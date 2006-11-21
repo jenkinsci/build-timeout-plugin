@@ -11,7 +11,7 @@
   <packaging>hpi</packaging>
   <name>Hudson build timeout plugin</name>
   <description>Aborts a build if it's taking too long</description>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   
   <build>
     <plugins>
@@ -36,4 +36,8 @@
       </plugin>
     </plugins>
   </build>
+
+  <scm>
+    <tag>build-timeout-1_0</tag>
+  </scm>
 </project>
