@@ -25,11 +25,14 @@
               <goal>translate</goal>
             </goals>
             <configuration>
-              <includes>
-                <include>
-                  <directory>target/classes</directory>
-                </include>
-              </includes>
+              <filesets>
+                <fileset>
+                  <directory>${project.build.outputDirectory}</directory>
+                    <includes>
+                      <include>**/*.class</include>
+                    </includes>
+                  </fileset>
+              </filesets>
             </configuration>
           </execution>
         </executions>
