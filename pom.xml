@@ -18,6 +18,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>retrotranslator-maven-plugin</artifactId>
+        <version>1.0-alpha-2</version>
         <executions>
           <execution>
             <phase>process-classes</phase>
@@ -28,9 +29,9 @@
               <filesets>
                 <fileset>
                   <directory>${project.build.outputDirectory}</directory>
-                    <includes>
-                      <include>**/*.class</include>
-                    </includes>
+                   <includes>
+                     <include>**/*.class</include>
+                   </includes>
                   </fileset>
               </filesets>
             </configuration>
