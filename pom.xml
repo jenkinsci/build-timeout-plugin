@@ -12,32 +12,4 @@
   <name>Hudson build timeout plugin</name>
   <description>Aborts a build if it's taking too long</description>
   <version>1.4-SNAPSHOT</version>
-  
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>retrotranslator-maven-plugin</artifactId>
-        <version>1.0-alpha-2</version>
-        <executions>
-          <execution>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>translate</goal>
-            </goals>
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>${project.build.outputDirectory}</directory>
-                   <includes>
-                     <include>**/*.class</include>
-                   </includes>
-                  </fileset>
-              </filesets>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>
