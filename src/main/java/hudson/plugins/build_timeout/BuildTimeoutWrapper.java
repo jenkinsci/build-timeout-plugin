@@ -7,6 +7,7 @@ import hudson.model.BuildListener;
 import hudson.model.Executor;
 import hudson.Launcher;
 import hudson.triggers.Trigger;
+import hudson.triggers.SafeTimerTask;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -30,8 +31,8 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             private final TimerTask task;
 
             public EnvironmentImpl() {
-                task = new TimerTask() {
-                    public void run() {
+                task = new SafeTimerTask() {
+                    public void doRun() {
                         // timed out
                         listener.getLogger().println("Build timed out. Aborting");
                         Executor e = build.getExecutor();
