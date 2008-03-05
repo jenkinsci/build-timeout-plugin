@@ -1,10 +1,13 @@
 package hudson.plugins.build_timeout;
 
 import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
 import hudson.model.Descriptor;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Executor;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.Launcher;
 import hudson.triggers.Trigger;
 import hudson.triggers.SafeTimerTask;
@@ -26,7 +29,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public int timeoutMinutes;
 
 
-    public Environment setUp(final Build build, Launcher launcher, final BuildListener listener) throws IOException {
+    public Environment setUp(final AbstractBuild build, Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
         class EnvironmentImpl extends Environment {
             private final TimerTask task;
 
@@ -58,7 +61,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
+    public static final class DescriptorImpl extends BuildWrapperDescriptor {
         DescriptorImpl() {
             super(BuildTimeoutWrapper.class);
         }
@@ -67,7 +70,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             return "Abort the build if it's stuck";
         }
 
-        public BuildTimeoutWrapper newInstance(StaplerRequest req) throws FormException {
+        public boolean isApplicable(AbstractProject<?, ?> item) {
+            return true;
+        }
+
+        public BuildTimeoutWrapper newInstance(StaplerRequest req) throws Descriptor.FormException {
             BuildTimeoutWrapper w = new BuildTimeoutWrapper();
             req.bindParameters(w,"build-timeout.");
             return w;
