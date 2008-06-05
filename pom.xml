@@ -11,12 +11,6 @@
   <packaging>hpi</packaging>
   <name>Hudson build timeout plugin</name>
   <description>Aborts a build if it's taking too long</description>
-  <version>1.4</version>
+  <version>1.5-SNAPSHOT</version>
   <url>http://hudson.gotdns.com/wiki/display/HUDSON/Build-timeout+Plugin</url>
-
-  <scm>
-    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/build-timeout-1.4</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/build-timeout-1.4</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/build-timeout/tags/build-timeout-1.4</url>
-  </scm>
 </project>
