@@ -1,16 +1,15 @@
 package hudson.plugins.build_timeout;
 
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildWrapperDescriptor;
-import hudson.model.Descriptor;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Executor;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.Launcher;
-import hudson.triggers.Trigger;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
+import hudson.model.Executor;
+import hudson.tasks.BuildWrapper;
+import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
+import hudson.triggers.Trigger;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
@@ -46,7 +45,8 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 Trigger.timer.schedule(task, timeoutMinutes*60L*1000L );
             }
 
-            public boolean tearDown(Build build, BuildListener listener) throws IOException {
+            @Override
+            public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
                 task.cancel();
                 return true;
             }
