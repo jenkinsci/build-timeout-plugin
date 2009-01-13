@@ -10,10 +10,10 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
-import java.util.TimerTask;
+
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * {@link BuildWrapper} that terminates a build if it's taking too long.
@@ -27,34 +27,59 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      */
     public int timeoutMinutes;
 
-
+    /**
+     * Fail the build rather than aborting it
+     */
+    public boolean failBuild;
+    
+    @DataBoundConstructor
+    public BuildTimeoutWrapper (int timeoutMinutes, boolean failBuild) {
+        System.out.println ("Constructor called: "+timeoutMinutes+" "+failBuild);
+        this.timeoutMinutes = timeoutMinutes;
+        this.failBuild = failBuild;
+    }
+    
     public Environment setUp(final AbstractBuild build, Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
         class EnvironmentImpl extends Environment {
-            private final TimerTask task;
+            final class TimeoutTimerTask extends SafeTimerTask {
+                private final AbstractBuild build;
+                private final BuildListener listener;
+                //Did the task timeout?
+                public boolean timeout= false;
 
+                private TimeoutTimerTask(AbstractBuild build, BuildListener listener) {
+                    this.build = build;
+                    this.listener = listener;
+                }
+
+                public void doRun() {
+                    // timed out
+                    listener.getLogger().println("Build timed out. Aborting");
+                    timeout=true;
+                    Executor e = build.getExecutor();
+                    if (e != null)
+                        e.interrupt();
+                }
+            }
+
+            private final TimeoutTimerTask task;
+            
             public EnvironmentImpl() {
-                task = new SafeTimerTask() {
-                    public void doRun() {
-                        // timed out
-                        listener.getLogger().println("Build timed out. Aborting");
-                        Executor e = build.getExecutor();
-                        if (e != null)
-                            e.interrupt();
-                    }
-                };
+                task = new TimeoutTimerTask(build, listener);
                 Trigger.timer.schedule(task, timeoutMinutes*60L*1000L );
             }
 
             @Override
             public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
                 task.cancel();
-                return true;
+                return (!task.timeout ||!failBuild);
             }
         }
 
         return new EnvironmentImpl();
     }
 
+    
     public Descriptor<BuildWrapper> getDescriptor() {
         return DESCRIPTOR;
     }
@@ -74,10 +99,5 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             return true;
         }
 
-        public BuildTimeoutWrapper newInstance(StaplerRequest req) throws Descriptor.FormException {
-            BuildTimeoutWrapper w = new BuildTimeoutWrapper();
-            req.bindParameters(w,"build-timeout.");
-            return w;
-        }
     }
 }
