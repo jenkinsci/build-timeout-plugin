@@ -12,5 +12,5 @@
   <name>Hudson build timeout plugin</name>
   <description>Aborts a build if it's taking too long</description>
   <version>1.5-SNAPSHOT</version>
-  <url>http://hudson.gotdns.com/wiki/display/HUDSON/Build-timeout+Plugin</url>
+  <url>http://wiki.hudson-ci.org/display/HUDSON/Build-timeout+Plugin</url>
 </project>
