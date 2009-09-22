@@ -1,5 +1,6 @@
 package hudson.plugins.build_timeout;
 
+import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -39,6 +40,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         this.failBuild = failBuild;
     }
     
+    @Override
     public Environment setUp(final AbstractBuild build, Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
         class EnvironmentImpl extends Environment {
             final class TimeoutTimerTask extends SafeTimerTask {
@@ -80,10 +82,12 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     }
 
     
+    @Override
     public Descriptor<BuildWrapper> getDescriptor() {
         return DESCRIPTOR;
     }
 
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
