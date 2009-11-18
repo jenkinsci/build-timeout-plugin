@@ -34,8 +34,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public boolean failBuild;
     
     @DataBoundConstructor
-    public BuildTimeoutWrapper (int timeoutMinutes, boolean failBuild) {
-        System.out.println ("Constructor called: "+timeoutMinutes+" "+failBuild);
+    public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild) {
         this.timeoutMinutes = Math.max(3,timeoutMinutes);
         this.failBuild = failBuild;
     }
