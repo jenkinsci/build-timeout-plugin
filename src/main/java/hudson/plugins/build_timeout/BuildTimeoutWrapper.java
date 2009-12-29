@@ -95,7 +95,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         }
 
         public String getDisplayName() {
-            return "Abort the build if it's stuck";
+            return Messages.Descriptor_DisplayName();
         }
 
         public boolean isApplicable(AbstractProject<?, ?> item) {

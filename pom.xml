@@ -13,4 +13,11 @@
   <description>Aborts a build if it's taking too long</description>
   <version>1.6-SNAPSHOT</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/Build-timeout+Plugin</url>
+
+  <developers>
+    <developer>
+      <id>kohsuke</id>
+      <name>Kohsuke Kawaguchi</name>
+    </developer>
+  </developers>
 </project>
