@@ -55,7 +55,10 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
                 public void doRun() {
                     // timed out
-                    listener.getLogger().println("Build timed out. Aborting");
+                    if (failBuild)
+                        listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as failed.");
+                    else
+                        listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as aborted.");
                     timeout=true;
                     Executor e = build.getExecutor();
                     if (e != null)
