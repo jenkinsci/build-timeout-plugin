@@ -191,7 +191,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         }
 
         public int[] getPercentages() {
-            return new int[] {0, 150,200,250,300,350,400};
+            return new int[] {150,200,250,300,350,400};
         }
         
         @Override
