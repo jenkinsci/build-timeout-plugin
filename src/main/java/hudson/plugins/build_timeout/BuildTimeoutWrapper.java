@@ -68,7 +68,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      * The timeout to use if there are no valid builds in the build 
      * history (ie, no successful or unstable builds)
      */
-    public int timeoutMinutesElasticDefault;
+    public Integer timeoutMinutesElasticDefault;
     
     @DataBoundConstructor
     public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild, int timeoutPercentage, int timeoutMinutesElasticDefault, String timeoutType) {

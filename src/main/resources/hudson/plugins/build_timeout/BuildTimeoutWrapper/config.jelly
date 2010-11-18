@@ -13,7 +13,7 @@
 	   </select>
 	  </f:entry>
 	  <f:entry title="${%Timeout minutes if no successful or unstable builds}" help="/plugin/build-timeout/help-projectConfig.html">
-        <f:textbox name="build-timeout.timeoutMinutesElasticDefault" value="${instance.timeoutMinutesElasticDefault}" />
+        <f:textbox name="build-timeout.timeoutMinutesElasticDefault" value="${instance.timeoutMinutesElasticDefault == null ? 60 : instance.timeoutMinutesElasticDefault}" />
       </f:entry> 
   </f:radioBlock>
    <f:entry title="${%Fail the build}" help="/plugin/build-timeout/help-failConfig.html">
