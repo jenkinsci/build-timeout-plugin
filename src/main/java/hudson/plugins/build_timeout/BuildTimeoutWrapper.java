@@ -197,7 +197,16 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         @Override
         public BuildWrapper newInstance(StaplerRequest req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
-            formData.put("timeoutType", formData.getJSONObject("timeoutType").getString("value"));
+            JSONObject timeoutObject = formData.getJSONObject("timeoutType");
+            
+            // we would ideally do this on the form itself (to show the default)
+            //but there is a show/hide bug when using radioOptions inside an optionBlock
+            if (timeoutObject.isNullObject() || timeoutObject.isEmpty()) {
+                formData.put("timeoutType", ELASTIC);
+            } else {
+                formData.put("timeoutType", timeoutObject.getString("value"));
+            }
+            
             return super.newInstance(req, formData);
         }
         
