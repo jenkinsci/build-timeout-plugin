@@ -113,7 +113,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             
             public EnvironmentImpl() {
                 task = new TimeoutTimerTask(build, listener);
-                this.effectiveTimeout = getEffectiveTimeout(timeoutMinutes * 60*1000, timeoutPercentage, timeoutMinutesElasticDefault, timeoutType, build.getProject().getBuilds()); 
+                this.effectiveTimeout = getEffectiveTimeout(timeoutMinutes * 60*1000, timeoutPercentage, timeoutMinutesElasticDefault * 60*1000, timeoutType, build.getProject().getBuilds()); 
                 Trigger.timer.schedule(task, effectiveTimeout);
             }
 

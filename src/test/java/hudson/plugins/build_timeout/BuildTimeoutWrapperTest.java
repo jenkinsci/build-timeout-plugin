@@ -43,14 +43,19 @@ public class BuildTimeoutWrapperTest extends TestCase {
     private int timeoutPercentage = 0;
     private int timeoutMilliseconds = 0;
     private int timeoutMillisecondsElasticDefault = 0;
-    private Run[] historicalBuilds = new Build[] {};
+    private Run[] historicalBuilds;
     private String timeoutType = BuildTimeoutWrapper.ABSOLUTE;
-    private static final int MINIMUM = 20;
+    private static final int MINIMUM = 60;
 
 
     public void setUp() throws Exception {
         super.setUp();
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = MINIMUM;
+        this.historicalBuilds = new Build[] {};
+        timeoutPercentage = 0;
+        timeoutMilliseconds = 0;
+        timeoutMillisecondsElasticDefault = 0;
+        timeoutType = BuildTimeoutWrapper.ABSOLUTE;
     }
     
     public void testDefaultTimeout() throws Exception {
@@ -67,8 +72,16 @@ public class BuildTimeoutWrapperTest extends TestCase {
         this.timeoutPercentage = 200;
         this.timeoutMillisecondsElasticDefault = 30;
         this.timeoutType = BuildTimeoutWrapper.ELASTIC;
-        this.historicalBuilds = new Build[] {new Build(20, SUCCESS)};
-        assertEffectiveTimeout(40, "Timeout should be 200% of 20");
+        this.historicalBuilds = new Build[] {new Build(60, SUCCESS)};
+        assertEffectiveTimeout(120, "Timeout should be 200% of 60");
+    } 
+    
+    public void testPercentageWithOneBuildLessThanDefault() throws Exception {
+        this.timeoutPercentage = 200;
+        this.timeoutMillisecondsElasticDefault = 30;
+        this.timeoutType = BuildTimeoutWrapper.ELASTIC;
+        this.historicalBuilds = new Build[] {new Build(10, SUCCESS)};
+        assertEffectiveTimeout(MINIMUM, "Timeout should be minimum");
     } 
 
     public void testPercentageWithTwoBuilds() throws Exception {
@@ -80,9 +93,9 @@ public class BuildTimeoutWrapperTest extends TestCase {
     
     public void testPercentageWithNoBuilds() throws Exception {
         this.timeoutPercentage = 200;
-        this.timeoutMillisecondsElasticDefault = 30;
+        this.timeoutMillisecondsElasticDefault = 90;
         this.timeoutType = BuildTimeoutWrapper.ELASTIC;
-        assertEffectiveTimeout(30, "Timeout should be the elastic default.");
+        assertEffectiveTimeout(90, "Timeout should be the elastic default.");
     }
 
     private void assertEffectiveTimeout(long expectedTimeout, String message)
