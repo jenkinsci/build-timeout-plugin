@@ -1,18 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.jvnet.hudson.plugins</groupId>
+    <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.318</version>
-    <relativePath>../pom.xml</relativePath>
+    <version>1.398</version>
   </parent>
   
   <artifactId>build-timeout</artifactId>
   <packaging>hpi</packaging>
-  <name>Hudson build timeout plugin</name>
+  <name>Jenkins build timeout plugin</name>
   <description>Aborts a build if it's taking too long</description>
   <version>1.7-SNAPSHOT</version>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/Build-timeout+Plugin</url>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/Build-timeout+Plugin</url>
 
   <developers>
     <developer>
@@ -20,4 +19,10 @@
       <name>Kohsuke Kawaguchi</name>
     </developer>
   </developers>
+
+   <scm>
+    <connection>scm:git:git://github.com/jenkinsci/build-timeout-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/build-timeout-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/build-timeout-plugin</url>
+  </scm>
 </project>
