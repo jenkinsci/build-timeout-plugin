@@ -7,6 +7,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
+import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
@@ -55,14 +56,20 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
                 public void doRun() {
                     // timed out
-                    if (failBuild)
-                        listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as failed.");
-                    else
-                        listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as aborted.");
+                    String resultName;
+                    Result result;
+                    if (failBuild) {
+                        result = Result.FAILURE;
+                        resultName = "failed";
+                    } else {
+                        result = Result.ABORTED;
+                        resultName = "aborted";
+                    }
+                    listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as " + resultName + ".");
                     timeout=true;
                     Executor e = build.getExecutor();
                     if (e != null)
-                        e.interrupt();
+                        e.interrupt(result);
                 }
             }
 
