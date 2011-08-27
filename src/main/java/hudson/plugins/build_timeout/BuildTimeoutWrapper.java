@@ -7,6 +7,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
+import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
@@ -62,7 +63,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     timeout=true;
                     Executor e = build.getExecutor();
                     if (e != null)
-                        e.interrupt();
+                        e.interrupt(failBuild? Result.FAILURE : Result.ABORTED);
                 }
             }
 
