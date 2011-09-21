@@ -9,7 +9,7 @@
   <artifactId>build-timeout</artifactId>
   <packaging>hpi</packaging>
   <name>Jenkins build timeout plugin</name>
-  <description>Aborts a build if it's taking too long</description>
+  <description>Aborts a build if it's taking longer than average build time setting</description>
   <version>1.9-SNAPSHOT</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Build-timeout+Plugin</url>
 
@@ -17,6 +17,10 @@
     <developer>
       <id>kohsuke</id>
       <name>Kohsuke Kawaguchi</name>
+    </developer>
+	<developer>
+      <id>gold_dudu</id>
+      <name>dudu goldberger</name>
     </developer>
   </developers>
 

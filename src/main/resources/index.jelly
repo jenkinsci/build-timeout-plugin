@@ -1,4 +1,4 @@
 <div>
-  This plugin allows builds to be automatically terminated after the
-  specified amount of time has elapsed.
+  This plugin allows builds to be automatically terminated or mark as unstable
+  if it takes longer than previous successful average builds time
 </div>

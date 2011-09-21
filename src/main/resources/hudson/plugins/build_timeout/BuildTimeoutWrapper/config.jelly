@@ -1,8 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Timeout minutes}" help="/plugin/build-timeout/help-projectConfig.html">
-    <f:textbox name="build-timeout.timeoutMinutes" value="${instance.timeoutMinutes}" />
+  <f:entry title="${%Threshold percentage}" help="/plugin/build-average-timeout/help-projectConfig.html">
+    <f:textbox name="build-timeout.thresholdPercentage" value="${instance.thresholdPercentage}" />
   </f:entry>
-   <f:entry title="${%Fail the build}" help="/plugin/build-timeout/help-failConfig.html">
+   <f:entry title="${%Number of builds to calculate average}" help="/plugin/build-average-timeout/help-projectConfigNumberOfBuilds.html">
+    <f:textbox name="build-timeout.buildsToCalculateAverage" value="${instance.buildsToCalculateAverage}" />
+  </f:entry>
+   <f:entry title="${%Fail the build}" help="/plugin/build-average-timeout/help-failConfig.html">
       <f:checkbox name="build-timeout.failBuild" checked="${instance.failBuild}"/>
    </f:entry>
+   <f:entry title="${%Timeout seconds limit}" help="/plugin/build-average-timeout/help-projectConfigHardcodedTimeout.html">
+    <f:textbox name="build-timeout.timeoutSeconds" value="${instance.timeoutSeconds}" />
+  </f:entry>
 </j:jelly>
