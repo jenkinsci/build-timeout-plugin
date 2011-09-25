@@ -159,7 +159,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     listener.getLogger().println("Setting timeout for " + timeOutToUse + " previous success builds average + threshold [" + thresholdPercentage + "%] : " + timeoutMinutesCalculated);
                     Trigger.timer.schedule(task, timeOutToUse * 1000L);
                 } else {
-//                    System.out.println("Was not able to find previous " + buildsToCalculateAverage + " success builds so no timeout is enforced");
+                    listener.getLogger().println("Was not able to find previous " + buildsToCalculateAverage + " success builds, and no hardcoded timeout given, so no timeout is enforced");
                 }
                 if (delaySecondsForTest > 0) {
                     try {
