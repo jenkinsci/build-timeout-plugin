@@ -6,7 +6,7 @@
     <version>1.420</version>
   </parent>
   
-  <artifactId>build-timeout</artifactId>
+  <artifactId>build-average-timeout</artifactId>
   <packaging>hpi</packaging>
   <name>Jenkins build timeout plugin</name>
   <description>Aborts a build if it's taking longer than average build time setting</description>

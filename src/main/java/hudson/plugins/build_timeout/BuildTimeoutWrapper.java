@@ -26,7 +26,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      */
     public int thresholdPercentage = 30;
 
-    private int timeoutMinutesCalculated;
+    private int timeoutSecondsCalculated;
 
     /**
      * Fail the build rather than aborting it
@@ -77,13 +77,17 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     int threshold = thresholdPercentage;
 //                    System.out.println("Threshold % input = " + threshold);
 //                    System.out.println("average = " + average);
-                    timeoutMinutesCalculated = average + (threshold / 100) * average;
-//                    System.out.println("timeout set to = " + timeoutMinutesCalculated);
+                    if (average > 0){
+                        listener.getLogger().println("Average builds time [secs] = " + average);
+                        listener.getLogger().println("Threshold set = " + threshold + "% ==>" + (threshold*average / 100) + " seconds");
+                    }
+                    timeoutSecondsCalculated = average + ((threshold / 100) * average);
+//                    System.out.println("timeout set to = " + timeoutSecondsCalculated);
                 }
 
                 public void doRun() {
 
-                    String msg = "Build time exceeded ( " + timeoutMinutesCalculated + " seconds)," +
+                    String msg = "Build time exceeded ( " + timeoutSecondsCalculated + " seconds)," +
                             " that is the average of previous passed builds." +
                             " Marking the build as ";
 
@@ -145,22 +149,26 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             public EnvironmentImpl() {
                 task = new TimeoutTimerTask(build, listener);
 
-                if (timeoutMinutesCalculated > 0 || timeoutSeconds > 0) {
+                if (timeoutSecondsCalculated > 0 || timeoutSeconds > 0) {
 
-                    int timeOutToUse = timeoutMinutesCalculated;
+                    int timeOutToUse = timeoutSecondsCalculated;
 
                     /**
                      * get the minimum valid timeout to enforce
                      */
-                    if (timeoutMinutesCalculated > 0 && timeoutSeconds > 0)
-                        timeOutToUse = Math.min(timeoutSeconds, timeoutMinutesCalculated);
+                    if (timeoutSecondsCalculated > 0 && timeoutSeconds > 0)
+                        timeOutToUse = Math.min(timeoutSeconds, timeoutSecondsCalculated);
                     else if (timeoutSeconds > 0)
                         timeOutToUse = timeoutSeconds;
-                    listener.getLogger().println("Setting timeout for " + timeOutToUse + " previous success builds average + threshold [" + thresholdPercentage + "%] : " + timeoutMinutesCalculated);
+                    listener.getLogger().println("hardcoded timeout [secs] = " + timeoutSeconds + "; Average build time + threshold [secs] = " + timeoutSecondsCalculated);
+                    listener.getLogger().println("Setting timeout for " + timeOutToUse + " seconds");
                     Trigger.timer.schedule(task, timeOutToUse * 1000L);
                 } else {
                     listener.getLogger().println("Was not able to find previous " + buildsToCalculateAverage + " success builds, and no hardcoded timeout given, so no timeout is enforced");
                 }
+                /**
+                 * Test only
+                 */
                 if (delaySecondsForTest > 0) {
                     try {
                         System.out.println("sleep for " + delaySecondsForTest + " Secs ");
