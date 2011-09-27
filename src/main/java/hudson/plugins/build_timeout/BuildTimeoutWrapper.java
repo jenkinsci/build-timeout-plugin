@@ -81,7 +81,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                         listener.getLogger().println("Average builds time [secs] = " + average);
                         listener.getLogger().println("Threshold set = " + threshold + "% ==>" + (threshold*average / 100) + " seconds");
                     }
-                    timeoutSecondsCalculated = average + ((threshold / 100) * average);
+                    timeoutSecondsCalculated = average + (threshold*average / 100);
 //                    System.out.println("timeout set to = " + timeoutSecondsCalculated);
                 }
 
