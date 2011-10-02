@@ -73,23 +73,14 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 private TimeoutTimerTask(AbstractBuild build, BuildListener listener) {
                     this.build = build;
                     this.listener = listener;
-                    int average = getPreviousBuildsTimeAverage(build);
-                    int threshold = thresholdPercentage;
-//                    System.out.println("Threshold % input = " + threshold);
-//                    System.out.println("average = " + average);
-                    if (average > 0){
-                        listener.getLogger().println("Average builds time [secs] = " + average);
-                        listener.getLogger().println("Threshold set = " + threshold + "% ==>" + (threshold*average / 100) + " seconds");
-                    }
-                    timeoutSecondsCalculated = average + (threshold*average / 100);
-//                    System.out.println("timeout set to = " + timeoutSecondsCalculated);
+
+                    timeoutSecondsCalculated = new TimeoutCalculator(build, listener, buildsToCalculateAverage, thresholdPercentage, timeoutSeconds).getCalculatedTimeoutSeconds();
                 }
 
                 public void doRun() {
 
                     String msg = "Build time exceeded ( " + timeoutSecondsCalculated + " seconds)," +
-                            " that is the average of previous passed builds." +
-                            " Marking the build as ";
+                            " that is the timeout. Marking the build as ";
 
                     // timed out
                     listener.getLogger().println(msg + (failBuild ? "failed." : "unstable."));
@@ -107,41 +98,6 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     }
                 }
 
-                /**
-                 * gets builds time [if not found return -1]
-                 * @return time int
-                 */
-                private int getLastSuccessfulBuildTime(Run run) {
-
-                    long timeMiliSecs = run.getDuration();
-                    long timeSecs = (timeMiliSecs / 1000);
-                    int buildTime = (int) timeSecs;
-//                    System.out.println("run time [sec] = " + buildTime);
-                    return buildTime;
-                }
-
-                /**
-                 * gets 3 previous success builds time average
-                 * @return time int
-                 */
-                public int getPreviousBuildsTimeAverage(AbstractBuild build) {
-                    System.out.println("getting previous " + buildsToCalculateAverage + " builds time");
-                    int lastThreeRunsTime = 0;
-                    Run run = build;
-                    for (int i = 0; i < buildsToCalculateAverage; i++) {
-                        try {
-                            run = run.getPreviousSuccessfulBuild();
-                            run.getNumber();
-//                            System.out.println("run number = " + run.getNumber());
-                        } catch (Exception e) {
-//                            System.out.println("Did not find successful build");
-                            return -1;
-                        }
-                        lastThreeRunsTime += getLastSuccessfulBuildTime(run);
-                    }
-//                    System.out.println("total " + buildsToCalculateAverage + " builds = " + lastThreeRunsTime);
-                    return lastThreeRunsTime > 0 ? lastThreeRunsTime / buildsToCalculateAverage : -1;
-                }
             }
 
             private final TimeoutTimerTask task;
@@ -149,20 +105,9 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             public EnvironmentImpl() {
                 task = new TimeoutTimerTask(build, listener);
 
-                if (timeoutSecondsCalculated > 0 || timeoutSeconds > 0) {
-
-                    int timeOutToUse = timeoutSecondsCalculated;
-
-                    /**
-                     * get the minimum valid timeout to enforce
-                     */
-                    if (timeoutSecondsCalculated > 0 && timeoutSeconds > 0)
-                        timeOutToUse = Math.min(timeoutSeconds, timeoutSecondsCalculated);
-                    else if (timeoutSeconds > 0)
-                        timeOutToUse = timeoutSeconds;
-                    listener.getLogger().println("hardcoded timeout [secs] = " + timeoutSeconds + "; Average build time + threshold [secs] = " + timeoutSecondsCalculated);
-                    listener.getLogger().println("Setting timeout for " + timeOutToUse + " seconds");
-                    Trigger.timer.schedule(task, timeOutToUse * 1000L);
+                if (timeoutSecondsCalculated > 0) {
+                    listener.getLogger().println("Setting timeout for " + timeoutSecondsCalculated + " seconds");
+                    Trigger.timer.schedule(task, timeoutSecondsCalculated * 1000L);
                 } else {
                     listener.getLogger().println("Was not able to find previous " + buildsToCalculateAverage + " success builds, and no hardcoded timeout given, so no timeout is enforced");
                 }
