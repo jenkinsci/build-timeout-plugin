@@ -56,19 +56,19 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
 				public void doRun() {
 					// timed out
-					String format = "Build timed out (after %s minutes). Marking the build as %s.";
 					String msg;
 					if (failBuild) {
-						msg = String.format(format, timeoutMinutes, "failed");
-					} else
-						msg = String.format(format, timeoutMinutes, "aborted");
+						msg = Messages.Timeout_Message(timeoutMinutes, Messages.Timeout_Failed());
+					} else {
+						msg = Messages.Timeout_Message(timeoutMinutes, Messages.Timeout_Aborted());
+					}
 
 					listener.getLogger().println(msg);
 					try {
 						build.setDescription(msg);
 					} catch (IOException e) {
 						listener.getLogger().println(
-								"failed writing to the build description!");
+								"failed to write to the build description!");
 					}
 
                     timeout=true;
