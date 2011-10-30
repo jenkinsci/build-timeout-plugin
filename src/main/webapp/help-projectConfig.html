@@ -1,5 +1,6 @@
 <div>
-  If configured, and if a build does not complete by the specified amount of time (in minutes;
-  at least 3), then the build will be terminated automatically and marked as aborted. This is
-  useful if you have experienced infinite loops in your test, for example.
+  If configured, and if a build does not complete by time average calculated in
+  previous given builds + [percentage threshold configured],
+  then the build will be terminated automatically and marked as failed or continue and marked as unstable.
+  This is  useful if you have experienced infinite loops in your test, for example.
 </div>

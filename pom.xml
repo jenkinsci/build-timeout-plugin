@@ -6,17 +6,21 @@
     <version>1.420</version>
   </parent>
   
-  <artifactId>build-timeout</artifactId>
+  <artifactId>build-average-timeout</artifactId>
   <packaging>hpi</packaging>
   <name>Jenkins build timeout plugin</name>
-  <description>Aborts a build if it's taking too long</description>
-  <version>1.9-SNAPSHOT</version>
+  <description>Aborts a build if it's taking longer than average build time setting</description>
+  <version>2.0-Dudu</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Build-timeout+Plugin</url>
 
   <developers>
     <developer>
       <id>kohsuke</id>
       <name>Kohsuke Kawaguchi</name>
+    </developer>
+	<developer>
+      <id>gold_dudu</id>
+      <name>dudu goldberger</name>
     </developer>
   </developers>
 
