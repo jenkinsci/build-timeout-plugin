@@ -2,12 +2,12 @@ package hudson.plugins.build_timeout;
 
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
-import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
@@ -54,12 +54,23 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     this.listener = listener;
                 }
 
-                public void doRun() {
-                    // timed out
-                    if (failBuild)
-                        listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as failed.");
-                    else
-                        listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as aborted.");
+				public void doRun() {
+					// timed out
+					String format = "Build timed out (after %s minutes). Marking the build as %s.";
+					String msg;
+					if (failBuild) {
+						msg = String.format(format, timeoutMinutes, "failed");
+					} else
+						msg = String.format(format, timeoutMinutes, "aborted");
+
+					listener.getLogger().println(msg);
+					try {
+						build.setDescription(msg);
+					} catch (IOException e) {
+						listener.getLogger().println(
+								"failed writing to the build description!");
+					}
+
                     timeout=true;
                     Executor e = build.getExecutor();
                     if (e != null)
