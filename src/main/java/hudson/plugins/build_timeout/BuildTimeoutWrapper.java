@@ -34,10 +34,17 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      */
     public boolean failBuild;
     
+	/**
+	 * Writing the build description when timeout occurred.
+	 */
+	public boolean writingDescription;
+
     @DataBoundConstructor
-    public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild) {
+	public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild,
+			boolean writingDescription) {
         this.timeoutMinutes = Math.max(3,timeoutMinutes);
         this.failBuild = failBuild;
+		this.writingDescription = writingDescription;
     }
     
     @Override
@@ -64,11 +71,14 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 					}
 
 					listener.getLogger().println(msg);
-					try {
-						build.setDescription(msg);
-					} catch (IOException e) {
-						listener.getLogger().println(
-								"failed to write to the build description!");
+					if (writingDescription) {
+						try {
+							build.setDescription(msg);
+						} catch (IOException e) {
+							listener.getLogger()
+									.println(
+											"failed to write to the build description!");
+						}
 					}
 
                     timeout=true;

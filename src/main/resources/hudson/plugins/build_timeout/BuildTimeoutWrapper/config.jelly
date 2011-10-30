@@ -5,4 +5,7 @@
    <f:entry title="${%Fail the build}" help="/plugin/build-timeout/help-failConfig.html">
       <f:checkbox name="build-timeout.failBuild" checked="${instance.failBuild}"/>
    </f:entry>
+   <f:entry title="${%Writing the build description}" help="/plugin/build-timeout/help-writingDescriptionConfig.html">
+      <f:checkbox name="build-timeout.writingDescription" checked="${instance.writingDescription}"/>
+   </f:entry>
 </j:jelly>
