@@ -2,16 +2,19 @@ package hudson.plugins.build_timeout;
 
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
-import hudson.model.Result;
+import hudson.model.Queue.Executable;
+import hudson.model.queue.Executables;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
+import hudson.util.TimeUnit2;
 
 import java.io.IOException;
 
@@ -33,7 +36,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      * Fail the build rather than aborting it
      */
     public boolean failBuild;
-    
+
     @DataBoundConstructor
     public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild) {
         this.timeoutMinutes = Math.max(3,timeoutMinutes);
@@ -69,10 +72,43 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
             private final TimeoutTimerTask task;
             
+
             public EnvironmentImpl() {
-                task = new TimeoutTimerTask(build, listener);
-                Trigger.timer.schedule(task, timeoutMinutes*60L*1000L );
-            }
+				long timeout;
+				if (true) {
+					timeout = getLikelyStuckTime();
+				} else {
+					timeout = timeoutMinutes * 60L * 1000L;
+				}
+
+				task = new TimeoutTimerTask(build, listener);
+				Trigger.timer.schedule(task, timeout);
+			}
+
+			/**
+			 * Get the time considered it stuck.
+			 * 
+			 * @return 10 times as much as eta if eta is available, else 24 hours.
+			 * @see Executor#isLikelyStuck()
+			 */
+			private long getLikelyStuckTime() {
+				Executor executor = build.getExecutor();
+				if (executor == null) {
+					return TimeUnit2.HOURS.toMillis(24);
+				}
+
+				Executable executable = executor.getCurrentExecutable();
+				if (executable == null) {
+					return TimeUnit2.HOURS.toMillis(24);
+				}
+
+				long eta = Executables.getEstimatedDurationFor(executable);
+				if (eta >= 0) {
+					return eta * 10;
+				} else {
+					return TimeUnit2.HOURS.toMillis(24);
+				}
+			}
 
             @Override
             public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
@@ -99,7 +135,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         }
 
         public String getDisplayName() {
-            return Messages.Descriptor_DisplayName();
+			return Messages.Descriptor_DisplayName();
         }
 
         public boolean isApplicable(AbstractProject<?, ?> item) {
