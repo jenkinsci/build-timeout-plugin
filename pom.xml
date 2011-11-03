@@ -25,4 +25,13 @@
     <developerConnection>scm:git:git@github.com:jenkinsci/build-timeout-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/build-timeout-plugin</url>
   </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.progress.hudson</groupId>
+      <artifactId>schedule-failed-builds</artifactId>
+      <version>1.1</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
 </project>

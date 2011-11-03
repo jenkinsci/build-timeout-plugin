@@ -7,6 +7,7 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
+import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
@@ -41,17 +42,19 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     }
     
     @Override
-    public Environment setUp(final AbstractBuild build, Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+    public Environment setUp(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
         class EnvironmentImpl extends Environment {
             final class TimeoutTimerTask extends SafeTimerTask {
                 private final AbstractBuild build;
                 private final BuildListener listener;
+                private final Launcher launcher;
                 //Did the task timeout?
                 public boolean timeout= false;
 
-                private TimeoutTimerTask(AbstractBuild build, BuildListener listener) {
+                private TimeoutTimerTask(AbstractBuild build, BuildListener listener, Launcher launcher) {
                     this.build = build;
                     this.listener = listener;
+                    this.launcher = launcher;
                 }
 
                 public void doRun() {
@@ -61,16 +64,29 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     else
                         listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as aborted.");
                     timeout=true;
-                    Executor e = build.getExecutor();
-                    if (e != null)
-                        e.interrupt(failBuild? Result.FAILURE : Result.ABORTED);
+                    Executor ex = build.getExecutor();
+                    if (ex != null) {
+                        ex.interrupt(failBuild? Result.FAILURE : Result.ABORTED);
+
+                        if (Hudson.getInstance().getPlugin("schedule-failed-builds") != null) {
+                            com.progress.hudson.ScheduleFailedBuildsPublisher retryFailedBuild =
+                                (com.progress.hudson.ScheduleFailedBuildsPublisher) build.getProject().getPublishersList().get(com.progress.hudson.ScheduleFailedBuildsPublisher.class);
+                            try {
+                                retryFailedBuild.perform(build, launcher, listener);
+                            } catch (InterruptedException e) {
+                                listener.getLogger().println("failed to re-scehdule failed build " + e.getMessage());
+                            } catch (IOException e) {
+                                listener.getLogger().println("failed to re-scehdule failed build " + e.getMessage());
+                            }
+                        }
+                    }
                 }
             }
 
             private final TimeoutTimerTask task;
             
             public EnvironmentImpl() {
-                task = new TimeoutTimerTask(build, listener);
+                task = new TimeoutTimerTask(build, listener, launcher);
                 Trigger.timer.schedule(task, timeoutMinutes*60L*1000L );
             }
 
