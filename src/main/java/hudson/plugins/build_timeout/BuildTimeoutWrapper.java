@@ -34,17 +34,16 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      */
     public boolean failBuild;
     
-	/**
-	 * Writing the build description when timeout occurred.
-	 */
-	public boolean writingDescription;
+    /**
+     * Writing the build description when timeout occurred.
+     */
+    public boolean writingDescription;
 
     @DataBoundConstructor
-	public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild,
-			boolean writingDescription) {
+    public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild, boolean writingDescription) {
         this.timeoutMinutes = Math.max(3,timeoutMinutes);
         this.failBuild = failBuild;
-		this.writingDescription = writingDescription;
+        this.writingDescription = writingDescription;
     }
     
     @Override
@@ -61,25 +60,23 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     this.listener = listener;
                 }
 
-				public void doRun() {
-					// timed out
-					String msg;
-					if (failBuild) {
-						msg = Messages.Timeout_Message(timeoutMinutes, Messages.Timeout_Failed());
-					} else {
-						msg = Messages.Timeout_Message(timeoutMinutes, Messages.Timeout_Aborted());
-					}
+                public void doRun() {
+                    // timed out
+                    String msg;
+                    if (failBuild) {
+                        msg = Messages.Timeout_Message(timeoutMinutes, Messages.Timeout_Failed());
+                    } else {
+                        msg = Messages.Timeout_Message(timeoutMinutes, Messages.Timeout_Aborted());
+                    }
 
-					listener.getLogger().println(msg);
-					if (writingDescription) {
-						try {
-							build.setDescription(msg);
-						} catch (IOException e) {
-							listener.getLogger()
-									.println(
-											"failed to write to the build description!");
-						}
-					}
+                    listener.getLogger().println(msg);
+                    if (writingDescription) {
+                        try {
+                            build.setDescription(msg);
+                        } catch (IOException e) {
+                            listener.getLogger().println("failed to write to the build description!");
+                        }
+                    }
 
                     timeout=true;
                     Executor e = build.getExecutor();
