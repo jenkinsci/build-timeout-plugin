@@ -2,13 +2,13 @@
   <f:block>
     <table width="100%">
 
-      <f:radioBlock name="build_timeout.strategy" value="fixationTimeStrategy" title="${%Fixation time}" checked="${instance.fixationTimeStrategy || instance.fixationTimeStrategy == null || instance.isNoStrategySelected()}">
+      <f:radioBlock name="build_timeout.strategy" value="fixationTimeStrategy" title="${%Fixation time}" checked="${instance.fixationTimeStrategy || instance.fixationTimeStrategy == null || instance.isNoStrategySelected()}" help="/plugin/build-timeout/help-fixationTimeConfig.html">
         <f:entry title="${%Timeout minutes}" help="/plugin/build-timeout/help-projectConfig.html">
           <f:textbox name="build-timeout.timeoutMinutes" value="${instance.timeoutMinutes}" />
         </f:entry>
       </f:radioBlock>
 
-      <f:radioBlock name="build_timeout.strategy" value="likelyStuckStrategy" title="${%Likely stuck}" checked="${instance.likelyStuckStrategy}">
+      <f:radioBlock name="build_timeout.strategy" value="likelyStuckStrategy" title="${%Likely stuck}" checked="${instance.likelyStuckStrategy}" help="/plugin/build-timeout/help-likelyStuckConfig.html">
       </f:radioBlock>
 
       <f:entry title="${%Fail the build}" help="/plugin/build-timeout/help-failConfig.html">
