@@ -91,12 +91,14 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
             public EnvironmentImpl() {
                 long timeout;
-                if (fixationTimeStrategy) {
+                if (fixationTimeStrategy || isNoStrategySelected()) {
                     timeout = timeoutMinutes * 60L * 1000L;
                 } else if (likelyStuckStrategy) {
                     timeout = getLikelyStuckTime();
                 } else {
-                    throw new IllegalStateException("timeout strategy is not selected.");
+                    // fixation time strategy is used if timeout strategy is not selected.
+                    // this is for backward compatibility.
+                    timeout = timeoutMinutes * 60L * 1000L;
                 }
 
                 task = new TimeoutTimerTask(build, listener);
@@ -138,7 +140,10 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         return new EnvironmentImpl();
     }
 
-    
+    public boolean isNoStrategySelected() {
+        return !fixationTimeStrategy && !likelyStuckStrategy;
+    }
+
     @Override
     public Descriptor<BuildWrapper> getDescriptor() {
         return DESCRIPTOR;
