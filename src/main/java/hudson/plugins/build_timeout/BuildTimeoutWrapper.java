@@ -2,12 +2,12 @@ package hudson.plugins.build_timeout;
 
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
-import hudson.model.Result;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
@@ -34,10 +34,16 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      */
     public boolean failBuild;
     
+    /**
+     * Writing the build description when timeout occurred.
+     */
+    public boolean writingDescription;
+
     @DataBoundConstructor
-    public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild) {
+    public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild, boolean writingDescription) {
         this.timeoutMinutes = Math.max(3,timeoutMinutes);
         this.failBuild = failBuild;
+        this.writingDescription = writingDescription;
     }
     
     @Override
@@ -56,10 +62,22 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
                 public void doRun() {
                     // timed out
-                    if (failBuild)
-                        listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as failed.");
-                    else
-                        listener.getLogger().println("Build timed out (after " + timeoutMinutes + " minutes). Marking the build as aborted.");
+                    String msg;
+                    if (failBuild) {
+                        msg = Messages.Timeout_Message(timeoutMinutes, Messages.Timeout_Failed());
+                    } else {
+                        msg = Messages.Timeout_Message(timeoutMinutes, Messages.Timeout_Aborted());
+                    }
+
+                    listener.getLogger().println(msg);
+                    if (writingDescription) {
+                        try {
+                            build.setDescription(msg);
+                        } catch (IOException e) {
+                            listener.getLogger().println("failed to write to the build description!");
+                        }
+                    }
+
                     timeout=true;
                     Executor e = build.getExecutor();
                     if (e != null)
