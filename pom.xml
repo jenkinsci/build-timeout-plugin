@@ -25,4 +25,13 @@
     <developerConnection>scm:git:git@github.com:jenkinsci/build-timeout-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/build-timeout-plugin</url>
   </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>1.8.5</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>
