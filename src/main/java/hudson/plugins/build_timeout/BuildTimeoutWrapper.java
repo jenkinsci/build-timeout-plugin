@@ -11,6 +11,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
+import hudson.util.ListBoxModel;
 import hudson.util.TimeUnit2;
 
 import java.io.IOException;
@@ -261,6 +262,15 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             }
 
             return super.newInstance(req, formData);
+        }
+
+        public ListBoxModel doFillTimeoutPercentageItems() {
+            ListBoxModel m = new ListBoxModel();
+            for (int option : getPercentages()) {
+                String s = String.valueOf(option);
+                m.add(s + "%", s);
+            }
+            return m;
         }
         
     }
