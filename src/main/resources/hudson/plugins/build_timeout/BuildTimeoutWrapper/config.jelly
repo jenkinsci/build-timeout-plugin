@@ -1,25 +1,29 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:radioBlock name="build-timeout.timeoutType" value="absolute" title="${%Absolute}" checked="${instance.timeoutType=='absolute'}">
-	  <f:entry title="${%Timeout minutes}" help="/plugin/build-timeout/help-projectConfig.html">
-	    <f:textbox name="build-timeout.timeoutMinutes" value="${instance.timeoutMinutes}" />
-	  </f:entry>
-  </f:radioBlock>
-  <f:radioBlock name="build-timeout.timeoutType" value="elastic" title="${%Elastic}" checked="${instance.timeoutType=='elastic'}">
-	  <f:entry title="${%Timeout as a percentage of recent non-failing builds}" help="/plugin/build-timeout/help-percentageTimeout.html">
-	   <select name="build-timeout.timeoutPercentage">
-	     <j:forEach var="percentage" items="${descriptor.percentages}">
-	        <f:option value="${percentage}" selected="${percentage==instance.timeoutPercentage}">${percentage == 0 ? 'None' : percentage + '%'}</f:option>
-	     </j:forEach>
-	   </select>
-	  </f:entry>
-	  <f:entry title="${%Timeout minutes if no successful or unstable builds}" help="/plugin/build-timeout/help-projectConfig.html">
+    <f:radioBlock name="build-timeout.timeoutType" value="absolute" title="${%Absolute}" checked="${instance.timeoutType=='absolute'}">
+      <f:entry title="${%Timeout minutes}" help="/plugin/build-timeout/help-projectConfig.html">
+        <f:textbox name="build-timeout.timeoutMinutes" value="${instance.timeoutMinutes}" />
+      </f:entry>
+    </f:radioBlock>
+
+    <f:radioBlock name="build-timeout.timeoutType" value="elastic" title="${%Elastic}" checked="${instance.timeoutType=='elastic'}">
+      <f:entry title="${%Timeout as a percentage of recent non-failing builds}" help="/plugin/build-timeout/help-percentageTimeout.html" >
+       <select name="build-timeout.timeoutPercentage">
+         <j:forEach var="percentage" items="${descriptor.percentages}">
+            <f:option value="${percentage}" selected="${percentage==instance.timeoutPercentage}">${percentage == 0 ? 'None' : percentage + '%'}</f:option>
+         </j:forEach>
+       </select>
+      </f:entry>
+      <f:entry title="${%Timeout minutes if no successful or unstable builds}" help="/plugin/build-timeout/help-projectConfig.html">
         <f:textbox name="build-timeout.timeoutMinutesElasticDefault" value="${instance.timeoutMinutesElasticDefault == null ? 60 : instance.timeoutMinutesElasticDefault}" />
-      </f:entry> 
-  </f:radioBlock>
-   <f:entry title="${%Fail the build}" help="/plugin/build-timeout/help-failConfig.html">
-      <f:checkbox name="build-timeout.failBuild" checked="${instance.failBuild}"/>
-   </f:entry>
-   <f:entry title="${%Writing the build description}" help="/plugin/build-timeout/help-writingDescriptionConfig.html">
-      <f:checkbox name="build-timeout.writingDescription" checked="${instance.writingDescription}"/>
-   </f:entry>
+      </f:entry>
+    </f:radioBlock>
+
+    <f:radioBlock name="build-timeout.timeoutType" value="likelyStuck" title="${%Likely stuck}" checked="${instance.timeoutType=='likelyStuck'}" help="/plugin/build-timeout/help-likelyStuckConfig.html"/>
+
+  <f:entry title="${%Fail the build}" help="/plugin/build-timeout/help-failConfig.html">
+    <f:checkbox name="build-timeout.failBuild" checked="${instance.failBuild}"/>
+  </f:entry>
+  <f:entry title="${%Writing the build description}" help="/plugin/build-timeout/help-writingDescriptionConfig.html">
+    <f:checkbox name="build-timeout.writingDescription" checked="${instance.writingDescription}"/>
+  </f:entry>
 </j:jelly>

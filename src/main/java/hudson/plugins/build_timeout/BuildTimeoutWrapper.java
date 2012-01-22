@@ -6,6 +6,7 @@ import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.Result;
+import hudson.model.queue.Executables;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
@@ -34,6 +35,8 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     
     public static final String ABSOLUTE = "absolute";
     public static final String ELASTIC = "elastic";
+    public static final String STUCK = "likelyStuck";
+    
     /**
      * If the build took longer than this amount of minutes,
      * it will be terminated.
@@ -83,7 +86,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     }
     
     @Override
-    public Environment setUp(final AbstractBuild build, Launcher launcher, final BuildListener listener) {
+    public Environment setUp(final AbstractBuild build, Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
         class EnvironmentImpl extends Environment {
             final class TimeoutTimerTask extends SafeTimerTask {
                 private final AbstractBuild build;
@@ -127,9 +130,44 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             private final long effectiveTimeout;
             
             public EnvironmentImpl() {
+                long timeout;
+                if (ELASTIC.equals(timeoutType)) {
+                    timeout = getEffectiveTimeout(timeoutMinutes * 60L * 1000L, timeoutPercentage,
+                            timeoutMinutesElasticDefault * 60*1000, timeoutType, build.getProject().getBuilds());
+                } else if (STUCK.equals(timeoutType)) {
+                    timeout = getLikelyStuckTime();
+                } else {
+                    timeout = timeoutMinutes * 60L * 1000L;
+                }
+
+                this.effectiveTimeout = timeout;
                 task = new TimeoutTimerTask(build, listener);
-                this.effectiveTimeout = getEffectiveTimeout(timeoutMinutes * 60*1000, timeoutPercentage, timeoutMinutesElasticDefault * 60*1000, timeoutType, build.getProject().getBuilds()); 
-                Trigger.timer.schedule(task, effectiveTimeout);
+                Trigger.timer.schedule(task, timeout);
+            }
+
+            /**
+             * Get the time considered it stuck.
+             * 
+             * @return 10 times as much as eta if eta is available, else 24 hours.
+             * @see Executor#isLikelyStuck()
+             */
+            private long getLikelyStuckTime() {
+                Executor executor = build.getExecutor();
+                if (executor == null) {
+                    return TimeUnit2.HOURS.toMillis(24);
+                }
+
+                Queue.Executable executable = executor.getCurrentExecutable();
+                if (executable == null) {
+                    return TimeUnit2.HOURS.toMillis(24);
+                }
+
+                long eta = Executables.getEstimatedDurationFor(executable);
+                if (eta >= 0) {
+                    return eta * 10;
+                } else {
+                    return TimeUnit2.HOURS.toMillis(24);
+                }
             }
 
             @Override
@@ -142,7 +180,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         return new EnvironmentImpl();
     }
 
-    public static long getEffectiveTimeout(int timeoutMilliseconds, int timeoutPercentage, int timeoutMillsecondsElasticDefault,
+    public static long getEffectiveTimeout(long timeoutMilliseconds, int timeoutPercentage, int timeoutMillsecondsElasticDefault,
             String timeoutType, List<Run> builds) {
         
         if (ELASTIC.equals(timeoutType)) {
@@ -213,15 +251,15 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         public BuildWrapper newInstance(StaplerRequest req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
             JSONObject timeoutObject = formData.getJSONObject("timeoutType");
-            
+
             // we would ideally do this on the form itself (to show the default)
             //but there is a show/hide bug when using radioOptions inside an optionBlock
             if (timeoutObject.isNullObject() || timeoutObject.isEmpty()) {
-                formData.put("timeoutType", ELASTIC);
+                formData.put("timeoutType", ABSOLUTE);
             } else {
                 formData.put("timeoutType", timeoutObject.getString("value"));
             }
-            
+
             return super.newInstance(req, formData);
         }
         
