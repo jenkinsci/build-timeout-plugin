@@ -9,6 +9,7 @@ import hudson.model.Result;
 import hudson.model.queue.Executables;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.tasks.Shell;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.ListBoxModel;
@@ -17,6 +18,12 @@ import hudson.util.TimeUnit2;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.lang.ProcessBuilder;
 
 import net.sf.json.JSONObject;
 
@@ -75,15 +82,19 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      */
     public Integer timeoutMinutesElasticDefault;
     
+    public String timeoutAction;
+
     @DataBoundConstructor
     public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild, boolean writingDescription,
-                               int timeoutPercentage, int timeoutMinutesElasticDefault, String timeoutType) {
+                               int timeoutPercentage, int timeoutMinutesElasticDefault, String timeoutType,
+                               String timeoutAction) {
         this.timeoutMinutes = Math.max(3,timeoutMinutes);
         this.failBuild = failBuild;
         this.writingDescription = writingDescription;
         this.timeoutPercentage = timeoutPercentage;
         this.timeoutMinutesElasticDefault = Math.max(3, timeoutMinutesElasticDefault);
         this.timeoutType = timeoutType;
+        this.timeoutAction = timeoutAction;
     }
     
     @Override
@@ -122,7 +133,38 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     timeout=true;
                     Executor e = build.getExecutor();
                     if (e != null)
+                        ExecuteTimeoutAction();
                         e.interrupt(failBuild? Result.FAILURE : Result.ABORTED);
+                }
+            }
+
+            private void ExecuteTimeoutAction() {
+                if ((timeoutAction == null) || (timeoutAction.trim().equals(""))) {
+                    return;
+                }
+                if (System.getProperty("os.name").startsWith("Win")) {
+                    listener.getLogger().println("Timeout actions are not supported on Windows");
+                    return;
+                }
+                listener.getLogger().println("Executing timeout action: " + timeoutAction);
+                try {
+                    File tmpShell = File.createTempFile("jenkins", ".sh");
+                    FileWriter tmpShellWriter = new FileWriter(tmpShell);
+                    tmpShellWriter.write(timeoutAction);
+                    tmpShellWriter.close();
+                    ProcessBuilder pb = new ProcessBuilder("/bin/bash", tmpShell.getAbsolutePath());
+                    pb.redirectErrorStream(true);
+                    Process p = pb.start();
+                    InputStream is = p.getInputStream();
+                    InputStreamReader isr = new InputStreamReader(is);
+                    BufferedReader br = new BufferedReader(isr);
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        listener.getLogger().println(line);
+                    }
+                } catch (IOException e) {
+                    listener.getLogger().println("Error while trying to execute timeout action:");
+                    listener.getLogger().println(e.toString());
                 }
             }
 
