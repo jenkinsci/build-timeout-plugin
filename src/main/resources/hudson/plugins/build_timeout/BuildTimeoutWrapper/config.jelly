@@ -1,20 +1,21 @@
-    <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:radioBlock name="build-timeout.timeoutType" value="absolute" title="${%Absolute}" checked="${instance.timeoutType=='absolute'}">
-      <f:entry title="${%Timeout minutes}" field="timeoutMinutes">
-        <f:textbox/>
-      </f:entry>
-    </f:radioBlock>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-    <f:radioBlock name="build-timeout.timeoutType" value="elastic" title="${%Elastic}" checked="${instance.timeoutType=='elastic'}">
-      <f:entry title="${%Timeout as a percentage of recent non-failing builds}" field="timeoutPercentage">
-        <f:select />
-      </f:entry>
-      <f:entry title="${%Timeout minutes if no successful or unstable builds}" help="/plugin/build-timeout/help-timeoutMinutes.html">
-        <f:textbox field="timeoutMinutesElasticDefault" default="60" />
-      </f:entry>
-    </f:radioBlock>
+  <f:radioBlock name="build-timeout.timeoutType" value="absolute" title="${%Absolute}" checked="${instance.timeoutType=='absolute'}">
+    <f:entry title="${%Timeout minutes}" field="timeoutMinutes">
+      <f:textbox/>
+    </f:entry>
+  </f:radioBlock>
 
-    <f:radioBlock name="build-timeout.timeoutType" value="likelyStuck" title="${%Likely stuck}" checked="${instance.timeoutType=='likelyStuck'}" help="/plugin/build-timeout/help-likelyStuckConfig.html"/>
+  <f:radioBlock name="build-timeout.timeoutType" value="elastic" title="${%Elastic}" checked="${instance.timeoutType=='elastic'}">
+    <f:entry title="${%Timeout as a percentage of recent non-failing builds}" field="timeoutPercentage">
+      <f:select />
+    </f:entry>
+    <f:entry title="${%Timeout minutes if no successful or unstable builds}" help="/descriptor/hudson.plugins.build_timeout.BuildTimeoutWrapper/help/timeoutMinutes">
+      <f:textbox field="timeoutMinutesElasticDefault" default="60" />
+    </f:entry>
+  </f:radioBlock>
+
+  <f:radioBlock name="build-timeout.timeoutType" value="likelyStuck" title="${%Likely stuck}" checked="${instance.timeoutType=='likelyStuck'}" help="/plugin/build-timeout/help-likelyStuckConfig.html"/>
 
   <f:entry title="${%Fail the build}" field="failBuild">
     <f:checkbox/>
@@ -22,4 +23,9 @@
   <f:entry title="${%Writing the build description}" field="writingDescription">
     <f:checkbox/>
   </f:entry>
+
+  <f:entry title="${%Execute command on timeout}" help="/plugin/build-timeout/help-timeoutAction.html">
+    <f:textbox field="timeoutAction" default="" />
+  </f:entry>
+
 </j:jelly>
