@@ -1,11 +1,15 @@
 package hudson.plugins.build_timeout;
 
-import static hudson.util.TimeUnit2.MILLISECONDS;
-import static hudson.util.TimeUnit2.MINUTES;
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
+import hudson.model.Executor;
+import hudson.model.Queue;
 import hudson.model.Result;
+import hudson.model.Run;
 import hudson.model.queue.Executables;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
@@ -13,13 +17,12 @@ import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
 import hudson.util.ListBoxModel;
 import hudson.util.TimeUnit2;
-
+import static hudson.util.TimeUnit2.MILLISECONDS;
+import static hudson.util.TimeUnit2.MINUTES;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Set;
 import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -258,8 +261,25 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             if (timeoutObject.isNullObject() || timeoutObject.isEmpty()) {
                 formData.put("timeoutType", ABSOLUTE);
             } else {
-                formData.put("timeoutType", timeoutObject.getString("value"));
-            }
+                // Jenkins 1.427
+                // {"timeoutType": {
+                //   "value": "elastic", "timeoutPercentage": "150", 
+                //   "timeoutMinutesElasticDefault": "3333333"}}
+                // Jenkins 1.420
+                // {"timeoutMinutes": "3", 
+                //  "timeoutType": {"value": "elastic"}, 
+                //  "timeoutPercentage": "150", "timeoutMinutesElasticDefault": "3333333", 
+                // "failBuild": false, "writingDescription": false}
+                // => to keep comaptibility
+                // "timeoutType": "elastic",  "timeoutPercentage": "150", 
+                // "timeoutMinutesElasticDefault": "3333333"... 
+                String timeoutType = timeoutObject.getString("value");
+                timeoutObject.remove("value");
+                for (String key : (Set<String>) timeoutObject.keySet()) {
+                    formData.put(key, timeoutObject.get(key));
+                }
+                formData.put("timeoutType", timeoutType);
+            }        
 
             return super.newInstance(req, formData);
         }
