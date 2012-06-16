@@ -10,8 +10,8 @@
       <f:entry title="${%Timeout as a percentage of recent non-failing builds}" field="timeoutPercentage">
         <f:select />
       </f:entry>
-      <f:entry title="${%Timeout minutes if no successful or unstable builds}" help="/plugin/build-timeout/help-timeoutMinutes.html">
-        <f:textbox field="timeoutMinutesElasticDefault" default="60" />
+      <f:entry title="${%Timeout minutes if no successful or unstable builds}" field="timeoutMinutesElasticDefault" >
+        <f:textbox default="60" />
       </f:entry>
     </f:radioBlock>
 
