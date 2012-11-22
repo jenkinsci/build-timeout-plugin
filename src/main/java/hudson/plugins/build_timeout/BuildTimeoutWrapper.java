@@ -207,7 +207,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         int nonFailingBuilds = 0;
         int durationSum= 0;
         
-        for (int i = builds.size() - 1; i >= 0 && nonFailingBuilds < NUMBER_OF_BUILDS_TO_AVERAGE; i--) {
+        for (int i = 0; i < builds.size() && nonFailingBuilds < NUMBER_OF_BUILDS_TO_AVERAGE; i++) {
             Run run = builds.get(i);
             if (run.getResult() != null && 
                     run.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
