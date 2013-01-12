@@ -148,7 +148,9 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     listener.getLogger().println(msg);
                     if (writingDescription) {
                         try {
-                            build.setDescription(msg);
+                            String description = build.getDescription();
+                            description = description != null ? description + "<br/>" + msg : msg;
+                            build.setDescription(description);
                         } catch (IOException e) {
                             listener.getLogger().println("failed to write to the build description!");
                         }
