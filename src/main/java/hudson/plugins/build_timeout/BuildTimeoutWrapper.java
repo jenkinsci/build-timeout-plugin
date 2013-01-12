@@ -1,28 +1,30 @@
 package hudson.plugins.build_timeout;
 
+import static hudson.util.TimeUnit2.MILLISECONDS;
+import static hudson.util.TimeUnit2.MINUTES;
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
 import hudson.model.Queue;
-import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.queue.Executables;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
-import hudson.util.ListBoxModel;
 import hudson.util.TimeUnit2;
-import static hudson.util.TimeUnit2.MILLISECONDS;
-import static hudson.util.TimeUnit2.MINUTES;
+import hudson.util.ListBoxModel;
+
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
+
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -31,6 +33,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public class BuildTimeoutWrapper extends BuildWrapper {
     
     protected static final int NUMBER_OF_BUILDS_TO_AVERAGE = 3;
@@ -137,7 +140,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 long timeout;
                 if (ELASTIC.equals(timeoutType)) {
                     timeout = getEffectiveTimeout(timeoutMinutes * 60L * 1000L, timeoutPercentage,
-                            timeoutMinutesElasticDefault * 60*1000, timeoutType, build.getProject().getBuilds());
+                            timeoutMinutesElasticDefault * 60*1000, timeoutType, build);
                 } else if (STUCK.equals(timeoutType)) {
                     timeout = getLikelyStuckTime();
                 } else {
@@ -184,11 +187,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         return new EnvironmentImpl();
     }
 
-    public static long getEffectiveTimeout(long timeoutMilliseconds, int timeoutPercentage, int timeoutMillsecondsElasticDefault,
-            String timeoutType, List<Run> builds) {
+    static long getEffectiveTimeout(long timeoutMilliseconds, int timeoutPercentage, int timeoutMillsecondsElasticDefault,
+            String timeoutType, Run run) {
         
         if (ELASTIC.equals(timeoutType)) {
-            double elasticTimeout = getElasticTimeout(timeoutPercentage, builds);
+            double elasticTimeout = getElasticTimeout(timeoutPercentage, run);
             if (elasticTimeout == 0) {
                 return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMillsecondsElasticDefault);
             } else {
@@ -199,24 +202,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         }
     }
     
-    private static double getElasticTimeout(int timeoutPercentage, List<Run> builds) {
-        return timeoutPercentage * .01D * (timeoutPercentage > 0 ? averageDuration(builds) : 0);
-    }
-
-    private static double averageDuration(List <Run> builds) {
-        int nonFailingBuilds = 0;
-        int durationSum= 0;
+    private static double getElasticTimeout(int timeoutPercentage, Run run) {
+        long averageDuration = run.getEstimatedDuration();
+        if (averageDuration <= 0) return 0;
         
-        for (int i = 0; i < builds.size() && nonFailingBuilds < NUMBER_OF_BUILDS_TO_AVERAGE; i++) {
-            Run run = builds.get(i);
-            if (run.getResult() != null && 
-                    run.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
-                durationSum += run.getDuration();
-                nonFailingBuilds++;
-            }
-        }
-        
-        return nonFailingBuilds > 0 ? durationSum / nonFailingBuilds : 0;
+        return timeoutPercentage * averageDuration / 100;
     }
 
     protected Object readResolve() {
@@ -251,6 +241,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             return new int[] {150,200,250,300,350,400};
         }
         
+        @SuppressWarnings("unchecked")
         @Override
         public BuildWrapper newInstance(StaplerRequest req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
