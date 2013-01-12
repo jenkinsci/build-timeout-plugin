@@ -3,8 +3,6 @@ package hudson.plugins.build_timeout;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.test.AbstractTestResultAction;
 
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;

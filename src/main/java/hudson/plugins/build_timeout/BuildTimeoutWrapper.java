@@ -36,8 +36,10 @@ import org.kohsuke.stapler.StaplerRequest;
 @SuppressWarnings("rawtypes")
 public class BuildTimeoutWrapper extends BuildWrapper {
     
-    protected static final int NUMBER_OF_BUILDS_TO_AVERAGE = 3;
-    public static long MINIMUM_TIMEOUT_MILLISECONDS = Long.getLong(BuildTimeoutWrapper.class.getName()+ ".MINIMUM_TIMEOUT_MILLISECONDS", 3 * 60 * 1000);
+    private static int MINIMUM_TIMEOUT_MINUTES_DEFAULT = 3;
+    
+    public static long MINIMUM_TIMEOUT_MILLISECONDS = Long.getLong(BuildTimeoutWrapper.class.getName()+ ".MINIMUM_TIMEOUT_MILLISECONDS",
+            MINIMUM_TIMEOUT_MINUTES_DEFAULT * 60 * 1000);
 
     
     public static final String ABSOLUTE = "absolute";
@@ -84,11 +86,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     @DataBoundConstructor
     public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild, boolean writingDescription,
                                int timeoutPercentage, int timeoutMinutesElasticDefault, String timeoutType) {
-        this.timeoutMinutes = Math.max(3,timeoutMinutes);
+        this.timeoutMinutes = Math.max(MINIMUM_TIMEOUT_MINUTES_DEFAULT,timeoutMinutes);
         this.failBuild = failBuild;
         this.writingDescription = writingDescription;
         this.timeoutPercentage = timeoutPercentage;
-        this.timeoutMinutesElasticDefault = Math.max(3, timeoutMinutesElasticDefault);
+        this.timeoutMinutesElasticDefault = Math.max(MINIMUM_TIMEOUT_MINUTES_DEFAULT, timeoutMinutesElasticDefault);
         this.timeoutType = timeoutType;
     }
     
