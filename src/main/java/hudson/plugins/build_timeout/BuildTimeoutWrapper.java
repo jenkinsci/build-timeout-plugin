@@ -1,40 +1,57 @@
 package hudson.plugins.build_timeout;
 
+import static hudson.util.TimeUnit2.MILLISECONDS;
+import static hudson.util.TimeUnit2.MINUTES;
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
 import hudson.model.Queue;
-import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.queue.Executables;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
+import hudson.tasks.Mailer;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
-import hudson.util.ListBoxModel;
 import hudson.util.TimeUnit2;
-import static hudson.util.TimeUnit2.MILLISECONDS;
-import static hudson.util.TimeUnit2.MINUTES;
+import hudson.util.ListBoxModel;
+
 import java.io.IOException;
-import java.util.List;
+import java.io.Serializable;
 import java.util.Set;
+import java.util.StringTokenizer;
+
+import javax.mail.Address;
+import javax.mail.Message.RecipientType;
+import javax.mail.MessagingException;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import jenkins.model.CauseOfInterruption;
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
 
 /**
  * {@link BuildWrapper} that terminates a build if it's taking too long.
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("rawtypes")
 public class BuildTimeoutWrapper extends BuildWrapper {
     
-    protected static final int NUMBER_OF_BUILDS_TO_AVERAGE = 3;
-    public static long MINIMUM_TIMEOUT_MILLISECONDS = Long.getLong(BuildTimeoutWrapper.class.getName()+ ".MINIMUM_TIMEOUT_MILLISECONDS", 3 * 60 * 1000);
+    private static int MINIMUM_TIMEOUT_MINUTES_DEFAULT = 3;
+    
+    public static long MINIMUM_TIMEOUT_MILLISECONDS = Long.getLong(BuildTimeoutWrapper.class.getName()+ ".MINIMUM_TIMEOUT_MILLISECONDS",
+            MINIMUM_TIMEOUT_MINUTES_DEFAULT * 60 * 1000);
 
     
     public static final String ABSOLUTE = "absolute";
@@ -48,10 +65,17 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public int timeoutMinutes;
 
     /**
-     * Fail the build rather than aborting it
+     * Fail the build.
+     * 
+     * @deprecated just for deserializing old instances. Replaced by timeoutAction
      */
-    public boolean failBuild;
-
+    @Deprecated
+    public transient boolean failBuild;
+    
+    public TimeoutAction timeoutAction;
+    
+    
+    public SendMail sendMail;
     
     /**
      * Writing the build description when timeout occurred.
@@ -79,14 +103,16 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public Integer timeoutMinutesElasticDefault;
     
     @DataBoundConstructor
-    public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild, boolean writingDescription,
-                               int timeoutPercentage, int timeoutMinutesElasticDefault, String timeoutType) {
-        this.timeoutMinutes = Math.max(3,timeoutMinutes);
-        this.failBuild = failBuild;
+    public BuildTimeoutWrapper(int timeoutMinutes, TimeoutAction timeoutAction, boolean writingDescription,
+                               int timeoutPercentage, int timeoutMinutesElasticDefault, String timeoutType,
+                               SendMail sendMail) {
+        this.timeoutMinutes = Math.max(MINIMUM_TIMEOUT_MINUTES_DEFAULT,timeoutMinutes);
+        this.timeoutAction = timeoutAction;
         this.writingDescription = writingDescription;
         this.timeoutPercentage = timeoutPercentage;
-        this.timeoutMinutesElasticDefault = Math.max(3, timeoutMinutesElasticDefault);
+        this.timeoutMinutesElasticDefault = Math.max(MINIMUM_TIMEOUT_MINUTES_DEFAULT, timeoutMinutesElasticDefault);
         this.timeoutType = timeoutType;
+        this.sendMail = sendMail;
     }
     
     @Override
@@ -105,27 +131,74 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
                 public void doRun() {
                     // timed out
+                    timeout=true;
+                    
                     long effectiveTimeoutMinutes = MINUTES.convert(effectiveTimeout,MILLISECONDS);
-                    String msg;
-                    if (failBuild) {
-                        msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Failed());
-                    } else {
-                        msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Aborted());
+                    final String msg;
+                    switch (timeoutAction) {
+                        case FAIL:
+                            msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Failed());
+                            break;
+                        case ABORT:
+                            msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Aborted());
+                            break;
+                        case NOTHING:
+                            msg = Messages.Timeout_Message2(effectiveTimeoutMinutes);
+                            break;
+                        default:
+                            throw new IllegalStateException();
                     }
 
                     listener.getLogger().println(msg);
                     if (writingDescription) {
                         try {
-                            build.setDescription(msg);
+                            String description = build.getDescription();
+                            description = description != null ? description + "<br/>" + msg : msg;
+                            build.setDescription(description);
                         } catch (IOException e) {
                             listener.getLogger().println("failed to write to the build description!");
                         }
                     }
 
-                    timeout=true;
+                    
+                    if (sendMail != null) {
+                        sendTimeoutMail(effectiveTimeoutMinutes);
+                    }
+                    
                     Executor e = build.getExecutor();
-                    if (e != null)
-                        e.interrupt(failBuild? Result.FAILURE : Result.ABORTED);
+                    if (e != null) {
+                        if (timeoutAction == TimeoutAction.FAIL) {
+                            e.interrupt(Result.FAILURE, new TimeoutInterruption(msg));
+                        } else if (timeoutAction == TimeoutAction.ABORT) {
+                            e.interrupt(Result.ABORTED, new TimeoutInterruption(msg));
+                        }
+                    }
+                }
+
+                private void sendTimeoutMail(long effectiveTimeoutMinutes) {
+                    try {
+                        MimeMessage mimeMsg = new MimeMessage(Mailer.descriptor().createSession());
+                        mimeMsg.setSubject("Build " + build.getFullDisplayName() + ": timeout");
+                        
+                        @SuppressWarnings("deprecation")
+                        String body = "Build " + build.getFullDisplayName() + " timed out after "
+                                + effectiveTimeoutMinutes + " minutes.\n"
+                                        + "See " + build.getAbsoluteUrl();
+                        
+                        mimeMsg.setText(body);
+                        mimeMsg.setFrom(new InternetAddress(Mailer.descriptor().getAdminAddress()));
+                        
+                        StringTokenizer tokens = new StringTokenizer(sendMail.recipients);
+                        while(tokens.hasMoreTokens()) {
+                            Address address = new InternetAddress(tokens.nextToken());
+                            mimeMsg.setRecipient(RecipientType.TO, address);
+                        }
+                        
+                        Transport.send(mimeMsg);
+                        listener.getLogger().println("Sent timeout mail to "+sendMail.recipients);
+                    } catch (MessagingException e) {
+                        listener.error("BuildTimeoutPlugin: failed to send mail:" + e.getMessage());
+                    }
                 }
             }
 
@@ -137,7 +210,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 long timeout;
                 if (ELASTIC.equals(timeoutType)) {
                     timeout = getEffectiveTimeout(timeoutMinutes * 60L * 1000L, timeoutPercentage,
-                            timeoutMinutesElasticDefault * 60*1000, timeoutType, build.getProject().getBuilds());
+                            timeoutMinutesElasticDefault * 60*1000, timeoutType, build);
                 } else if (STUCK.equals(timeoutType)) {
                     timeout = getLikelyStuckTime();
                 } else {
@@ -184,45 +257,41 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         return new EnvironmentImpl();
     }
 
-    public static long getEffectiveTimeout(long timeoutMilliseconds, int timeoutPercentage, int timeoutMillsecondsElasticDefault,
-            String timeoutType, List<Run> builds) {
+    static long getEffectiveTimeout(long timeoutMilliseconds, int timeoutPercentage, int timeoutMillsecondsElasticDefault,
+            String timeoutType, Run run) {
         
         if (ELASTIC.equals(timeoutType)) {
-            double elasticTimeout = getElasticTimeout(timeoutPercentage, builds);
+            double elasticTimeout = getElasticTimeout(timeoutPercentage, run);
             if (elasticTimeout == 0) {
                 return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMillsecondsElasticDefault);
             } else {
                 return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);    
             }
         } else {
-            return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMilliseconds);    
+            return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMilliseconds);    
         }
     }
     
-    private static double getElasticTimeout(int timeoutPercentage, List<Run> builds) {
-        return timeoutPercentage * .01D * (timeoutPercentage > 0 ? averageDuration(builds) : 0);
-    }
-
-    private static double averageDuration(List <Run> builds) {
-        int nonFailingBuilds = 0;
-        int durationSum= 0;
+    private static double getElasticTimeout(int timeoutPercentage, Run run) {
+        long averageDuration = run.getEstimatedDuration();
+        if (averageDuration <= 0) return 0;
         
-        for (int i = 0; i < builds.size() && nonFailingBuilds < NUMBER_OF_BUILDS_TO_AVERAGE; i++) {
-            Run run = builds.get(i);
-            if (run.getResult() != null && 
-                    run.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
-                durationSum += run.getDuration();
-                nonFailingBuilds++;
-            }
-        }
-        
-        return nonFailingBuilds > 0 ? durationSum / nonFailingBuilds : 0;
+        return timeoutPercentage * averageDuration / 100;
     }
 
     protected Object readResolve() {
         if (timeoutType == null)  {
             timeoutType = ABSOLUTE;
         }
+        
+        if (timeoutAction == null) {
+            if(failBuild) {
+                timeoutAction = TimeoutAction.FAIL;
+            } else {
+                timeoutAction = TimeoutAction.ABORT;
+            }
+        }
+        
         return this;
     }
     
@@ -235,6 +304,18 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
+        
+        
+        public static final TimeoutAction[] timeoutActions = TimeoutAction.values();
+        
+        public ListBoxModel doFillTimeoutActionItems() {
+            ListBoxModel items = new ListBoxModel();
+            for (TimeoutAction a : TimeoutAction.values()) {
+                items.add(a.getDescription(), a.name());
+            }
+            return items;
+        }
+        
         DescriptorImpl() {
             super(BuildTimeoutWrapper.class);
         }
@@ -251,6 +332,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             return new int[] {150,200,250,300,350,400};
         }
         
+        @SuppressWarnings("unchecked")
         @Override
         public BuildWrapper newInstance(StaplerRequest req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
@@ -292,6 +374,49 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             }
             return m;
         }
+    }
+    
+    public static class SendMail implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final String recipients;
+
+        @DataBoundConstructor
+        public SendMail(String recipients) {
+            this.recipients = recipients;
+        }
+
+        public String getRecipients() {
+            return recipients;
+        }
+    }
+    
+    public static class TimeoutInterruption extends CauseOfInterruption {
+
+        private String description;
+        
+        public TimeoutInterruption(String description) {
+            this.description = description;
+        }
+        
+        @Override
+        public String getShortDescription() {
+            return this.description;
+        }
         
     }
 }
+
+enum TimeoutAction {
+    ABORT("Abort the build"), FAIL("Fail the build"), NOTHING("Don't stop build");
+    
+    public final String description;
+    
+    TimeoutAction(String description) {
+        this.description = description;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+}
+
