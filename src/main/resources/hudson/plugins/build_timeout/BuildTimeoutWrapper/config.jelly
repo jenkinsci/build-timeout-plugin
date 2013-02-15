@@ -18,12 +18,10 @@
 
     <f:radioBlock name="build-timeout.timeoutType" value="likelyStuck" title="${%Likely stuck}" checked="${instance.timeoutType=='likelyStuck'}" help="/plugin/build-timeout/help-likelyStuckConfig.html"/>
 
-    <f:entry title="${%Abort the build}" field="abortBuild">
-        <f:checkbox/>
+    <f:entry title="${%Timeout action}" field="timeoutAction">
+        <f:select/>
     </f:entry>
-    <f:entry title="${%Fail the build}" field="failBuild">
-        <f:checkbox/>
-    </f:entry>
+
     <j:set var="sendMail" value="${instance.sendMail}"/>
     <f:optionalBlock title="${%Send mail}" name="sendMail" checked="${instance.sendMail != null}">
         <f:entry title="${%Mail recipients}" field="sendMail.recipients">

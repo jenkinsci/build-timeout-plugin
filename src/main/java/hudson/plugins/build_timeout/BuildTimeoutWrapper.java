@@ -34,7 +34,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import jenkins.model.CauseOfInterruption;
-
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -67,13 +66,13 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
     /**
      * Fail the build.
+     * 
+     * @deprecated just for deserializing old instances. Replaced by timeoutAction
      */
-    public boolean failBuild;
+    @Deprecated
+    public transient boolean failBuild;
     
-    /**
-     * Abort the build.
-     */
-    public Boolean abortBuild;
+    public TimeoutAction timeoutAction;
     
     
     public SendMail sendMail;
@@ -104,12 +103,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public Integer timeoutMinutesElasticDefault;
     
     @DataBoundConstructor
-    public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild, boolean abortBuild, boolean writingDescription,
+    public BuildTimeoutWrapper(int timeoutMinutes, TimeoutAction timeoutAction, boolean writingDescription,
                                int timeoutPercentage, int timeoutMinutesElasticDefault, String timeoutType,
                                SendMail sendMail) {
         this.timeoutMinutes = Math.max(MINIMUM_TIMEOUT_MINUTES_DEFAULT,timeoutMinutes);
-        this.failBuild = failBuild;
-        this.abortBuild = abortBuild;
+        this.timeoutAction = timeoutAction;
         this.writingDescription = writingDescription;
         this.timeoutPercentage = timeoutPercentage;
         this.timeoutMinutesElasticDefault = Math.max(MINIMUM_TIMEOUT_MINUTES_DEFAULT, timeoutMinutesElasticDefault);
@@ -137,12 +135,18 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     
                     long effectiveTimeoutMinutes = MINUTES.convert(effectiveTimeout,MILLISECONDS);
                     final String msg;
-                    if (failBuild) {
-                        msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Failed());
-                    } else if (abortBuild){
-                        msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Aborted());
-                    } else {
-                        msg = Messages.Timeout_Message2(effectiveTimeoutMinutes);
+                    switch (timeoutAction) {
+                        case FAIL:
+                            msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Failed());
+                            break;
+                        case ABORT:
+                            msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Aborted());
+                            break;
+                        case NOTHING:
+                            msg = Messages.Timeout_Message2(effectiveTimeoutMinutes);
+                            break;
+                        default:
+                            throw new IllegalStateException();
                     }
 
                     listener.getLogger().println(msg);
@@ -163,8 +167,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                     
                     Executor e = build.getExecutor();
                     if (e != null) {
-                        if (failBuild) e.interrupt(Result.FAILURE, new TimeoutInterruption(msg));
-                        if (abortBuild) e.interrupt(Result.ABORTED, new TimeoutInterruption(msg));
+                        if (timeoutAction == TimeoutAction.FAIL) {
+                            e.interrupt(Result.FAILURE, new TimeoutInterruption(msg));
+                        } else if (timeoutAction == TimeoutAction.ABORT) {
+                            e.interrupt(Result.ABORTED, new TimeoutInterruption(msg));
+                        }
                     }
                 }
 
@@ -261,7 +268,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);    
             }
         } else {
-            return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMilliseconds);    
+            return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMilliseconds);    
         }
     }
     
@@ -277,8 +284,12 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             timeoutType = ABSOLUTE;
         }
         
-        if (abortBuild == null) {
-            abortBuild = !failBuild;
+        if (timeoutAction == null) {
+            if(failBuild) {
+                timeoutAction = TimeoutAction.FAIL;
+            } else {
+                timeoutAction = TimeoutAction.ABORT;
+            }
         }
         
         return this;
@@ -293,6 +304,18 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
+        
+        
+        public static final TimeoutAction[] timeoutActions = TimeoutAction.values();
+        
+        public ListBoxModel doFillTimeoutActionItems() {
+            ListBoxModel items = new ListBoxModel();
+            for (TimeoutAction a : TimeoutAction.values()) {
+                items.add(a.getDescription(), a.name());
+            }
+            return items;
+        }
+        
         DescriptorImpl() {
             super(BuildTimeoutWrapper.class);
         }
@@ -382,3 +405,18 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         
     }
 }
+
+enum TimeoutAction {
+    ABORT("Abort the build"), FAIL("Fail the build"), NOTHING("Don't stop build");
+    
+    public final String description;
+    
+    TimeoutAction(String description) {
+        this.description = description;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+}
+
