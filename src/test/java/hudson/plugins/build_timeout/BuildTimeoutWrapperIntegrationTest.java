@@ -17,10 +17,6 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 	public void testIssue9203() throws Exception {
 		FreeStyleProject project = (FreeStyleProject) hudson.getItem("9203");
 		
-		// Force a timeout of 1, plugin will not accept less than 3 minutes.
-		BuildTimeoutWrapper buildWrapper = (BuildTimeoutWrapper) project.getBuildWrappersList().get(0);
-		buildWrapper.timeoutMinutes = 1;
-		
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
 		assertBuildStatus(Result.FAILURE, build);
 	}
