@@ -11,6 +11,9 @@ import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.queue.Executables;
+import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
+import hudson.plugins.build_timeout.impl.ElasticTimeOutStrategy;
+import hudson.plugins.build_timeout.impl.LikelyStuckTimeOutStrategy;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
@@ -22,6 +25,8 @@ import static hudson.util.TimeUnit2.MINUTES;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -33,60 +38,27 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class BuildTimeoutWrapper extends BuildWrapper {
     
-    protected static final int NUMBER_OF_BUILDS_TO_AVERAGE = 3;
     public static long MINIMUM_TIMEOUT_MILLISECONDS = Long.getLong(BuildTimeoutWrapper.class.getName()+ ".MINIMUM_TIMEOUT_MILLISECONDS", 3 * 60 * 1000);
 
-    
-    public static final String ABSOLUTE = "absolute";
-    public static final String ELASTIC = "elastic";
-    public static final String STUCK = "likelyStuck";
-    
-    /**
-     * If the build took longer than this amount of minutes,
-     * it will be terminated.
-     */
-    public int timeoutMinutes;
+
+    private /* final */ BuildTimeOutStrategy strategy;
 
     /**
      * Fail the build rather than aborting it
      */
     public boolean failBuild;
 
-    
     /**
      * Writing the build description when timeout occurred.
      */
     public boolean writingDescription;
 
-    /**
-     * The percentage of the mean of the duration of the last n successful builds
-     * to wait before killing the build.
-     * 
-     * IE, if the last n successful builds averaged a 10 minute duration,
-     * then 200% of that would be 20 minutes.
-     */
-    public int timeoutPercentage;
-    
-    /**
-     * Values can be "elastic" or "absolute"
-     */
-    public String timeoutType;
-    
-    /**
-     * The timeout to use if there are no valid builds in the build 
-     * history (ie, no successful or unstable builds)
-     */
-    public Integer timeoutMinutesElasticDefault;
     
     @DataBoundConstructor
-    public BuildTimeoutWrapper(int timeoutMinutes, boolean failBuild, boolean writingDescription,
-                               int timeoutPercentage, int timeoutMinutesElasticDefault, String timeoutType) {
-        this.timeoutMinutes = Math.max(3,timeoutMinutes);
+    public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, boolean failBuild, boolean writingDescription) {
+        this.strategy = strategy;
         this.failBuild = failBuild;
         this.writingDescription = writingDescription;
-        this.timeoutPercentage = timeoutPercentage;
-        this.timeoutMinutesElasticDefault = Math.max(3, timeoutMinutesElasticDefault);
-        this.timeoutType = timeoutType;
     }
     
     @Override
@@ -131,47 +103,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
             private final TimeoutTimerTask task;
             
-            private final long effectiveTimeout;
+            private final long effectiveTimeout = strategy.getTimeOut(build);
             
             public EnvironmentImpl() {
-                long timeout;
-                if (ELASTIC.equals(timeoutType)) {
-                    timeout = getEffectiveTimeout(timeoutMinutes * 60L * 1000L, timeoutPercentage,
-                            timeoutMinutesElasticDefault * 60*1000, timeoutType, build.getProject().getBuilds());
-                } else if (STUCK.equals(timeoutType)) {
-                    timeout = getLikelyStuckTime();
-                } else {
-                    timeout = timeoutMinutes * 60L * 1000L;
-                }
-
-                this.effectiveTimeout = timeout;
                 task = new TimeoutTimerTask(build, listener);
-                Trigger.timer.schedule(task, timeout);
-            }
-
-            /**
-             * Get the time considered it stuck.
-             * 
-             * @return 10 times as much as eta if eta is available, else 24 hours.
-             * @see Executor#isLikelyStuck()
-             */
-            private long getLikelyStuckTime() {
-                Executor executor = build.getExecutor();
-                if (executor == null) {
-                    return TimeUnit2.HOURS.toMillis(24);
-                }
-
-                Queue.Executable executable = executor.getCurrentExecutable();
-                if (executable == null) {
-                    return TimeUnit2.HOURS.toMillis(24);
-                }
-
-                long eta = Executables.getEstimatedDurationFor(executable);
-                if (eta >= 0) {
-                    return eta * 10;
-                } else {
-                    return TimeUnit2.HOURS.toMillis(24);
-                }
+                Trigger.timer.schedule(task, effectiveTimeout);
             }
 
             @Override
@@ -184,44 +120,15 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         return new EnvironmentImpl();
     }
 
-    public static long getEffectiveTimeout(long timeoutMilliseconds, int timeoutPercentage, int timeoutMillsecondsElasticDefault,
-            String timeoutType, List<Run> builds) {
-        
-        if (ELASTIC.equals(timeoutType)) {
-            double elasticTimeout = getElasticTimeout(timeoutPercentage, builds);
-            if (elasticTimeout == 0) {
-                return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMillsecondsElasticDefault);
-            } else {
-                return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);    
-            }
-        } else {
-            return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMilliseconds);    
-        }
-    }
-    
-    private static double getElasticTimeout(int timeoutPercentage, List<Run> builds) {
-        return timeoutPercentage * .01D * (timeoutPercentage > 0 ? averageDuration(builds) : 0);
-    }
-
-    private static double averageDuration(List <Run> builds) {
-        int nonFailingBuilds = 0;
-        int durationSum= 0;
-        
-        for (int i = 0; i < builds.size() && nonFailingBuilds < NUMBER_OF_BUILDS_TO_AVERAGE; i++) {
-            Run run = builds.get(i);
-            if (run.getResult() != null && 
-                    run.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
-                durationSum += run.getDuration();
-                nonFailingBuilds++;
-            }
-        }
-        
-        return nonFailingBuilds > 0 ? durationSum / nonFailingBuilds : 0;
-    }
-
     protected Object readResolve() {
-        if (timeoutType == null)  {
-            timeoutType = ABSOLUTE;
+        if ("elastic".equalsIgnoreCase(timeoutType)) {
+            strategy = new ElasticTimeOutStrategy(timeoutPercentage,
+                    timeoutMinutesElasticDefault != null ? timeoutMinutesElasticDefault.intValue() : 60,
+                    3);
+        } else if ("likelyStuck".equalsIgnoreCase(timeoutType)) {
+            strategy = new LikelyStuckTimeOutStrategy();
+        } else if (strategy == null) {
+            strategy = new AbsoluteTimeOutStrategy(timeoutMinutes);
         }
         return this;
     }
@@ -246,52 +153,23 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         public boolean isApplicable(AbstractProject<?, ?> item) {
             return true;
         }
-
-        public int[] getPercentages() {
-            return new int[] {150,200,250,300,350,400};
-        }
-        
-        @Override
-        public BuildWrapper newInstance(StaplerRequest req, JSONObject formData)
-                throws hudson.model.Descriptor.FormException {
-            JSONObject timeoutObject = formData.getJSONObject("timeoutType");
-
-            // we would ideally do this on the form itself (to show the default)
-            //but there is a show/hide bug when using radioOptions inside an optionBlock
-            if (timeoutObject.isNullObject() || timeoutObject.isEmpty()) {
-                formData.put("timeoutType", ABSOLUTE);
-            } else {
-                // Jenkins 1.427
-                // {"timeoutType": {
-                //   "value": "elastic", "timeoutPercentage": "150", 
-                //   "timeoutMinutesElasticDefault": "3333333"}}
-                // Jenkins 1.420
-                // {"timeoutMinutes": "3", 
-                //  "timeoutType": {"value": "elastic"}, 
-                //  "timeoutPercentage": "150", "timeoutMinutesElasticDefault": "3333333", 
-                // "failBuild": false, "writingDescription": false}
-                // => to keep comaptibility
-                // "timeoutType": "elastic",  "timeoutPercentage": "150", 
-                // "timeoutMinutesElasticDefault": "3333333"... 
-                String timeoutType = timeoutObject.getString("value");
-                timeoutObject.remove("value");
-                for (String key : (Set<String>) timeoutObject.keySet()) {
-                    formData.put(key, timeoutObject.get(key));
-                }
-                formData.put("timeoutType", timeoutType);
-            }        
-
-            return super.newInstance(req, formData);
-        }
-
-        public ListBoxModel doFillTimeoutPercentageItems() {
-            ListBoxModel m = new ListBoxModel();
-            for (int option : getPercentages()) {
-                String s = String.valueOf(option);
-                m.add(s + "%", s);
-            }
-            return m;
-        }
-        
     }
+
+    public BuildTimeOutStrategy getStrategy() {
+        return strategy;
+    }
+
+    public List<BuildTimeOutStrategyDescriptor> getStrategies() {
+        return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
+    }
+
+    // --- legacy attributes, kept for backward compatibility
+
+    public transient int timeoutMinutes;
+
+    public transient int timeoutPercentage;
+
+    public transient String timeoutType;
+
+    public transient Integer timeoutMinutesElasticDefault;
 }
