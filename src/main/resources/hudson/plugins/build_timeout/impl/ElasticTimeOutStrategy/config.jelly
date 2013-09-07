@@ -1,0 +1,16 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+    <f:entry title="${%Timeout as a percentage of recent non-failing builds}" field="timeoutPercentage">
+        <f:select />
+    </f:entry>
+    <f:entry title="${%Number of Builds}" field="numberOfBuilds"
+             description="${%Number of builds to consider computing average duration}" >
+        <f:textbox default="3" />
+    </f:entry>
+    <f:entry title="${%Timeout minutes}" field="timeoutMinutesElasticDefault"
+           description="${%Timeout to use if there are no previous successful or unstable builds}" >
+        <f:textbox default="60" />
+    </f:entry>
+
+</j:jelly>
