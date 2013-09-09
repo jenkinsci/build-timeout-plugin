@@ -8,7 +8,7 @@
         <f:checkbox/>
     </f:entry>
 
-    <f:entry title="">
+    <f:entry title="${%Time-out strategy}">
       <f:hetero-radio field="strategy" descriptors="${instance.strategies}"/>
     </f:entry>
 
