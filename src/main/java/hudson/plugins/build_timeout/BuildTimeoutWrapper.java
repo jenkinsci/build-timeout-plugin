@@ -15,6 +15,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.TimeUnit2;
 import static hudson.util.TimeUnit2.MILLISECONDS;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -40,6 +42,9 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public static final String ABSOLUTE = "absolute";
     public static final String ELASTIC = "elastic";
     public static final String STUCK = "likelyStuck";
+    public static final int ELASTIC_MIN_PERCENTAGE=150;
+    public static final int ELASTIC_MAX_PERCENTAGE=800;
+    
     
     /**
      * If the build took longer than this amount of minutes,
@@ -255,7 +260,18 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         public BuildWrapper newInstance(StaplerRequest req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
             JSONObject timeoutObject = formData.getJSONObject("timeoutType");
-
+            
+            // Validate timeout percentage
+            if (timeoutObject.containsKey("timeoutPercentage")) {
+                int percentage = timeoutObject.optInt("timeoutPercentage", -1);
+                if (percentage == -1) {
+                    throw new FormException("Cannot convert value to integer", "timeoutPercentage");
+                }
+                if (percentage<ELASTIC_MIN_PERCENTAGE || percentage>ELASTIC_MAX_PERCENTAGE) {
+                    throw new FormException(Messages.Timeout_PercentageOutOfBounds(percentage, ELASTIC_MIN_PERCENTAGE, ELASTIC_MAX_PERCENTAGE), "timeoutPercentage");
+                }
+            }
+            
             // we would ideally do this on the form itself (to show the default)
             //but there is a show/hide bug when using radioOptions inside an optionBlock
             if (timeoutObject.isNullObject() || timeoutObject.isEmpty()) {
@@ -284,14 +300,17 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             return super.newInstance(req, formData);
         }
 
-        public ListBoxModel doFillTimeoutPercentageItems() {
-            ListBoxModel m = new ListBoxModel();
-            for (int option : getPercentages()) {
-                String s = String.valueOf(option);
-                m.add(s + "%", s);
+        public FormValidation doCheckTimeoutPercentage(@QueryParameter String value) {
+            int percentage;
+            try {
+                percentage = Integer.parseInt(value);
+            } catch (NumberFormatException ex) {
+                return FormValidation.error(ex.getMessage());
             }
-            return m;
+            if (percentage<ELASTIC_MIN_PERCENTAGE || percentage>ELASTIC_MAX_PERCENTAGE) {
+                return FormValidation.error(Messages.Timeout_PercentageOutOfBounds(percentage, ELASTIC_MIN_PERCENTAGE, ELASTIC_MAX_PERCENTAGE));
+            }
+            return FormValidation.ok();
         }
-        
     }
 }

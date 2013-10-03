@@ -8,7 +8,7 @@
 
     <f:radioBlock name="build-timeout.timeoutType" value="elastic" title="${%Elastic}" checked="${instance.timeoutType=='elastic'}">
         <f:entry title="${%Timeout as a percentage of recent non-failing builds}" field="timeoutPercentage">
-            <f:select />
+            <f:textbox default="200" />
         </f:entry>
         <f:entry title="${%Timeout minutes}" field="timeoutMinutesElasticDefault" 
                description="${%Timeout to use if there are no previous successful or unstable builds}" >
