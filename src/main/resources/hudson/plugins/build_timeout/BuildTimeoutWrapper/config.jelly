@@ -9,7 +9,7 @@
     </f:entry>
 
     <f:entry title="${%Time-out strategy}">
-      <f:hetero-radio field="strategy" descriptors="${instance.strategies}"/>
+      <f:hetero-radio field="strategy" descriptors="${descriptor.strategies}"/>
     </f:entry>
 
 </j:jelly>

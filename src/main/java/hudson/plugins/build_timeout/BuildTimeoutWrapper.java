@@ -153,14 +153,14 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         public boolean isApplicable(AbstractProject<?, ?> item) {
             return true;
         }
+
+        public List<BuildTimeOutStrategyDescriptor> getStrategies() {
+            return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
+        }
     }
 
     public BuildTimeOutStrategy getStrategy() {
         return strategy;
-    }
-
-    public List<BuildTimeOutStrategyDescriptor> getStrategies() {
-        return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
     }
 
     // --- legacy attributes, kept for backward compatibility
