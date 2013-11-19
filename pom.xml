@@ -13,13 +13,6 @@
   <version>1.13-SNAPSHOT</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Build-timeout+Plugin</url>
 
-  <developers>
-    <developer>
-      <id>kohsuke</id>
-      <name>Kohsuke Kawaguchi</name>
-    </developer>
-  </developers>
-
    <scm>
     <connection>scm:git:git://github.com/jenkinsci/build-timeout-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/build-timeout-plugin.git</developerConnection>
