@@ -20,6 +20,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         project.getBuildersList().add(new SleepBuilder(9999));
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
 		assertBuildStatus(Result.FAILURE, build);
+        System.err.println(getLog(build));
 	}
     private static class QuickBuildTimeOutStrategy extends BuildTimeOutStrategy {
         @Override public long getTimeOut(Run run) {
