@@ -10,6 +10,7 @@ import hudson.model.Executor;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.Run.RunnerAbortedException;
 import hudson.model.queue.Executables;
 import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
 import hudson.plugins.build_timeout.impl.ElasticTimeOutStrategy;
@@ -23,6 +24,7 @@ import hudson.util.TimeUnit2;
 import static hudson.util.TimeUnit2.MILLISECONDS;
 import static hudson.util.TimeUnit2.MINUTES;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
@@ -61,19 +63,13 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         this.writingDescription = writingDescription;
     }
     
-    @Override
-    public Environment setUp(final AbstractBuild build, Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
-        class EnvironmentImpl extends Environment {
+    public class EnvironmentImpl extends Environment {
+            private final AbstractBuild<?,?> build;
+            private final BuildListener listener;
+
             final class TimeoutTimerTask extends SafeTimerTask {
-                private final AbstractBuild build;
-                private final BuildListener listener;
                 //Did the task timeout?
                 public boolean timeout= false;
-
-                private TimeoutTimerTask(AbstractBuild build, BuildListener listener) {
-                    this.build = build;
-                    this.listener = listener;
-                }
 
                 public void doRun() {
                     // timed out
@@ -101,12 +97,22 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 }
             }
 
-            private final TimeoutTimerTask task;
+            private TimeoutTimerTask task = null;
             
-            private final long effectiveTimeout = strategy.getTimeOut(build);
+            private final long effectiveTimeout;
             
-            public EnvironmentImpl() {
-                task = new TimeoutTimerTask(build, listener);
+            public EnvironmentImpl(AbstractBuild<?,?> build, BuildListener listener) {
+                this.build = build;
+                this.listener = listener;
+                this.effectiveTimeout = strategy.getTimeOut(build);
+                reschedule();
+            }
+            
+            public void reschedule() {
+                if (task != null) {
+                    task.cancel();
+                }
+                task = new TimeoutTimerTask();
                 Trigger.timer.schedule(task, effectiveTimeout);
             }
 
@@ -115,9 +121,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 task.cancel();
                 return (!task.timeout ||!failBuild);
             }
-        }
+    }
 
-        return new EnvironmentImpl();
+    @Override
+    public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        return new EnvironmentImpl(build, listener);
     }
 
     protected Object readResolve() {
@@ -161,6 +169,27 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
     public BuildTimeOutStrategy getStrategy() {
         return strategy;
+    }
+
+    /**
+     * @param build
+     * @param logger
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws RunnerAbortedException
+     * @see hudson.tasks.BuildWrapper#decorateLogger(hudson.model.AbstractBuild, java.io.OutputStream)
+     */
+    @Override
+    public OutputStream decorateLogger(@SuppressWarnings("rawtypes") final AbstractBuild build, final OutputStream logger)
+            throws IOException, InterruptedException, RunnerAbortedException {
+        return new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                getStrategy().onWrite(build, b);
+                logger.write(b);
+            }
+        };
     }
 
     // --- legacy attributes, kept for backward compatibility
