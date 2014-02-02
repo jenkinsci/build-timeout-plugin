@@ -189,6 +189,12 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 getStrategy().onWrite(build, b);
                 logger.write(b);
             }
+            
+            @Override
+            public void close() throws IOException {
+                logger.close();
+                super.close();
+            }
         };
     }
 
