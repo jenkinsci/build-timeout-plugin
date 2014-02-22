@@ -71,6 +71,10 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
      */
     @Override
     public void onWrite(AbstractBuild<?,?> build, int b) {
+        if (b != '\r' && b != '\n') {
+            // process only when it is a line break.
+            return;
+        }
         BuildTimeoutWrapper.EnvironmentImpl env = build.getEnvironments().get(BuildTimeoutWrapper.EnvironmentImpl.class);
         if (env != null) {
             env.reschedule();
