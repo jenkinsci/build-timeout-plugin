@@ -21,6 +21,7 @@ import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 	@Bug(9203)
@@ -240,6 +241,96 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertTrue(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNull(build.getDescription());
+        }
+    }
+    
+    @LocalData
+    public void testMigrationFrom_1_12_2() throws Exception {
+        BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
+        // Abort
+        {
+            FreeStyleProject project = jenkins.getItem("AbortWithoutDescription", jenkins, FreeStyleProject.class);
+            assertNotNull(project);
+            
+            ExecutionCheckBuilder checkBuilder = project.getBuildersList().get(ExecutionCheckBuilder.class);
+            ExecutionCheckPublisher checkPublisher = project.getPublishersList().get(ExecutionCheckPublisher.class);
+            assertNotNull(checkBuilder);
+            assertNotNull(checkPublisher);
+            
+            assertFalse(checkBuilder.executed);
+            assertFalse(checkPublisher.executed);
+            
+            FreeStyleBuild build = project.scheduleBuild2(0).get();
+            
+            assertBuildStatus(Result.ABORTED, build);
+            assertFalse(checkBuilder.executed);
+            assertTrue(checkPublisher.executed);
+            assertNull(build.getDescription());
+        }
+        
+        // Abort and Set description
+        {
+            FreeStyleProject project = jenkins.getItem("AbortWithDescription", jenkins, FreeStyleProject.class);
+            assertNotNull(project);
+            
+            ExecutionCheckBuilder checkBuilder = project.getBuildersList().get(ExecutionCheckBuilder.class);
+            ExecutionCheckPublisher checkPublisher = project.getPublishersList().get(ExecutionCheckPublisher.class);
+            assertNotNull(checkBuilder);
+            assertNotNull(checkPublisher);
+            
+            assertFalse(checkBuilder.executed);
+            assertFalse(checkPublisher.executed);
+            
+            FreeStyleBuild build = project.scheduleBuild2(0).get();
+            
+            assertBuildStatus(Result.ABORTED, build);
+            assertFalse(checkBuilder.executed);
+            assertTrue(checkPublisher.executed);
+            assertNotNull(build.getDescription());
+            assertFalse(build.getDescription().isEmpty());
+        }
+        
+        // Fail
+        {
+            FreeStyleProject project = jenkins.getItem("FailWithoutDescription", jenkins, FreeStyleProject.class);
+            assertNotNull(project);
+            
+            ExecutionCheckBuilder checkBuilder = project.getBuildersList().get(ExecutionCheckBuilder.class);
+            ExecutionCheckPublisher checkPublisher = project.getPublishersList().get(ExecutionCheckPublisher.class);
+            assertNotNull(checkBuilder);
+            assertNotNull(checkPublisher);
+            
+            assertFalse(checkBuilder.executed);
+            assertFalse(checkPublisher.executed);
+            
+            FreeStyleBuild build = project.scheduleBuild2(0).get();
+            
+            assertBuildStatus(Result.FAILURE, build);
+            assertFalse(checkBuilder.executed);
+            assertTrue(checkPublisher.executed);
+            assertNull(build.getDescription());
+        }
+        
+        // Fail and Set description
+        {
+            FreeStyleProject project = jenkins.getItem("FailWithDescription", jenkins, FreeStyleProject.class);
+            assertNotNull(project);
+            
+            ExecutionCheckBuilder checkBuilder = project.getBuildersList().get(ExecutionCheckBuilder.class);
+            ExecutionCheckPublisher checkPublisher = project.getPublishersList().get(ExecutionCheckPublisher.class);
+            assertNotNull(checkBuilder);
+            assertNotNull(checkPublisher);
+            
+            assertFalse(checkBuilder.executed);
+            assertFalse(checkPublisher.executed);
+            
+            FreeStyleBuild build = project.scheduleBuild2(0).get();
+            
+            assertBuildStatus(Result.FAILURE, build);
+            assertFalse(checkBuilder.executed);
+            assertTrue(checkPublisher.executed);
+            assertNotNull(build.getDescription());
+            assertFalse(build.getDescription().isEmpty());
         }
     }
 }

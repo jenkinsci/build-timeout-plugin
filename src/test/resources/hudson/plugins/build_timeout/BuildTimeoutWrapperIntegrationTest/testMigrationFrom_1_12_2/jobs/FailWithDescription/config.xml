@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <org.jvnet.hudson.test.SleepBuilder>
+      <time>9999</time>
+    </org.jvnet.hudson.test.SleepBuilder>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapperIntegrationTest_-ExecutionCheckBuilder />
+  </builders>
+  <publishers>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapperIntegrationTest_-ExecutionCheckPublisher />
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.build__timeout.BuildTimeoutWrapper>
+      <strategy class="hudson.plugins.build_timeout.BuildTimeoutWrapperIntegrationTest$QuickBuildTimeOutStrategy" />
+      <failBuild>true</failBuild>
+      <writingDescription>true</writingDescription>
+    </hudson.plugins.build__timeout.BuildTimeoutWrapper>
+  </buildWrappers>
+</project>
