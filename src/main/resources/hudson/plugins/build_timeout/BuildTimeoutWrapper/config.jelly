@@ -1,14 +1,14 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
+    <f:entry title="${%Time-out strategy}">
+      <f:hetero-radio field="strategy" descriptors="${descriptor.strategies}"/>
+    </f:entry>
+    
     <f:entry title="${%Time-out actions}" field="operationList">
       <f:hetero-list name="operationList" hasHeader="true"
         descriptors="${descriptor.operations}" items="${instance.operationList}"
         addCaption="${%Add action}" />
-    </f:entry>
-    
-    <f:entry title="${%Time-out strategy}">
-      <f:hetero-radio field="strategy" descriptors="${descriptor.strategies}"/>
     </f:entry>
 
 </j:jelly>
