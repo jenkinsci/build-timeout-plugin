@@ -45,14 +45,14 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      * @deprecated use {@link FailOperation} instead.
      */
     @Deprecated
-    public boolean failBuild;
+    public transient boolean failBuild;
 
     /**
      * Writing the build description when timeout occurred.
      * @deprecated use {@link WriteDescriptionOperation} instead.
      */
     @Deprecated
-    public boolean writingDescription;
+    public transient boolean writingDescription;
     
     private final List<BuildTimeOutOperation> operationList;
     
