@@ -45,7 +45,7 @@ public abstract class BuildTimeOutOperation
      * @param build             build timed out
      * @param listener          build listener. can be used to print log.
      * @param effectiveTimeout  timeout (milliseconds)
-     * @return false not to run subsequent operations, builders and publishers.
+     * @return false not to run subsequent operations. It also mark the build as failure.
      */
     public abstract boolean perform(AbstractBuild<?,?> build, BuildListener listener, long effectiveTimeout);
     
