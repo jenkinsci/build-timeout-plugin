@@ -6,32 +6,27 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.Executor;
-import hudson.model.Queue;
-import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.Run.RunnerAbortedException;
-import hudson.model.queue.Executables;
 import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
 import hudson.plugins.build_timeout.impl.ElasticTimeOutStrategy;
 import hudson.plugins.build_timeout.impl.LikelyStuckTimeOutStrategy;
+import hudson.plugins.build_timeout.operations.AbortOperation;
+import hudson.plugins.build_timeout.operations.FailOperation;
+import hudson.plugins.build_timeout.operations.WriteDescriptionOperation;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SafeTimerTask;
 import hudson.triggers.Trigger;
-import hudson.util.ListBoxModel;
-import hudson.util.TimeUnit2;
-import static hudson.util.TimeUnit2.MILLISECONDS;
-import static hudson.util.TimeUnit2.MINUTES;
+
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link BuildWrapper} that terminates a build if it's taking too long.
@@ -47,53 +42,78 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
     /**
      * Fail the build rather than aborting it
+     * @deprecated use {@link FailOperation} instead.
      */
-    public boolean failBuild;
+    @Deprecated
+    public transient boolean failBuild;
 
     /**
      * Writing the build description when timeout occurred.
+     * @deprecated use {@link WriteDescriptionOperation} instead.
      */
-    public boolean writingDescription;
-
+    @Deprecated
+    public transient boolean writingDescription;
     
-    @DataBoundConstructor
+    private final List<BuildTimeOutOperation> operationList;
+    
+    /**
+     * @return operations to perform at timeout.
+     */
+    public List<BuildTimeOutOperation> getOperationList() {
+        return operationList;
+    }
+    
+    private static List<BuildTimeOutOperation> createCompatibleOperationList(
+            boolean failBuild, boolean writingDescription
+    ) {
+        BuildTimeOutOperation lastOp = (failBuild)?new FailOperation():new AbortOperation();
+        if (!writingDescription) {
+            return Arrays.asList(lastOp);
+        }
+        
+        String msg;
+        if (failBuild) {
+            msg = Messages.Timeout_Message("{0}", Messages.Timeout_Failed());
+        } else {
+            msg = Messages.Timeout_Message("{0}", Messages.Timeout_Aborted());
+        }
+        BuildTimeOutOperation firstOp = new WriteDescriptionOperation(msg);
+        return Arrays.asList(firstOp, lastOp);
+    }
+    
+    @Deprecated
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, boolean failBuild, boolean writingDescription) {
         this.strategy = strategy;
-        this.failBuild = failBuild;
-        this.writingDescription = writingDescription;
+        this.operationList = createCompatibleOperationList(failBuild, writingDescription);
+    }
+    
+
+    @DataBoundConstructor
+    public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList) {
+        this.strategy = strategy;
+        this.operationList = (operationList != null)?operationList:Collections.<BuildTimeOutOperation>emptyList();
     }
     
     public class EnvironmentImpl extends Environment {
             private final AbstractBuild<?,?> build;
             private final BuildListener listener;
-
+            
+            //Did some opertion failed?
+            protected boolean operationFailed = false;
+            
             final class TimeoutTimerTask extends SafeTimerTask {
-                //Did the task timeout?
-                public boolean timeout= false;
-
                 public void doRun() {
-                    // timed out
-                    long effectiveTimeoutMinutes = MINUTES.convert(effectiveTimeout,MILLISECONDS);
-                    String msg;
-                    if (failBuild) {
-                        msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Failed());
-                    } else {
-                        msg = Messages.Timeout_Message(effectiveTimeoutMinutes, Messages.Timeout_Aborted());
+                    List<BuildTimeOutOperation> opList = getOperationList();
+                    if (opList == null || opList.isEmpty()) {
+                        // defaults to AbortOperation.
+                        opList = Arrays.<BuildTimeOutOperation>asList(new AbortOperation());
                     }
-
-                    listener.getLogger().println(msg);
-                    if (writingDescription) {
-                        try {
-                            build.setDescription(msg);
-                        } catch (IOException e) {
-                            listener.getLogger().println("failed to write to the build description!");
+                    for( BuildTimeOutOperation op: getOperationList() ) {
+                        if (!op.perform(build, listener, effectiveTimeout)) {
+                            operationFailed = true;
+                            break;
                         }
                     }
-
-                    timeout=true;
-                    Executor e = build.getExecutor();
-                    if (e != null)
-                        e.interrupt(failBuild? Result.FAILURE : Result.ABORTED);
                 }
             }
 
@@ -119,7 +139,9 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             @Override
             public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
                 task.cancel();
-                return (!task.timeout ||!failBuild);
+                
+                // true to continue build.
+                return !operationFailed;
             }
     }
 
@@ -129,6 +151,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     }
 
     protected Object readResolve() {
+        if (strategy != null && getOperationList() != null) {
+            // no need to upgrade
+            return this;
+        }
+        
         if ("elastic".equalsIgnoreCase(timeoutType)) {
             strategy = new ElasticTimeOutStrategy(timeoutPercentage,
                     timeoutMinutesElasticDefault != null ? timeoutMinutesElasticDefault.intValue() : 60,
@@ -138,7 +165,13 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         } else if (strategy == null) {
             strategy = new AbsoluteTimeOutStrategy(timeoutMinutes);
         }
-        return this;
+        
+        List<BuildTimeOutOperation> opList = getOperationList();
+        if (opList == null) {
+            opList = createCompatibleOperationList(failBuild, writingDescription);
+        }
+        
+        return new BuildTimeoutWrapper(strategy, opList);
     }
     
     @Override
@@ -164,6 +197,10 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
         public List<BuildTimeOutStrategyDescriptor> getStrategies() {
             return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
+        }
+        
+        public List<BuildTimeOutOperationDescriptor> getOperations() {
+            return Jenkins.getInstance().getDescriptorList(BuildTimeOutOperation.class);
         }
     }
 
