@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import jenkins.model.Jenkins;
 
@@ -34,7 +35,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public class BuildTimeoutWrapper extends BuildWrapper {
-    
+
     public static long MINIMUM_TIMEOUT_MILLISECONDS = Long.getLong(BuildTimeoutWrapper.class.getName()+ ".MINIMUM_TIMEOUT_MILLISECONDS", 3 * 60 * 1000);
 
 
@@ -53,16 +54,16 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      */
     @Deprecated
     public transient boolean writingDescription;
-    
+
     private final List<BuildTimeOutOperation> operationList;
-    
+
     /**
      * @return operations to perform at timeout.
      */
     public List<BuildTimeOutOperation> getOperationList() {
         return operationList;
     }
-    
+
     private static List<BuildTimeOutOperation> createCompatibleOperationList(
             boolean failBuild, boolean writingDescription
     ) {
@@ -70,7 +71,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         if (!writingDescription) {
             return Arrays.asList(lastOp);
         }
-        
+
         String msg;
         if (failBuild) {
             msg = Messages.Timeout_Message("{0}", Messages.Timeout_Failed());
@@ -80,27 +81,27 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         BuildTimeOutOperation firstOp = new WriteDescriptionOperation(msg);
         return Arrays.asList(firstOp, lastOp);
     }
-    
+
     @Deprecated
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, boolean failBuild, boolean writingDescription) {
         this.strategy = strategy;
         this.operationList = createCompatibleOperationList(failBuild, writingDescription);
     }
-    
+
 
     @DataBoundConstructor
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList) {
         this.strategy = strategy;
         this.operationList = (operationList != null)?operationList:Collections.<BuildTimeOutOperation>emptyList();
     }
-    
+
     public class EnvironmentImpl extends Environment {
             private final AbstractBuild<?,?> build;
             private final BuildListener listener;
-            
+
             //Did some opertion failed?
             protected boolean operationFailed = false;
-            
+
             final class TimeoutTimerTask extends SafeTimerTask {
                 public void doRun() {
                     List<BuildTimeOutOperation> opList = getOperationList();
@@ -118,16 +119,22 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             }
 
             private TimeoutTimerTask task = null;
-            
+
             private final long effectiveTimeout;
-            
+
             public EnvironmentImpl(AbstractBuild<?,?> build, BuildListener listener) {
                 this.build = build;
                 this.listener = listener;
                 this.effectiveTimeout = strategy.getTimeOut(build);
                 reschedule();
             }
-            
+
+            @Override
+            public void buildEnvVars(Map<String, String> env) {
+		        long timeout = strategy.getTimeOut(build);
+		        env.put("BUILD_TIMEOUT", String.valueOf(timeout));
+			}
+
             public void reschedule() {
                 if (task != null) {
                     task.cancel();
@@ -139,7 +146,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             @Override
             public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
                 task.cancel();
-                
+
                 // true to continue build.
                 return !operationFailed;
             }
@@ -155,7 +162,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             // no need to upgrade
             return this;
         }
-        
+
         if ("elastic".equalsIgnoreCase(timeoutType)) {
             strategy = new ElasticTimeOutStrategy(timeoutPercentage,
                     timeoutMinutesElasticDefault != null ? timeoutMinutesElasticDefault.intValue() : 60,
@@ -165,15 +172,15 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         } else if (strategy == null) {
             strategy = new AbsoluteTimeOutStrategy(timeoutMinutes);
         }
-        
+
         List<BuildTimeOutOperation> opList = getOperationList();
         if (opList == null) {
             opList = createCompatibleOperationList(failBuild, writingDescription);
         }
-        
+
         return new BuildTimeoutWrapper(strategy, opList);
     }
-    
+
     @Override
     public Descriptor<BuildWrapper> getDescriptor() {
         return DESCRIPTOR;
@@ -198,7 +205,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         public List<BuildTimeOutStrategyDescriptor> getStrategies() {
             return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
         }
-        
+
         public List<BuildTimeOutOperationDescriptor> getOperations() {
             return Jenkins.getInstance().getDescriptorList(BuildTimeOutOperation.class);
         }
@@ -226,7 +233,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 getStrategy().onWrite(build, b);
                 logger.write(b);
             }
-            
+
             @Override
             public void close() throws IOException {
                 logger.close();
