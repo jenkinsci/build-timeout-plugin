@@ -406,7 +406,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         TestBuildTimeOutOperation op3 = new TestBuildTimeOutOperation();
         project.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(1000),
-                Arrays.<BuildTimeOutOperation>asList(op1, op2, op3)
+                Arrays.<BuildTimeOutOperation>asList(op1, op2, op3),
+                "BUILD_TIMEOUT"
         ));
         project.getBuildersList().add(new SleepBuilder(5000));
         
@@ -439,7 +440,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         TestBuildTimeOutOperation op3 = new TestBuildTimeOutOperation();
         project.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(1000),
-                Arrays.<BuildTimeOutOperation>asList(op1, op2, op3)
+                Arrays.<BuildTimeOutOperation>asList(op1, op2, op3),
+                "BUILD_TIMEOUT"
         ));
         project.getBuildersList().add(new SleepBuilder(5000));
         
