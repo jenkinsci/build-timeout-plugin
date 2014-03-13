@@ -64,7 +64,8 @@ public class WriteDescriptionOperationTest {
                 Arrays.<BuildTimeOutOperation>asList(
                         new WriteDescriptionOperation(DESCRIPTION),
                         new AbortOperation()
-                )
+                ),
+                "BUILD_TIMEOUT"
         ));
         p.getBuildersList().add(new SleepBuilder(10000));
         
@@ -84,7 +85,8 @@ public class WriteDescriptionOperationTest {
                 new QuickBuildTimeOutStrategy(5000),
                 Arrays.<BuildTimeOutOperation>asList(
                         new WriteDescriptionOperation(DESCRIPTION)
-                )
+                ),
+                "BUILD_TIMEOUT"
         ));
         p.getBuildersList().add(new SleepBuilder(10000));
         
@@ -107,7 +109,8 @@ public class WriteDescriptionOperationTest {
                         new WriteDescriptionOperation(DESCRIPTION1),
                         new AbortOperation(),
                         new WriteDescriptionOperation(DESCRIPTION2)
-                )
+                ),
+                "BUILD_TIMEOUT"
         ));
         p.getBuildersList().add(new SleepBuilder(10000));
         
