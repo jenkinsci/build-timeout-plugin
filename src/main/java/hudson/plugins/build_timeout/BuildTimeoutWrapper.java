@@ -36,12 +36,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Kohsuke Kawaguchi
  */
 public class BuildTimeoutWrapper extends BuildWrapper {
-
+    
     public static long MINIMUM_TIMEOUT_MILLISECONDS = Long.getLong(BuildTimeoutWrapper.class.getName()+ ".MINIMUM_TIMEOUT_MILLISECONDS", 3 * 60 * 1000);
 
 
     private /* final */ BuildTimeOutStrategy strategy;
-    private /* final */ String timeoutEnvVar;
+    private final String timeoutEnvVar;
 
     /**
      * Fail the build rather than aborting it
@@ -56,16 +56,16 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      */
     @Deprecated
     public transient boolean writingDescription;
-
+    
     private final List<BuildTimeOutOperation> operationList;
-
+    
     /**
      * @return operations to perform at timeout.
      */
     public List<BuildTimeOutOperation> getOperationList() {
         return operationList;
     }
-
+    
     private static List<BuildTimeOutOperation> createCompatibleOperationList(
             boolean failBuild, boolean writingDescription
     ) {
@@ -73,7 +73,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         if (!writingDescription) {
             return Arrays.asList(lastOp);
         }
-
+        
         String msg;
         if (failBuild) {
             msg = Messages.Timeout_Message("{0}", Messages.Timeout_Failed());
@@ -83,13 +83,14 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         BuildTimeOutOperation firstOp = new WriteDescriptionOperation(msg);
         return Arrays.asList(firstOp, lastOp);
     }
-
+    
     @Deprecated
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, boolean failBuild, boolean writingDescription) {
         this.strategy = strategy;
         this.operationList = createCompatibleOperationList(failBuild, writingDescription);
+        this.timeoutEnvVar = null; 
     }
-
+    
 
     @DataBoundConstructor
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList, String timeoutEnvVar) {
@@ -97,14 +98,14 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         this.operationList = (operationList != null)?operationList:Collections.<BuildTimeOutOperation>emptyList();
         this.timeoutEnvVar = Util.fixEmptyAndTrim(timeoutEnvVar);
     }
-
+    
     public class EnvironmentImpl extends Environment {
             private final AbstractBuild<?,?> build;
             private final BuildListener listener;
-
+            
             //Did some opertion failed?
             protected boolean operationFailed = false;
-
+            
             final class TimeoutTimerTask extends SafeTimerTask {
                 public void doRun() {
                     List<BuildTimeOutOperation> opList = getOperationList();
@@ -122,9 +123,9 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             }
 
             private TimeoutTimerTask task = null;
-
+            
             private final long effectiveTimeout;
-
+            
             public EnvironmentImpl(AbstractBuild<?,?> build, BuildListener listener) {
                 this.build = build;
                 this.listener = listener;
@@ -134,10 +135,10 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
             @Override
             public void buildEnvVars(Map<String, String> env) {
-            	  if (timeoutEnvVar != null) {
-            		    env.put(timeoutEnvVar, String.valueOf(effectiveTimeout));
-            	  }
-			      }
+            	if (timeoutEnvVar != null) {
+            		env.put(timeoutEnvVar, String.valueOf(effectiveTimeout));
+           		}
+            }
 
             public void reschedule() {
                 if (task != null) {
@@ -150,7 +151,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             @Override
             public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
                 task.cancel();
-
+                
                 // true to continue build.
                 return !operationFailed;
             }
@@ -166,7 +167,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             // no need to upgrade
             return this;
         }
-
+        
         if ("elastic".equalsIgnoreCase(timeoutType)) {
             strategy = new ElasticTimeOutStrategy(timeoutPercentage,
                     timeoutMinutesElasticDefault != null ? timeoutMinutesElasticDefault.intValue() : 60,
@@ -176,7 +177,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         } else if (strategy == null) {
             strategy = new AbsoluteTimeOutStrategy(timeoutMinutes);
         }
-
+        
         List<BuildTimeOutOperation> opList = getOperationList();
         if (opList == null) {
             opList = createCompatibleOperationList(failBuild, writingDescription);
@@ -184,7 +185,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
         return new BuildTimeoutWrapper(strategy, opList, timeoutEnvVar);
     }
-
+    
     @Override
     public Descriptor<BuildWrapper> getDescriptor() {
         return DESCRIPTOR;
@@ -209,7 +210,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         public List<BuildTimeOutStrategyDescriptor> getStrategies() {
             return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
         }
-
+        
         public List<BuildTimeOutOperationDescriptor> getOperations() {
             return Jenkins.getInstance().getDescriptorList(BuildTimeOutOperation.class);
         }
@@ -222,11 +223,6 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public String getTimeoutEnvVar() {
         return timeoutEnvVar;
     }
-
-    public void setTimeoutEnvVar(String timeoutEnvVar)
-    {
-		    this.timeoutEnvVar = timeoutEnvVar;
-	  }
 
     /**
      * @param build
@@ -246,7 +242,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 getStrategy().onWrite(build, b);
                 logger.write(b);
             }
-
+            
             @Override
             public void close() throws IOException {
                 logger.close();
