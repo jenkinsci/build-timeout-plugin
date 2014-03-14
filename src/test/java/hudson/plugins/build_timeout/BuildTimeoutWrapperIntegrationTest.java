@@ -41,7 +41,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 		project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(300000), false, false));
 		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
 		project.getBuildersList().add(captureEnvBuilder);
-		FreeStyleBuild build = project.scheduleBuild2(0).get();
+		project.scheduleBuild2(0).get();
 		return captureEnvBuilder.getEnvVars();
 	}
 
@@ -59,12 +59,11 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 	  	));
 		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
 		project.getBuildersList().add(captureEnvBuilder);
-		FreeStyleBuild build = project.scheduleBuild2(0).get();
+		project.scheduleBuild2(0).get();
 		EnvVars envVars = captureEnvBuilder.getEnvVars();
 
 		assertEquals(expectedEnvVars.size()+1, envVars.size());
 		assertEquals("12345", envVars.get("BUILD_TIMEOUT"));
-		System.err.println(getLog(build));
 	}
 
 	/*
@@ -81,11 +80,10 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 		));
 		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
 		project.getBuildersList().add(captureEnvBuilder);
-		FreeStyleBuild build = project.scheduleBuild2(0).get();
+		project.scheduleBuild2(0).get();
 		EnvVars envVars = captureEnvBuilder.getEnvVars();
 
   		assertEquals(expectedEnvVars.size(), envVars.size());
-  		System.err.println(getLog(build));
 	}
 
 	/*
@@ -102,11 +100,10 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 		));
 		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
 		project.getBuildersList().add(captureEnvBuilder);
-		FreeStyleBuild build = project.scheduleBuild2(0).get();
+		project.scheduleBuild2(0).get();
 		EnvVars envVars = captureEnvBuilder.getEnvVars();
 
   		assertEquals(expectedEnvVars.size(), envVars.size());
-  		System.err.println(getLog(build));
 	}
 	
 	@Bug(9203)
