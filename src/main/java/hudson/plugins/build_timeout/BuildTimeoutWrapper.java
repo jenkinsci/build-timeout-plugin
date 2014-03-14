@@ -91,6 +91,12 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         this.timeoutEnvVar = null;
     }
     
+    @Deprecated
+    public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList) {
+        this.strategy = strategy;
+        this.operationList = (operationList != null)?operationList:Collections.<BuildTimeOutOperation>emptyList();
+        this.timeoutEnvVar = null;
+    }
 
     @DataBoundConstructor
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList, String timeoutEnvVar) {
