@@ -2,6 +2,7 @@ package hudson.plugins.build_timeout;
 
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -23,6 +24,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import jenkins.model.Jenkins;
 
@@ -39,6 +41,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
 
     private /* final */ BuildTimeOutStrategy strategy;
+    private final String timeoutEnvVar;
 
     /**
      * Fail the build rather than aborting it
@@ -85,13 +88,21 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, boolean failBuild, boolean writingDescription) {
         this.strategy = strategy;
         this.operationList = createCompatibleOperationList(failBuild, writingDescription);
+        this.timeoutEnvVar = null;
     }
     
-
-    @DataBoundConstructor
+    @Deprecated
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList) {
         this.strategy = strategy;
         this.operationList = (operationList != null)?operationList:Collections.<BuildTimeOutOperation>emptyList();
+        this.timeoutEnvVar = null;
+    }
+
+    @DataBoundConstructor
+    public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList, String timeoutEnvVar) {
+        this.strategy = strategy;
+        this.operationList = (operationList != null)?operationList:Collections.<BuildTimeOutOperation>emptyList();
+        this.timeoutEnvVar = Util.fixEmptyAndTrim(timeoutEnvVar);
     }
     
     public class EnvironmentImpl extends Environment {
@@ -127,7 +138,14 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 this.effectiveTimeout = strategy.getTimeOut(build);
                 reschedule();
             }
-            
+
+            @Override
+            public void buildEnvVars(Map<String, String> env) {
+            	if (timeoutEnvVar != null) {
+            		env.put(timeoutEnvVar, String.valueOf(effectiveTimeout));
+           		}
+            }
+
             public void reschedule() {
                 if (task != null) {
                     task.cancel();
@@ -171,7 +189,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             opList = createCompatibleOperationList(failBuild, writingDescription);
         }
         
-        return new BuildTimeoutWrapper(strategy, opList);
+        return new BuildTimeoutWrapper(strategy, opList, timeoutEnvVar);
     }
     
     @Override
@@ -206,6 +224,10 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
     public BuildTimeOutStrategy getStrategy() {
         return strategy;
+    }
+
+    public String getTimeoutEnvVar() {
+        return timeoutEnvVar;
     }
 
     /**

@@ -4,7 +4,11 @@
     <f:entry title="${%Time-out strategy}">
       <f:hetero-radio field="strategy" descriptors="${descriptor.strategies}"/>
     </f:entry>
-    
+
+    <f:entry title="${%Time-out variable}" description="Set a build timeout environment variable">
+      <f:textbox field="timeoutEnvVar"/>
+    </f:entry>
+
     <f:entry title="${%Time-out actions}" field="operationList">
       <f:hetero-list name="operationList" hasHeader="true"
         descriptors="${descriptor.operations}" items="${instance.operationList}"

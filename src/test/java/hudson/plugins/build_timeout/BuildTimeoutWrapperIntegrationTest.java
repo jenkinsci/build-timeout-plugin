@@ -2,8 +2,8 @@ package hudson.plugins.build_timeout;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -23,6 +23,7 @@ import hudson.tasks.Recorder;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -30,6 +31,81 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
+	
+	/*
+	 * Method to get environment variables when no timeout env variable is declared
+	 */
+	public EnvVars getEnvVars() throws Exception {
+		BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
+		FreeStyleProject project = createFreeStyleProject();
+		project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(300000), false, false));
+		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
+		project.getBuildersList().add(captureEnvBuilder);
+		project.scheduleBuild2(0).get();
+		return captureEnvBuilder.getEnvVars();
+	}
+
+	/*
+	 * Test to verify setting a timeout environment variable to a valid string
+	 */
+	public void testBuildTimeoutEnvValid() throws Exception {
+
+		EnvVars expectedEnvVars = getEnvVars();
+	  	FreeStyleProject project = createFreeStyleProject();
+	  	project.getBuildWrappersList().add(new BuildTimeoutWrapper(
+              new QuickBuildTimeOutStrategy(12345),
+              Arrays.<BuildTimeOutOperation>asList(),
+              "BUILD_TIMEOUT"
+	  	));
+		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
+		project.getBuildersList().add(captureEnvBuilder);
+		project.scheduleBuild2(0).get();
+		EnvVars envVars = captureEnvBuilder.getEnvVars();
+
+		assertEquals(expectedEnvVars.size()+1, envVars.size());
+		assertEquals("12345", envVars.get("BUILD_TIMEOUT"));
+	}
+
+	/*
+	 * Test to verify setting timeout environment variable to null (this is the default)
+	 */
+	public void testBuildTimeoutEnvNull() throws Exception {
+
+	    EnvVars expectedEnvVars = getEnvVars();
+		FreeStyleProject project = createFreeStyleProject();
+		project.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                new QuickBuildTimeOutStrategy(12345),
+                Arrays.<BuildTimeOutOperation>asList(),
+                null
+		));
+		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
+		project.getBuildersList().add(captureEnvBuilder);
+		project.scheduleBuild2(0).get();
+		EnvVars envVars = captureEnvBuilder.getEnvVars();
+
+  		assertEquals(expectedEnvVars.size(), envVars.size());
+	}
+
+	/*
+	 * Test to verify setting timeout environment variable to empty string.
+	 */
+	public void testBuildTimeoutEnvEmpty() throws Exception {
+
+		EnvVars expectedEnvVars = getEnvVars();
+		FreeStyleProject project = createFreeStyleProject();
+		project.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                new QuickBuildTimeOutStrategy(12345),
+                Arrays.<BuildTimeOutOperation>asList(),
+                "   "
+		));
+		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
+		project.getBuildersList().add(captureEnvBuilder);
+		project.scheduleBuild2(0).get();
+		EnvVars envVars = captureEnvBuilder.getEnvVars();
+
+  		assertEquals(expectedEnvVars.size(), envVars.size());
+	}
+	
 	@Bug(9203)
 	public void testIssue9203() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
