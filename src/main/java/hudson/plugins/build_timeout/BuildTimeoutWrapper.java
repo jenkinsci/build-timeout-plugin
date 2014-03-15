@@ -217,8 +217,9 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
         }
         
-        public List<BuildTimeOutOperationDescriptor> getOperations() {
-            return Jenkins.getInstance().getDescriptorList(BuildTimeOutOperation.class);
+        @SuppressWarnings("unchecked")
+        public List<BuildTimeOutOperationDescriptor> getOperations(AbstractProject<?,?> project) {
+            return BuildTimeOutOperationDescriptor.all((Class<? extends AbstractProject<?, ?>>)project.getClass());
         }
     }
 

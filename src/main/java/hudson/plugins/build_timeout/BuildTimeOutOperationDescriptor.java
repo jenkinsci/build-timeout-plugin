@@ -24,10 +24,40 @@
 
 package hudson.plugins.build_timeout;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import jenkins.model.Jenkins;
+import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
+import hudson.tasks.BuildStepDescriptor;
 
 /**
  * Descriptor for {@link BuildTimeOutOperation}
  */
 public abstract class BuildTimeOutOperationDescriptor extends Descriptor<BuildTimeOutOperation> {
+    /**
+     * Returns true if this task is applicable to the given project.
+     * 
+     * Override this to restrict project types this action can be applied.
+     * 
+     * @param jobType
+     * @return
+     *      true to allow user to configure this timeout action to given project.
+     * @see BuildStepDescriptor#isApplicable(Class)
+     */
+    public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
+        return true;
+    }
+    
+    public static List<BuildTimeOutOperationDescriptor> all(Class<? extends AbstractProject<?,?>> jobType) {
+        List<BuildTimeOutOperationDescriptor> alldescs = Jenkins.getInstance().getDescriptorList(BuildTimeOutOperation.class);
+        List<BuildTimeOutOperationDescriptor> descs = new ArrayList<BuildTimeOutOperationDescriptor>();
+        for (BuildTimeOutOperationDescriptor d: alldescs) {
+            if (d.isApplicable(jobType)) {
+                descs.add(d);
+            }
+        }
+        return descs;
+    }
 }
