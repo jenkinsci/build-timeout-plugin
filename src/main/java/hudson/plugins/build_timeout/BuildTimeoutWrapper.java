@@ -114,6 +114,9 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             
             final class TimeoutTimerTask extends SafeTimerTask {
                 public void doRun() {
+                    synchronized(EnvironmentImpl.this) {
+                        EnvironmentImpl.this.task = null;   // mark timer is not active.
+                    }
                     List<BuildTimeOutOperation> opList = getOperationList();
                     if (opList == null || opList.isEmpty()) {
                         // defaults to AbortOperation.
@@ -146,7 +149,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
            		}
             }
 
-            public void reschedule() {
+            public synchronized void reschedule() {
                 if (task != null) {
                     task.cancel();
                 }
@@ -154,9 +157,19 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 Trigger.timer.schedule(task, effectiveTimeout);
             }
 
+            public synchronized void rescheduleIfScheduled() {
+                if (task == null) {
+                    return;
+                }
+                reschedule();
+            }
+
             @Override
-            public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
-                task.cancel();
+            public synchronized boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
+                if (task != null) {
+                    task.cancel();
+                    task = null;
+                }
                 
                 // true to continue build.
                 return !operationFailed;

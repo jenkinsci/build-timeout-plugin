@@ -24,14 +24,18 @@
 
 package hudson.plugins.build_timeout.impl;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.SleepBuilder;
 
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -39,6 +43,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
+import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.tasks.Builder;
 
@@ -132,5 +137,33 @@ public class NoActivityTimeOutStrategyTest {
         p.getBuildersList().add(new PollingBuilder(10 * 1000, 30 * 1000));
         
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+    }
+    
+    private static class CountOperation extends BuildTimeOutOperation {
+        public int count = 0;
+        
+        @Override
+        public boolean perform(AbstractBuild<?, ?> build,
+                BuildListener listener, long effectiveTimeout) {
+            listener.getLogger().println(String.format("Count: %d", ++count));
+            return true;
+        }
+        
+    }
+    
+    @Test
+    public void testPerformedOnlyOnce() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        CountOperation count = new CountOperation();
+        p.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                new NoActivityTimeOutStrategy(3),
+                Arrays.<BuildTimeOutOperation>asList(count),
+                null
+        ));
+        p.getBuildersList().add(new SleepBuilder(10 * 1000));
+        
+        assertEquals(0, count.count);
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(1, count.count);
     }
 }

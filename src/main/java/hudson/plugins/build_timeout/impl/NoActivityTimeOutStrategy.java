@@ -77,7 +77,7 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
         }
         BuildTimeoutWrapper.EnvironmentImpl env = build.getEnvironments().get(BuildTimeoutWrapper.EnvironmentImpl.class);
         if (env != null) {
-            env.reschedule();
+            env.rescheduleIfScheduled();
         }
     }
     
