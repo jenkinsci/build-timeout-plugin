@@ -150,6 +150,13 @@ public class BuildStepOperation extends BuildTimeOutOperation {
         }
         
         /**
+         * @param enabled
+         */
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+        
+        /**
          * @param req
          * @param json
          * @return
@@ -159,7 +166,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
         @Override
         public boolean configure(StaplerRequest req, JSONObject json)
                 throws hudson.model.Descriptor.FormException {
-            enabled = json.containsKey("enabled");
+            setEnabled(json.containsKey("enabled"));
             return true;
         }
         
