@@ -27,9 +27,11 @@ package hudson.plugins.build_timeout.operations;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
@@ -39,14 +41,22 @@ import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
+import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Recorder;
+import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.Mailer;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.kohsuke.stapler.DataBoundConstructor;
+
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 /**
  *
@@ -210,4 +220,79 @@ public class BuildStepOperationTest {
         assertEquals(1, publisher2.executed);
     }
     
+    @Test
+    public void testConfiguration() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        ArtifactArchiver archiver = new ArtifactArchiver("**/*.xml", "exclude.xml", false);
+        
+        BuildStepOperation op = new BuildStepOperation(archiver, true);
+        BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
+                new AbsoluteTimeOutStrategy(3),
+                Arrays.<BuildTimeOutOperation>asList(op)
+        );
+        p.getBuildWrappersList().add(timeout);
+        p.save();
+        
+        String fullname = p.getFullName();
+        
+        // reconfigure.
+        // This should preserve configuration.
+        WebClient wc = j.createWebClient();
+        HtmlPage page = wc.getPage(p, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+        
+        p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
+        timeout = p.getBuildWrappersList().get(BuildTimeoutWrapper.class);
+        op = Util.filter(timeout.getOperationList(), BuildStepOperation.class).get(0);
+        archiver = (ArtifactArchiver)op.getBuildstep();
+        
+        assertEquals("**/*.xml", archiver.getArtifacts());
+        assertEquals("exclude.xml", archiver.getExcludes());
+        assertFalse(archiver.isLatestOnly());
+    }
+    
+    @Test
+    public void testConfigurationWithoutDbc() throws Exception {
+        // assert that Mailer does not have a constructor with DataBoundConstructor.
+        {
+            for(Constructor<?> c: Mailer.class.getConstructors()) {
+                assertFalse(c.isAnnotationPresent(DataBoundConstructor.class));
+            }
+        }
+        
+        FreeStyleProject p = j.createFreeStyleProject();
+        Mailer mailer = new Mailer();
+        mailer.recipients = "test@example.com";
+        mailer.dontNotifyEveryUnstableBuild = true;
+        mailer.sendToIndividuals = true;
+        
+        BuildStepOperation op = new BuildStepOperation(mailer, true);
+        BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
+                new AbsoluteTimeOutStrategy(3),
+                Arrays.<BuildTimeOutOperation>asList(op)
+        );
+        p.getBuildWrappersList().add(timeout);
+        p.save();
+        
+        String fullname = p.getFullName();
+        
+        // reconfigure.
+        // This should preserve configuration.
+        WebClient wc = j.createWebClient();
+        HtmlPage page = wc.getPage(p, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+        
+        p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
+        timeout = p.getBuildWrappersList().get(BuildTimeoutWrapper.class);
+        op = Util.filter(timeout.getOperationList(), BuildStepOperation.class).get(0);
+        mailer = (Mailer)op.getBuildstep();
+        
+        assertEquals("test@example.com", mailer.recipients);
+        // mailer.dontNotifyEveryUnstableBuild does not restored, for it is treated in a special way.
+        // Detail: there can be multiple "mailer_notifyEveryUnstableBuild"s in a form.
+        //assertTrue(mailer.dontNotifyEveryUnstableBuild);
+        assertTrue(mailer.sendToIndividuals);
+    }
 }
