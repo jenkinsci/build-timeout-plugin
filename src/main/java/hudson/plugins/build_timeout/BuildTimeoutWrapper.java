@@ -27,8 +27,10 @@ import java.util.List;
 import java.util.Map;
 
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link BuildWrapper} that terminates a build if it's taking too long.
@@ -98,6 +100,16 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         this.timeoutEnvVar = null;
     }
 
+    /**
+     * ctor.
+     * 
+     * Don't forget to update {@link DescriptorImpl#newInstance(StaplerRequest, JSONObject)}
+     * when you add new arguments.
+     * 
+     * @param strategy
+     * @param operationList
+     * @param timeoutEnvVar
+     */
     @DataBoundConstructor
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList, String timeoutEnvVar) {
         this.strategy = strategy;
@@ -205,6 +217,28 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             super(BuildTimeoutWrapper.class);
         }
 
+        /**
+         * create a new instance form user input.
+         * 
+         * Usually this is performed with {@link StaplerRequest#bindJSON(Class, JSONObject)},
+         * but here it is required to construct object manually to call {@link Descriptor#newInstance(StaplerRequest, JSONObject)}
+         * of downstream classes.
+         * 
+         * @param req
+         * @param formData
+         * @return
+         * @throws hudson.model.Descriptor.FormException
+         * @see hudson.model.Descriptor#newInstance(org.kohsuke.stapler.StaplerRequest, net.sf.json.JSONObject)
+         */
+        @Override
+        public BuildTimeoutWrapper newInstance(StaplerRequest req, JSONObject formData)
+                throws hudson.model.Descriptor.FormException {
+            BuildTimeOutStrategy strategy = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "strategy", BuildTimeOutStrategy.class);
+            List<BuildTimeOutOperation> operationList = newInstancesFromHeteroList(req, formData, "operationList", getOperations());
+            String timeoutEnvVar = formData.getString("timeoutEnvVar");
+            return new BuildTimeoutWrapper(strategy, operationList, timeoutEnvVar);
+        }
+
         public String getDisplayName() {
             return Messages.Descriptor_DisplayName();
         }
@@ -220,6 +254,10 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         @SuppressWarnings("unchecked")
         public List<BuildTimeOutOperationDescriptor> getOperations(AbstractProject<?,?> project) {
             return BuildTimeOutOperationDescriptor.all((Class<? extends AbstractProject<?, ?>>)project.getClass());
+        }
+        
+        public List<BuildTimeOutOperationDescriptor> getOperations() {
+            return BuildTimeOutOperationDescriptor.all();
         }
     }
 

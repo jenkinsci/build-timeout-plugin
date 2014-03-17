@@ -54,10 +54,14 @@ public abstract class BuildTimeOutOperationDescriptor extends Descriptor<BuildTi
         List<BuildTimeOutOperationDescriptor> alldescs = Jenkins.getInstance().getDescriptorList(BuildTimeOutOperation.class);
         List<BuildTimeOutOperationDescriptor> descs = new ArrayList<BuildTimeOutOperationDescriptor>();
         for (BuildTimeOutOperationDescriptor d: alldescs) {
-            if (d.isApplicable(jobType)) {
+            if (jobType == null || d.isApplicable(jobType)) {
                 descs.add(d);
             }
         }
         return descs;
+    }
+    
+    public static List<BuildTimeOutOperationDescriptor> all() {
+        return all(null);
     }
 }

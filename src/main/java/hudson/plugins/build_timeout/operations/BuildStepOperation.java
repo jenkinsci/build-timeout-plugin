@@ -45,6 +45,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
+import hudson.plugins.build_timeout.BuildTimeOutUtility;
 import hudson.remoting.Channel;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
@@ -168,6 +169,27 @@ public class BuildStepOperation extends BuildTimeOutOperation {
                 throws hudson.model.Descriptor.FormException {
             setEnabled(json.containsKey("enabled"));
             return true;
+        }
+        
+        /**
+         * Create a new instance from user input.
+         * 
+         * As there are builders or publishers who does not use {@link DataBoundConstructor},
+         * it is required to handle to call {@link Descriptor#newInstance(StaplerRequest, JSONObject)}
+         * manually.
+         * 
+         * @param req
+         * @param formData
+         * @return
+         * @throws hudson.model.Descriptor.FormException
+         * @see hudson.model.Descriptor#newInstance(org.kohsuke.stapler.StaplerRequest, net.sf.json.JSONObject)
+         */
+        @Override
+        public BuildStepOperation newInstance(StaplerRequest req, JSONObject formData)
+                throws hudson.model.Descriptor.FormException {
+            BuildStep buildstep = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "buildstep", BuildStep.class);
+            boolean continueEvenFailed = formData.getBoolean("continueEvenFailed");
+            return new BuildStepOperation(buildstep, continueEvenFailed);
         }
         
         /**

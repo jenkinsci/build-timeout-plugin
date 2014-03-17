@@ -2,6 +2,8 @@ package hudson.plugins.build_timeout;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import hudson.EnvVars;
 import hudson.Launcher;
@@ -11,6 +13,7 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.plugins.build_timeout.operations.FailOperation;
 import hudson.plugins.build_timeout.operations.WriteDescriptionOperation;
@@ -27,6 +30,8 @@ import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -538,5 +543,162 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         assertTrue(op1.executed);
         assertTrue(op2.executed);
         assertFalse(op3.executed);
+    }
+    
+    public void testConfigurationNoOperation() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                new AbsoluteTimeOutStrategy(3),
+                Collections.<BuildTimeOutOperation>emptyList(),
+                "TESTVAR"
+        ));
+        p.save();
+        
+        String fullname = p.getFullName();
+        
+        // reconfigure.
+        // This should preserve configuration.
+        WebClient wc = createWebClient();
+        HtmlPage page = wc.getPage(p, "configure");
+        HtmlForm form = page.getFormByName("config");
+        submit(form);
+        
+        p = jenkins.getItemByFullName(fullname, FreeStyleProject.class);
+        
+        // assert strategy is preserved.
+        assertEquals(
+                AbsoluteTimeOutStrategy.class,
+                p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy().getClass()
+        );
+        assertEquals(
+                3,
+                ((AbsoluteTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy()).timeoutMinutes
+        );
+        
+        // assert operation is preserved
+        assertEquals(
+                Collections.emptyList(),
+                p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getOperationList()
+        );
+        
+        assertEquals(
+                "TESTVAR",
+                p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getTimeoutEnvVar()
+        );
+    }
+    
+    public void testConfigurationSingleOperation() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                new AbsoluteTimeOutStrategy(3),
+                Arrays.<BuildTimeOutOperation>asList(
+                        new WriteDescriptionOperation("test")
+                ),
+                "TESTVAR"
+        ));
+        p.save();
+        
+        String fullname = p.getFullName();
+        
+        // reconfigure.
+        // This should preserve configuration.
+        WebClient wc = createWebClient();
+        HtmlPage page = wc.getPage(p, "configure");
+        HtmlForm form = page.getFormByName("config");
+        submit(form);
+        
+        p = jenkins.getItemByFullName(fullname, FreeStyleProject.class);
+        
+        // assert strategy is preserved.
+        assertEquals(
+                AbsoluteTimeOutStrategy.class,
+                p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy().getClass()
+        );
+        assertEquals(
+                3,
+                ((AbsoluteTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy()).timeoutMinutes
+        );
+        
+        // assert operation is preserved
+        assertEquals(
+                Arrays.asList(WriteDescriptionOperation.class),
+                Lists.transform(
+                        p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getOperationList(),
+                        new Function<BuildTimeOutOperation, Class<? extends BuildTimeOutOperation>>() {
+                            public Class<? extends BuildTimeOutOperation> apply(BuildTimeOutOperation input) {
+                                return input.getClass();
+                            }
+                        }
+                )
+        );
+        assertEquals(
+                "test",
+                ((WriteDescriptionOperation)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getOperationList().get(0)).getDescription()
+        );
+        
+        assertEquals(
+                "TESTVAR",
+                p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getTimeoutEnvVar()
+        );
+    }
+    
+    
+    public void testConfigurationMultipleOperation() throws Exception {
+        FreeStyleProject p = createFreeStyleProject();
+        p.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                new AbsoluteTimeOutStrategy(3),
+                Arrays.<BuildTimeOutOperation>asList(
+                        new WriteDescriptionOperation("test"),
+                        new AbortOperation()
+                ),
+                "TESTVAR"
+        ));
+        p.save();
+        
+        String fullname = p.getFullName();
+        
+        // reconfigure.
+        // This should preserve configuration.
+        WebClient wc = createWebClient();
+        HtmlPage page = wc.getPage(p, "configure");
+        HtmlForm form = page.getFormByName("config");
+        submit(form);
+        
+        p = jenkins.getItemByFullName(fullname, FreeStyleProject.class);
+        
+        // assert strategy is preserved.
+        assertEquals(
+                AbsoluteTimeOutStrategy.class,
+                p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy().getClass()
+        );
+        assertEquals(
+                3,
+                ((AbsoluteTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy()).timeoutMinutes
+        );
+        
+        // assert operation is preserved
+        assertEquals(
+                Arrays.asList(
+                        WriteDescriptionOperation.class,
+                        AbortOperation.class
+                ),
+                Lists.transform(
+                        p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getOperationList(),
+                        new Function<BuildTimeOutOperation, Class<? extends BuildTimeOutOperation>>() {
+                            public Class<? extends BuildTimeOutOperation> apply(BuildTimeOutOperation input) {
+                                return input.getClass();
+                            }
+                        }
+                )
+        );
+        assertEquals(
+                "test",
+                ((WriteDescriptionOperation)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getOperationList().get(0)).getDescription()
+        );
+        
+        assertEquals(
+                "TESTVAR",
+                p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getTimeoutEnvVar()
+        );
     }
 }
