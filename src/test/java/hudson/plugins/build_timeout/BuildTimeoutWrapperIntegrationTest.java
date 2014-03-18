@@ -328,6 +328,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             // assert migration of configuration
             BuildTimeoutWrapper buildTimeout = project.getBuildWrappersList().get(BuildTimeoutWrapper.class);
             assertNotNull(buildTimeout);
+            assertEquals(QuickBuildTimeOutStrategy.class, buildTimeout.getStrategy().getClass());
             assertEquals(
                     Arrays.asList(AbortOperation.class),
                     Lists.transform(buildTimeout.getOperationList(), new Function<BuildTimeOutOperation, Class<? extends BuildTimeOutOperation>>() {
@@ -362,6 +363,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             // assert migration of configuration
             BuildTimeoutWrapper buildTimeout = project.getBuildWrappersList().get(BuildTimeoutWrapper.class);
             assertNotNull(buildTimeout);
+            assertEquals(QuickBuildTimeOutStrategy.class, buildTimeout.getStrategy().getClass());
             assertEquals(
                     Arrays.asList(WriteDescriptionOperation.class, AbortOperation.class),
                     Lists.transform(buildTimeout.getOperationList(), new Function<BuildTimeOutOperation, Class<? extends BuildTimeOutOperation>>() {
@@ -397,6 +399,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             // assert migration of configuration
             BuildTimeoutWrapper buildTimeout = project.getBuildWrappersList().get(BuildTimeoutWrapper.class);
             assertNotNull(buildTimeout);
+            assertEquals(QuickBuildTimeOutStrategy.class, buildTimeout.getStrategy().getClass());
             assertEquals(
                     Arrays.asList(FailOperation.class),
                     Lists.transform(buildTimeout.getOperationList(), new Function<BuildTimeOutOperation, Class<? extends BuildTimeOutOperation>>() {
@@ -431,6 +434,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             // assert migration of configuration
             BuildTimeoutWrapper buildTimeout = project.getBuildWrappersList().get(BuildTimeoutWrapper.class);
             assertNotNull(buildTimeout);
+            assertEquals(QuickBuildTimeOutStrategy.class, buildTimeout.getStrategy().getClass());
             assertEquals(
                     Arrays.asList(WriteDescriptionOperation.class, FailOperation.class),
                     Lists.transform(buildTimeout.getOperationList(), new Function<BuildTimeOutOperation, Class<? extends BuildTimeOutOperation>>() {
