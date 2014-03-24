@@ -11,7 +11,7 @@
 
     <f:entry title="${%Time-out actions}" field="operationList">
       <f:hetero-list name="operationList" hasHeader="true"
-        descriptors="${descriptor.operations}" items="${instance.operationList}"
+        descriptors="${descriptor.getOperations(it)}" items="${instance.operationList}"
         addCaption="${%Add action}" />
     </f:entry>
 
