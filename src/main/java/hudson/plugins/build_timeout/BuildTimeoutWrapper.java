@@ -294,6 +294,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     @Override
     public OutputStream decorateLogger(@SuppressWarnings("rawtypes") final AbstractBuild build, final OutputStream logger)
             throws IOException, InterruptedException, RunnerAbortedException {
+        if(!getStrategy().wantsCaptureLog()) {
+            // For performance reason, decorates only when
+            // the strategy requires that.
+            return logger;
+        }
         return new OutputStream() {
             @Override
             public void write(int b) throws IOException {
