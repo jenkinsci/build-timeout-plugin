@@ -138,6 +138,10 @@ public class BuildStepOperation extends BuildTimeOutOperation {
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         private boolean enabled = false;
         
+        public DescriptorImpl() {
+            load();
+        }
+        
         /**
          * Returns whether {@link BuildStepOperation} is enabled.
          * 
@@ -168,6 +172,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
         public boolean configure(StaplerRequest req, JSONObject json)
                 throws hudson.model.Descriptor.FormException {
             setEnabled(json.containsKey("enabled"));
+            save();
             return true;
         }
         
