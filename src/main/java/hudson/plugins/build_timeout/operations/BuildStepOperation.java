@@ -62,6 +62,7 @@ import hudson.tasks.Publisher;
 public class BuildStepOperation extends BuildTimeOutOperation {
     private final BuildStep buildstep;
     private final boolean continueEvenFailed;
+    private final boolean createLauncher;
     
     /**
      * @return build step to perform.
@@ -78,13 +79,26 @@ public class BuildStepOperation extends BuildTimeOutOperation {
     }
     
     /**
+     * @return whether to create a launcher for this build step
+     */
+    public boolean isCreateLauncher() {
+        return createLauncher;
+    }
+    
+    /**
      * @param buildstep
      * @param continueEvenFailed
      */
     @DataBoundConstructor
-    public BuildStepOperation(BuildStep buildstep, boolean continueEvenFailed) {
+    public BuildStepOperation(BuildStep buildstep, boolean continueEvenFailed, boolean createLauncher) {
         this.buildstep = buildstep;
         this.continueEvenFailed = continueEvenFailed;
+        this.createLauncher = createLauncher;
+    }
+    
+    @Deprecated
+    public BuildStepOperation(BuildStep buildstep, boolean continueEvenFailed) {
+        this(buildstep, continueEvenFailed, false);
     }
     
     /**
@@ -115,6 +129,17 @@ public class BuildStepOperation extends BuildTimeOutOperation {
     /**
      * @param build
      * @param listener
+     * @return launcher specified with launcherOption.
+     */
+    protected Launcher createLauncher(AbstractBuild<?, ?> build, BuildListener listener) {
+        return isCreateLauncher()
+            ?build.getBuiltOn().createLauncher(listener)
+            :new DummyLauncher();
+    }
+    
+    /**
+     * @param build
+     * @param listener
      * @param effectiveTimeout
      * @return
      * @see hudson.plugins.build_timeout.BuildTimeOutOperation#perform(hudson.model.AbstractBuild, hudson.model.BuildListener, long)
@@ -123,7 +148,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
     public boolean perform(AbstractBuild<?, ?> build, BuildListener listener, long effectiveTimeout) {
         boolean result = false;
         try {
-            result = getBuildstep().perform(build, new DummyLauncher(), listener);
+            result = getBuildstep().perform(build, createLauncher(build, listener), listener);
         } catch(InterruptedException e) {
             e.printStackTrace(listener.getLogger());
             result = false;
@@ -189,7 +214,8 @@ public class BuildStepOperation extends BuildTimeOutOperation {
                 throws hudson.model.Descriptor.FormException {
             BuildStep buildstep = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "buildstep", BuildStep.class);
             boolean continueEvenFailed = formData.getBoolean("continueEvenFailed");
-            return new BuildStepOperation(buildstep, continueEvenFailed);
+            boolean createLauncher = formData.getBoolean("createLauncher");
+            return new BuildStepOperation(buildstep, continueEvenFailed, createLauncher);
         }
         
         /**
