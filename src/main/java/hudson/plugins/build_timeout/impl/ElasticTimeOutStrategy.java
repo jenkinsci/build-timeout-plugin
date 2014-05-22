@@ -3,57 +3,73 @@ package hudson.plugins.build_timeout.impl;
 import static hudson.plugins.build_timeout.BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS;
 
 import hudson.Extension;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import hudson.util.ListBoxModel;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.io.IOException;
 
 public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
 
-    public final int timeoutPercentage;
+    public final String timeoutPercentage;
 
-    public final int numberOfBuilds;
+    public final String numberOfBuilds;
 
     /**
      * The timeout to use if there are no valid builds in the build
      * history (ie, no successful or unstable builds)
      */
-    public final int timeoutMinutesElasticDefault;
+    public final String timeoutMinutesElasticDefault;
 
+
+    @Deprecated
+    public ElasticTimeOutStrategy(int timeoutPercentage, int timeoutMinutesElasticDefault, int numberOfBuilds) {
+        this.timeoutPercentage = Integer.toString(timeoutPercentage);
+        this.timeoutMinutesElasticDefault = Integer.toString(timeoutMinutesElasticDefault);
+        this.numberOfBuilds = Integer.toString(numberOfBuilds);
+    }
 
     @DataBoundConstructor
-    public ElasticTimeOutStrategy(int timeoutPercentage, int timeoutMinutesElasticDefault, int numberOfBuilds) {
+    public ElasticTimeOutStrategy(String timeoutPercentage, String timeoutMinutesElasticDefault, String numberOfBuilds) {
         this.timeoutPercentage = timeoutPercentage;
         this.timeoutMinutesElasticDefault = timeoutMinutesElasticDefault;
         this.numberOfBuilds = numberOfBuilds;
     }
 
     @Override
-    public long getTimeOut(Run run) {
-        double elasticTimeout = getElasticTimeout(timeoutPercentage, run);
+    public long getTimeOut(AbstractBuild<?, ?> build, BuildListener listener)
+            throws InterruptedException, MacroEvaluationException, IOException {
+        double elasticTimeout = getElasticTimeout(Integer.parseInt(expandAll(build,listener,timeoutPercentage)), build, listener);
         if (elasticTimeout == 0) {
-            return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, timeoutMinutesElasticDefault * MINUTES);
+            return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, Integer.parseInt(expandAll(build, listener, timeoutMinutesElasticDefault)) * MINUTES);
         } else {
             return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);
         }
     }
 
-    private double getElasticTimeout(int timeoutPercentage, Run build) {
-        return timeoutPercentage * .01D * (timeoutPercentage > 0 ? averageDuration(build) : 0);
+    private double getElasticTimeout(int timeoutPercentage, AbstractBuild<?, ?> build, BuildListener listener)
+            throws InterruptedException, MacroEvaluationException, IOException {
+        return timeoutPercentage * .01D * (timeoutPercentage > 0 ? averageDuration(build,listener) : 0);
     }
 
-    private double averageDuration(Run run) {
+    private double averageDuration(AbstractBuild<?, ?> build, BuildListener listener)
+            throws InterruptedException, MacroEvaluationException, IOException {
         int nonFailingBuilds = 0;
         int durationSum = 0;
+        int numberOfBuilds = Integer.parseInt(expandAll(build, listener, this.numberOfBuilds));
 
-        while(run.getPreviousBuild() != null && nonFailingBuilds < numberOfBuilds) {
-            run = run.getPreviousBuild();
-            if (run.getResult() != null &&
-                    run.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
-                durationSum += run.getDuration();
+        while(build.getPreviousBuild() != null && nonFailingBuilds < numberOfBuilds) {
+            build = build.getPreviousBuild();
+            if (build.getResult() != null &&
+                    build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
+                durationSum += build.getDuration();
                 nonFailingBuilds++;
             }
         }

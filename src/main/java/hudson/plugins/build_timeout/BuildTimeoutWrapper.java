@@ -29,6 +29,7 @@ import java.util.Map;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -147,10 +148,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             
             private final long effectiveTimeout;
             
-            public EnvironmentImpl(AbstractBuild<?,?> build, BuildListener listener) {
+            public EnvironmentImpl(AbstractBuild<?,?> build, BuildListener listener)
+                    throws InterruptedException, MacroEvaluationException, IOException {
                 this.build = build;
                 this.listener = listener;
-                this.effectiveTimeout = strategy.getTimeOut(build);
+                this.effectiveTimeout = strategy.getTimeOut(build, listener);
                 reschedule();
             }
 
@@ -190,7 +192,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        return new EnvironmentImpl(build, listener);
+        try {
+            return new EnvironmentImpl(build, listener);
+        } catch (MacroEvaluationException e) {
+            e.printStackTrace(listener.fatalError("Could not evaluate macro"));
+        }
     }
 
     protected Object readResolve() {
