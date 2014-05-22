@@ -1,6 +1,9 @@
 package hudson.plugins.build_timeout.impl;
 
+import hudson.model.AbstractBuild;
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Project;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
@@ -37,10 +40,10 @@ public class ElasticTimeOutStrategyTest extends TestCase {
         BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy(200, 90, 3);
 
         Build b = new Build(null);
-        assertEquals("Timeout should be the elastic default.", 90 * MINUTES, strategy.getTimeOut(b));
+        assertEquals("Timeout should be the elastic default.", 90 * MINUTES, strategy.getTimeOut(b,null));
     }
 
-    private class Build extends Run {
+    private class Build extends FreeStyleBuild {
         Build previous;
         long duration;
         Result result;
@@ -71,8 +74,13 @@ public class ElasticTimeOutStrategyTest extends TestCase {
         }
 
         @Override
-        public Run getPreviousBuild() {
+        public FreeStyleBuild getPreviousBuild() {
             return previous;
+        }
+
+        @Override
+        public void run() {
+            //To change body of implemented methods use File | Settings | File Templates.
         }
     }
 
