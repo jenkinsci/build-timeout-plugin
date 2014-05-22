@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
@@ -196,6 +197,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             return new EnvironmentImpl(build, listener);
         } catch (MacroEvaluationException e) {
             e.printStackTrace(listener.fatalError("Could not evaluate macro"));
+            throw new IOException2(e.getMessage(), e);
         }
     }
 
