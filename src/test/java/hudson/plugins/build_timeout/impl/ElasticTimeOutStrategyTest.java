@@ -25,7 +25,7 @@ public class ElasticTimeOutStrategyTest extends TestCase {
 
         Build b = new Build(new Build(60 * MINUTES, SUCCESS));
 
-        assertEquals("Timeout should be 200% of 60", 120 * MINUTES, strategy.getTimeOut(b));
+        assertEquals("Timeout should be 200% of 60", 120 * MINUTES, strategy.getTimeOut(b,null));
     }
 
     public void testPercentageWithTwoBuilds() throws Exception {
@@ -33,7 +33,7 @@ public class ElasticTimeOutStrategyTest extends TestCase {
 
         Build b = new Build(new Build(20 * MINUTES, SUCCESS, new Build(40 * MINUTES, SUCCESS)));
 
-        assertEquals("Timeout should be 200% of the average of 20 and 40", 60 * MINUTES, strategy.getTimeOut(b));
+        assertEquals("Timeout should be 200% of the average of 20 and 40", 60 * MINUTES, strategy.getTimeOut(b,null));
     }
 
     public void testPercentageWithNoBuilds() throws Exception {
