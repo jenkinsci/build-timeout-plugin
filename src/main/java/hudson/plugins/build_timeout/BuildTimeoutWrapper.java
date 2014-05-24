@@ -135,9 +135,16 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                         opList = Arrays.<BuildTimeOutOperation>asList(new AbortOperation());
                     }
                     for( BuildTimeOutOperation op: getOperationList() ) {
-                        if (!op.perform(build, listener, effectiveTimeout)) {
+                        try {
+                            if (!op.perform(build, listener, effectiveTimeout)) {
+                                operationFailed = true;
+                                break;
+                            }
+                        } catch(RuntimeException e) {
+                            // if some unexpected exception,
+                            // mark the operation failed and pass through the exception.
                             operationFailed = true;
-                            break;
+                            throw e;
                         }
                     }
                 }
