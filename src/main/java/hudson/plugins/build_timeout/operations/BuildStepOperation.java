@@ -41,14 +41,17 @@ import hudson.Launcher;
 import hudson.Proc;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
+import hudson.model.Run.RunnerAbortedException;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 import hudson.plugins.build_timeout.BuildTimeOutUtility;
 import hudson.remoting.Channel;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 
@@ -132,9 +135,27 @@ public class BuildStepOperation extends BuildTimeOutOperation {
      * @return launcher specified with launcherOption.
      */
     protected Launcher createLauncher(AbstractBuild<?, ?> build, BuildListener listener) {
-        return isCreateLauncher()
-            ?build.getBuiltOn().createLauncher(listener)
-            :new DummyLauncher();
+        if(!isCreateLauncher()) {
+            return new DummyLauncher();
+        }
+        
+        Launcher l = build.getBuiltOn().createLauncher(listener);
+        if (build.getParent() instanceof BuildableItemWithBuildWrappers) {
+            BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers)build.getParent();
+            for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
+                try {
+                    l = bw.decorateLauncher(build,l,listener);
+                } catch(RunnerAbortedException e) {
+                    e.printStackTrace(listener.getLogger());
+                } catch(IOException e) {
+                    e.printStackTrace(listener.getLogger());
+                } catch(InterruptedException e) {
+                    e.printStackTrace(listener.getLogger());
+                }
+            }
+        }
+        
+        return l;
     }
     
     /**
