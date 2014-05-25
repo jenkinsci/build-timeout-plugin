@@ -36,15 +36,23 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
+
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.model.BuildListener;
+import hudson.model.ParametersAction;
 import hudson.model.Result;
+import hudson.model.StringParameterValue;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
+import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.tasks.Builder;
 
 /**
@@ -165,5 +173,106 @@ public class NoActivityTimeOutStrategyTest {
         assertEquals(0, count.count);
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(1, count.count);
+    }
+    
+    @Test
+    public void testCanConfigureWithWebPage() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildWrappersList().add(
+                new BuildTimeoutWrapper(
+                        new NoActivityTimeOutStrategy("60"),
+                        Arrays.<BuildTimeOutOperation>asList(new AbortOperation()),
+                        null
+                )
+        );
+        p.save();
+        
+        String projectName = p.getFullName();
+        
+        // test configuration before configure on configuration page.
+        {
+            NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
+            assertEquals("60", strategy.getTimeoutSecondsString());
+            assertEquals(60, strategy.getTimeoutSeconds());
+        }
+        
+        // reconfigure.
+        // This should preserve configuration.
+        WebClient wc = j.createWebClient();
+        HtmlPage page = wc.getPage(p, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+        p = j.jenkins.getItemByFullName(projectName, FreeStyleProject.class);
+        
+        // test configuration before configure on configuration page.
+        {
+            NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
+            assertEquals("60", strategy.getTimeoutSecondsString());
+            assertEquals(60, strategy.getTimeoutSeconds());
+        }
+    }
+    
+    @Test
+    public void testCanConfigureWithWebPageUsingStringExpression() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildWrappersList().add(
+                new BuildTimeoutWrapper(
+                        new NoActivityTimeOutStrategy("${TEST}"),
+                        Arrays.<BuildTimeOutOperation>asList(new AbortOperation()),
+                        null
+                )
+        );
+        p.save();
+        
+        String projectName = p.getFullName();
+        
+        // test configuration before configure on configuration page.
+        {
+            NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
+            assertEquals("${TEST}", strategy.getTimeoutSecondsString());
+            assertEquals(0, strategy.getTimeoutSeconds());
+        }
+        
+        // reconfigure.
+        // This should preserve configuration.
+        WebClient wc = j.createWebClient();
+        HtmlPage page = wc.getPage(p, "configure");
+        HtmlForm form = page.getFormByName("config");
+        j.submit(form);
+        p = j.jenkins.getItemByFullName(projectName, FreeStyleProject.class);
+        
+        // test configuration before configure on configuration page.
+        {
+            NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
+            assertEquals("${TEST}", strategy.getTimeoutSecondsString());
+            assertEquals(0, strategy.getTimeoutSeconds());
+        }
+    }
+    
+    @Test
+    public void testConfigurationWithParameter() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildWrappersList().add(
+                new BuildTimeoutWrapper(
+                        new NoActivityTimeOutStrategy("${TIMEOUT}"),
+                        Arrays.<BuildTimeOutOperation>asList(new AbortOperation()),
+                        null
+                )
+        );
+        p.getBuildersList().add(new PollingBuilder(10 * 1000, 30 * 1000));
+        
+        // If called with TIMEOUT=15, the build succeeds.
+        j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(
+                0,
+                new Cause.UserCause(),
+                new ParametersAction(new StringParameterValue("TIMEOUT", "15"))
+        ).get());
+        
+        // If called with TIMEOUT=5, the build is aborted.
+        j.assertBuildStatus(Result.ABORTED, p.scheduleBuild2(
+                0,
+                new Cause.UserCause(),
+                new ParametersAction(new StringParameterValue("TIMEOUT", "5"))
+        ).get());
     }
 }

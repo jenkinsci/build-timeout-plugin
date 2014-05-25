@@ -18,16 +18,36 @@ import java.io.IOException;
 
 public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
 
-    public final String timeoutPercentage;
+    private final String timeoutPercentage;
 
-    public final String numberOfBuilds;
+    private final String numberOfBuilds;
 
     /**
      * The timeout to use if there are no valid builds in the build
      * history (ie, no successful or unstable builds)
      */
-    public final String timeoutMinutesElasticDefault;
+    private final String timeoutMinutesElasticDefault;
 
+    /**
+     * @return how long percentage of the average duration to timeout.
+     */
+    public String getTimeoutPercentage() {
+        return timeoutPercentage;
+    }
+
+    /**
+     * @return the number of last builds to use to calculate average duration.
+     */
+    public String getNumberOfBuilds() {
+        return numberOfBuilds;
+    }
+
+    /**
+     * @return the default minutes to timeout used when failed to calculate average duration
+     */
+    public String getTimeoutMinutesElasticDefault() {
+        return timeoutMinutesElasticDefault;
+    }
 
     @Deprecated
     public ElasticTimeOutStrategy(int timeoutPercentage, int timeoutMinutesElasticDefault, int numberOfBuilds) {
@@ -46,9 +66,9 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
     @Override
     public long getTimeOut(AbstractBuild<?, ?> build, BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
-        double elasticTimeout = getElasticTimeout(Integer.parseInt(expandAll(build,listener,timeoutPercentage)), build, listener);
+        double elasticTimeout = getElasticTimeout(Integer.parseInt(expandAll(build,listener,getTimeoutPercentage())), build, listener);
         if (elasticTimeout == 0) {
-            return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, Integer.parseInt(expandAll(build, listener, timeoutMinutesElasticDefault)) * MINUTES);
+            return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES);
         } else {
             return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);
         }
@@ -63,7 +83,7 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
             throws InterruptedException, MacroEvaluationException, IOException {
         int nonFailingBuilds = 0;
         int durationSum = 0;
-        int numberOfBuilds = Integer.parseInt(expandAll(build, listener, this.numberOfBuilds));
+        int numberOfBuilds = Integer.parseInt(expandAll(build, listener, getNumberOfBuilds()));
 
         while(build.getPreviousBuild() != null && nonFailingBuilds < numberOfBuilds) {
             build = build.getPreviousBuild();
