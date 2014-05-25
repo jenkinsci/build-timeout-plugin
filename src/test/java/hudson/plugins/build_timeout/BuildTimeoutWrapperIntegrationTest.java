@@ -14,6 +14,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
+import hudson.plugins.build_timeout.impl.NoActivityTimeOutStrategy;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.plugins.build_timeout.operations.FailOperation;
 import hudson.plugins.build_timeout.operations.WriteDescriptionOperation;
@@ -704,5 +705,17 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
                 "TESTVAR",
                 p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getTimeoutEnvVar()
         );
+    }
+    
+    @LocalData
+    public void testMigrationFrom_1_13() throws Exception {
+        Thread.sleep(60000);
+        FreeStyleProject p = jenkins.getItemByFullName("NoActivityTimeOutStrategy", FreeStyleProject.class);
+        assertNotNull(p);
+        NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
+        assertEquals("5", strategy.getTimeoutSecondsString());
+        assertEquals(5, strategy.getTimeoutSeconds());
+        
+        assertBuildStatus(Result.ABORTED, p.scheduleBuild2(0).get());
     }
 }
