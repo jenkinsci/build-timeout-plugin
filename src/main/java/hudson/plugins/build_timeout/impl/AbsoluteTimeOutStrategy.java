@@ -30,7 +30,7 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
         return DESCRIPTOR;
     }
 
-    @Extension
+    @Extension(ordinal=100) // This is displayed at the top as the default
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends BuildTimeOutStrategyDescriptor {
