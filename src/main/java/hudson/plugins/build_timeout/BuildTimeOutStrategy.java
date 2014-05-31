@@ -1,5 +1,8 @@
 package hudson.plugins.build_timeout;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import jenkins.model.Jenkins;
 import hudson.model.AbstractBuild;
 import hudson.model.Describable;
@@ -12,6 +15,7 @@ import hudson.model.Run;
 public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutStrategy> {
 
     public static final long MINUTES = 60*1000L;
+    public static final Logger LOG = Logger.getLogger(BuildTimeOutStrategy.class.getName());
 
     /**
      * Define the delay (in milliseconds) to wait for the build to complete before interrupting.
@@ -27,6 +31,27 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
      * @param b output character.
      */
     public void onWrite(AbstractBuild<?,?> build, int b) {}
+    
+    /**
+     * Decides whether to call {@link BuildTimeOutStrategy.onWrite}
+     * 
+     * For performance reason, {@link BuildTimeOutStrategy.onWrite} is called
+     * only when subclass overrides it.
+     * 
+     * @return true to call {@link BuildTimeOutStrategy.onWrite}
+     */
+    public boolean wantsCaptureLog() {
+        try {
+            Class<?> classOfOnWrite = getClass().getMethod("onWrite", AbstractBuild.class, int.class).getDeclaringClass();
+            return !BuildTimeOutStrategy.class.equals(classOfOnWrite);
+        } catch(SecurityException e) {
+            LOG.log(Level.WARNING, "Unexpected exception in build-timeout-plugin", e);
+            return false;
+        } catch(NoSuchMethodException e) {
+            LOG.log(Level.WARNING, "Unexpected exception in build-timeout-plugin", e);
+            return false;
+        }
+    }
     
     /**
      * @return
