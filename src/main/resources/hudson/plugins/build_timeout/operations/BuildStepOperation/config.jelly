@@ -28,4 +28,7 @@ THE SOFTWARE.
   <f:entry field="continueEvenFailed">
     <f:checkbox default="true" title="${%Ignore failure of the build step}" />
   </f:entry>
+  <f:entry field="createLauncher">
+    <f:checkbox title="${%Create a launcher for this build step}" />
+  </f:entry>
 </j:jelly>

@@ -30,11 +30,15 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Cause;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
+import hudson.model.ParametersAction;
+import hudson.model.StringParameterValue;
 import hudson.model.Result;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
@@ -46,7 +50,9 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Recorder;
 import hudson.tasks.ArtifactArchiver;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Mailer;
+import hudson.tasks.Shell;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -225,7 +231,7 @@ public class BuildStepOperationTest {
         FreeStyleProject p = j.createFreeStyleProject();
         ArtifactArchiver archiver = new ArtifactArchiver("**/*.xml", "exclude.xml", false);
         
-        BuildStepOperation op = new BuildStepOperation(archiver, true);
+        BuildStepOperation op = new BuildStepOperation(archiver, true, false);
         BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
                 Arrays.<BuildTimeOutOperation>asList(op)
@@ -245,6 +251,11 @@ public class BuildStepOperationTest {
         p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
         timeout = p.getBuildWrappersList().get(BuildTimeoutWrapper.class);
         op = Util.filter(timeout.getOperationList(), BuildStepOperation.class).get(0);
+        assertNotNull(op.getBuildstep());
+        assertEquals(ArtifactArchiver.class, op.getBuildstep().getClass());
+        assertTrue(op.isContinueEvenFailed());
+        assertFalse(op.isCreateLauncher());
+        
         archiver = (ArtifactArchiver)op.getBuildstep();
         
         assertEquals("**/*.xml", archiver.getArtifacts());
@@ -267,7 +278,7 @@ public class BuildStepOperationTest {
         mailer.dontNotifyEveryUnstableBuild = true;
         mailer.sendToIndividuals = true;
         
-        BuildStepOperation op = new BuildStepOperation(mailer, true);
+        BuildStepOperation op = new BuildStepOperation(mailer, false, true);
         BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
                 Arrays.<BuildTimeOutOperation>asList(op)
@@ -287,6 +298,11 @@ public class BuildStepOperationTest {
         p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
         timeout = p.getBuildWrappersList().get(BuildTimeoutWrapper.class);
         op = Util.filter(timeout.getOperationList(), BuildStepOperation.class).get(0);
+        assertNotNull(op.getBuildstep());
+        assertEquals(Mailer.class, op.getBuildstep().getClass());
+        assertFalse(op.isContinueEvenFailed());
+        assertTrue(op.isCreateLauncher());
+        
         mailer = (Mailer)op.getBuildstep();
         
         assertEquals("test@example.com", mailer.recipients);
@@ -294,5 +310,64 @@ public class BuildStepOperationTest {
         // Detail: there can be multiple "mailer_notifyEveryUnstableBuild"s in a form.
         //assertTrue(mailer.dontNotifyEveryUnstableBuild);
         assertTrue(mailer.sendToIndividuals);
+    }
+    
+    @Test
+    public void testLauncher() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        
+        String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";
+        
+        Builder shell = null;
+        if(Functions.isWindows()) {
+            shell = new BatchFile("echo %TESTSTRING%");
+        } else {
+            shell = new Shell("echo ${TESTSTRING}");
+        }
+        
+        BuildStepOperation op = new BuildStepOperation(shell, false, true);
+        BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
+                new QuickBuildTimeOutStrategy(5000),
+                Arrays.<BuildTimeOutOperation>asList(op),
+                null
+        );
+        p.getBuildWrappersList().add(timeout);
+        p.getBuildersList().add(new SleepBuilder(9999));
+        
+        j.assertBuildStatusSuccess(p.scheduleBuild2(
+                0,
+                new Cause.UserCause(),
+                new ParametersAction(new StringParameterValue("TESTSTRING", TESTSTRING))
+        ));
+        j.assertLogContains(TESTSTRING, p.getLastBuild());
+    }
+    
+    @Test
+    public void testNoLauncher() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        
+        String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";
+        
+        Builder shell = null;
+        if(Functions.isWindows()) {
+            shell = new BatchFile("echo %TESTSTRING%");
+        } else {
+            shell = new Shell("echo ${TESTSTRING}");
+        }
+        
+        BuildStepOperation op = new BuildStepOperation(shell, false, false);
+        BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
+                new QuickBuildTimeOutStrategy(5000),
+                Arrays.<BuildTimeOutOperation>asList(op),
+                null
+        );
+        p.getBuildWrappersList().add(timeout);
+        p.getBuildersList().add(new SleepBuilder(9999));
+        
+        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(
+                0,
+                new Cause.UserCause(),
+                new ParametersAction(new StringParameterValue("TESTSTRING", TESTSTRING))
+        ).get());
     }
 }

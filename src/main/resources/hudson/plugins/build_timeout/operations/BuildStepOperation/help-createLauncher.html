@@ -1,0 +1,6 @@
+<div>
+Build steps like "Execute shell", "Execute Windows batch command" and so on, requires Launcher object to execute an external program.
+Build Timeout does not provide Launcher for build steps by default and those build steps fail.
+Checking here provides the build step a new created Launcher.
+You should not check here as long as the build step can run without this (that is, it does not require an external program).
+</div>
