@@ -19,7 +19,14 @@ import java.io.IOException;
  */
 public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
 
-    public final String timeoutMinutes;
+    private final String timeoutMinutes;
+
+    /**
+     * @return minutes to timeout.
+     */
+    public String getTimeoutMinutes() {
+        return timeoutMinutes;
+    }
 
     @Deprecated
     public AbsoluteTimeOutStrategy(int timeoutMinutes) {
@@ -35,7 +42,7 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
     public long getTimeOut(AbstractBuild<?,?> build, BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         return MINUTES * Math.max((int) (MINIMUM_TIMEOUT_MILLISECONDS / MINUTES), Integer.parseInt(
-                expandAll(build, listener, this.timeoutMinutes)));
+                expandAll(build, listener, getTimeoutMinutes())));
     }
 
     public Descriptor<BuildTimeOutStrategy> getDescriptor() {

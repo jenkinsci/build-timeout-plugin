@@ -30,7 +30,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
 import hudson.model.AbstractBuild;
-import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
@@ -41,27 +40,57 @@ import java.io.IOException;
  * Timeout when specified time passed since the last output.
  */
 public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
-    private final long timeout;
+    @Deprecated
+    private transient long timeout;
+    
+    private final String timeoutSecondsString;
+    
+    /**
+     * @return
+     * @deprecated use {@link NoActivityTimeOutStrategy#getTimeoutSecondsString()} instead.
+     */
+    @Deprecated
+    public long getTimeoutSeconds() {
+        try {
+            return Long.parseLong(timeoutSecondsString);
+        } catch(NumberFormatException e) {
+            return 0L;
+        }
+    }
     
     /**
      * @return
      */
-    public long getTimeoutSeconds() {
-        return timeout / 1000L;
+    public String getTimeoutSecondsString()
+    {
+        return timeoutSecondsString;
+    }
+    
+    private Object readResolve() {
+        if(timeoutSecondsString == null) {
+            return new NoActivityTimeOutStrategy(this.timeout / 1000L);
+        }
+        
+        return this;
     }
     
     /**
      * @param timeoutSeconds
      */
     @DataBoundConstructor
+    public NoActivityTimeOutStrategy(String timeoutSecondsString) {
+        this.timeoutSecondsString = timeoutSecondsString;
+    }
+    
+    @Deprecated
     public NoActivityTimeOutStrategy(long timeoutSeconds) {
-        this.timeout = timeoutSeconds * 1000L;
+        this(Long.toString(timeoutSeconds));
     }
     
     @Override
     public long getTimeOut(AbstractBuild<?, ?> build, BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
-        return timeout;
+        return Long.parseLong(expandAll(build, listener, getTimeoutSecondsString())) * 1000L;
     }
 
     /**
