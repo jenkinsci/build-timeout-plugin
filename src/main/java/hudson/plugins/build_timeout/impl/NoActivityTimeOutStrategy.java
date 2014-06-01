@@ -24,6 +24,8 @@
 
 package hudson.plugins.build_timeout.impl;
 
+import hudson.model.BuildListener;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
@@ -32,6 +34,8 @@ import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
+
+import java.io.IOException;
 
 /**
  * Timeout when specified time passed since the last output.
@@ -54,16 +58,12 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
         this.timeout = timeoutSeconds * 1000L;
     }
     
-    /**
-     * @param run
-     * @return
-     * @see hudson.plugins.build_timeout.BuildTimeOutStrategy#getTimeOut(hudson.model.Run)
-     */
     @Override
-    public long getTimeOut(@SuppressWarnings("rawtypes") Run run) {
+    public long getTimeOut(AbstractBuild<?, ?> build, BuildListener listener)
+            throws InterruptedException, MacroEvaluationException, IOException {
         return timeout;
     }
-    
+
     /**
      * @param build
      * @param b

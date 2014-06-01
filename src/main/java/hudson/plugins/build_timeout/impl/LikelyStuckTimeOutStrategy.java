@@ -1,6 +1,8 @@
 package hudson.plugins.build_timeout.impl;
 
 import hudson.Extension;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
 import hudson.model.Queue;
@@ -9,7 +11,10 @@ import hudson.model.queue.Executables;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import hudson.util.TimeUnit2;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.io.IOException;
 
 /**
  * Get the time considered it stuck.
@@ -25,7 +30,8 @@ public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(Run run) {
+    public long getTimeOut(AbstractBuild<?, ?> run, BuildListener listener)
+            throws InterruptedException, MacroEvaluationException, IOException {
         Executor executor = run.getExecutor();
         if (executor == null) {
             return TimeUnit2.HOURS.toMillis(24);
