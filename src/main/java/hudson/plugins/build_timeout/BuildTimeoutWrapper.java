@@ -136,7 +136,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                         // defaults to AbortOperation.
                         opList = Arrays.<BuildTimeOutOperation>asList(new AbortOperation());
                     }
-                    for( BuildTimeOutOperation op: getOperationList() ) {
+                    for( BuildTimeOutOperation op: opList ) {
                         try {
                             if (!op.perform(build, listener, effectiveTimeout)) {
                                 operationFailed = true;
