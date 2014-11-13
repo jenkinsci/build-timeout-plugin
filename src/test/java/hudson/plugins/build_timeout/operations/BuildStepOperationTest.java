@@ -63,7 +63,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.*;
 
 /**
  *
@@ -269,7 +269,7 @@ public class BuildStepOperationTest {
         // assert that Mailer does not have a constructor with DataBoundConstructor. Not true as of 1.6. Would be better to have a @TestExtension with such a build step.
         {
             for(Constructor<?> c: Mailer.class.getConstructors()) {
-                assumeFalse(c.isAnnotationPresent(DataBoundConstructor.class));
+                assumeTrue(!c.isAnnotationPresent(DataBoundConstructor.class));
             }
         }
         
