@@ -61,7 +61,7 @@ public class BuildTimeOutUtility {
           clazzName = formData.optString("stapler-class", null);
         }
         if (clazzName == null) {
-            throw new FormException("No $class is specified", fieldName);
+            throw new FormException("No $class or stapler-class is specified", fieldName);
         }
         try {
             @SuppressWarnings("unchecked")
