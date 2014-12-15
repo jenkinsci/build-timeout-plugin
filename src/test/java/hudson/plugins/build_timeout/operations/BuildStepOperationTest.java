@@ -27,13 +27,14 @@ package hudson.plugins.build_timeout.operations;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
+import hudson.Extension;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Cause;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
@@ -46,13 +47,14 @@ import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Recorder;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
-import hudson.tasks.Mailer;
 import hudson.tasks.Shell;
+import net.sf.json.JSONObject;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,10 +62,10 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import static org.junit.Assume.*;
 
 /**
  *
@@ -266,23 +268,17 @@ public class BuildStepOperationTest {
     
     @Test
     public void testConfigurationWithoutDbc() throws Exception {
-        // assert that Mailer does not have a constructor with DataBoundConstructor. Not true as of 1.6. Would be better to have a @TestExtension with such a build step.
-        {
-            for(Constructor<?> c: Mailer.class.getConstructors()) {
-                assumeTrue(!c.isAnnotationPresent(DataBoundConstructor.class));
-            }
-        }
+        final String STRING_TO_TEST = "foobar";
         
         FreeStyleProject p = j.createFreeStyleProject();
-        Mailer mailer = new Mailer();
-        mailer.recipients = "test@example.com";
-        mailer.dontNotifyEveryUnstableBuild = true;
-        mailer.sendToIndividuals = true;
+        NoDataBoundConstructorBuilder builder = new NoDataBoundConstructorBuilder();
+        builder.setDescriptionToSet(STRING_TO_TEST);
         
-        BuildStepOperation op = new BuildStepOperation(mailer, false, true);
+        BuildStepOperation op = new BuildStepOperation(builder, false, true);
         BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
-                new AbsoluteTimeOutStrategy(3),
-                Arrays.<BuildTimeOutOperation>asList(op)
+                new AbsoluteTimeOutStrategy("3"),
+                Arrays.<BuildTimeOutOperation>asList(op),
+                ""
         );
         p.getBuildWrappersList().add(timeout);
         p.save();
@@ -300,17 +296,13 @@ public class BuildStepOperationTest {
         timeout = p.getBuildWrappersList().get(BuildTimeoutWrapper.class);
         op = Util.filter(timeout.getOperationList(), BuildStepOperation.class).get(0);
         assertNotNull(op.getBuildstep());
-        assertEquals(Mailer.class, op.getBuildstep().getClass());
+        assertEquals(NoDataBoundConstructorBuilder.class, op.getBuildstep().getClass());
         assertFalse(op.isContinueEvenFailed());
         assertTrue(op.isCreateLauncher());
         
-        mailer = (Mailer)op.getBuildstep();
+        builder = (NoDataBoundConstructorBuilder)op.getBuildstep();
         
-        assertEquals("test@example.com", mailer.recipients);
-        // mailer.dontNotifyEveryUnstableBuild does not restored, for it is treated in a special way.
-        // Detail: there can be multiple "mailer_notifyEveryUnstableBuild"s in a form.
-        //assertTrue(mailer.dontNotifyEveryUnstableBuild);
-        assertTrue(mailer.sendToIndividuals);
+        assertEquals(STRING_TO_TEST, builder.getDescriptionToSet());
     }
     
     @Test
@@ -370,5 +362,60 @@ public class BuildStepOperationTest {
                 new Cause.UserCause(),
                 new ParametersAction(new StringParameterValue("TESTSTRING", TESTSTRING))
         ).get());
+    }
+    
+    /**
+     * A builder without {@link DataBoundConstructor}.
+     * This sets description of the build.
+     * 
+     * usually, Jenkins components initialized from form posts should support
+     * with DataBoundConstructor, but components in some plugins (especially ancient ones)
+     * doesn't support that.
+     * {@link BuildStepOperation} should support them.
+     */
+    public static class NoDataBoundConstructorBuilder extends Builder {
+        private String descriptionToSet;
+        
+        // @DataBoundConstuctor
+        public NoDataBoundConstructorBuilder() {
+        }
+        
+        public void setDescriptionToSet(String descriptionToSet) {
+            this.descriptionToSet = descriptionToSet;
+        }
+        
+        public String getDescriptionToSet() {
+            return descriptionToSet;
+        }
+        
+        @Override
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            if(getDescriptionToSet() == null) {
+                return false;
+            }
+            build.setDescription(getDescriptionToSet());
+            return true;
+        }
+        
+        //@TestExtension doesn't work for JenkinsRule till jenkins-1.482.
+        @Extension
+        public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @Override
+            public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+                return true;
+            }
+            
+            @Override
+            public String getDisplayName() {
+                return "NoDataBoundConstructorBuilder";
+            }
+            
+            @Override
+            public NoDataBoundConstructorBuilder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+                NoDataBoundConstructorBuilder builder = new NoDataBoundConstructorBuilder();
+                builder.setDescriptionToSet(formData.getString("descriptionToSet"));
+                return builder;
+            }
+        }
     }
 }
