@@ -3,6 +3,7 @@ package hudson.plugins.build_timeout;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.console.LineTransformationOutputStream;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -314,11 +315,11 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             // the strategy requires that.
             return logger;
         }
-        return new OutputStream() {
+        return new LineTransformationOutputStream() {
             @Override
-            public void write(int b) throws IOException {
-                getStrategy().onWrite(build, b);
-                logger.write(b);
+            protected void eol(byte[] b, int len) throws IOException {
+                getStrategy().onWrite(build, b, len);
+                logger.write(b, 0, len);
             }
             
             @Override
