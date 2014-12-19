@@ -323,6 +323,12 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             }
             
             @Override
+            public void flush() throws IOException {
+                super.flush();
+                logger.flush();
+            }
+            
+            @Override
             public void close() throws IOException {
                 logger.close();
                 super.close();
