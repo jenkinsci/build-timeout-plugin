@@ -96,14 +96,11 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
     /**
      * @param build
      * @param b
-     * @see hudson.plugins.build_timeout.BuildTimeOutStrategy#onWrite(int)
+     * @param length
+     * @see hudson.plugins.build_timeout.BuildTimeOutStrategy#onWrite(AbstractBuild, byte[], int)
      */
     @Override
-    public void onWrite(AbstractBuild<?,?> build, int b) {
-        if (b != '\r' && b != '\n') {
-            // process only when it is a line break.
-            return;
-        }
+    public void onWrite(AbstractBuild<?,?> build, byte b[], int length) {
         BuildTimeoutWrapper.EnvironmentImpl env = build.getEnvironments().get(BuildTimeoutWrapper.EnvironmentImpl.class);
         if (env != null) {
             env.rescheduleIfScheduled();

@@ -50,8 +50,27 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
      * 
      * @param build
      * @param b output character.
+     * 
+     * @deprecated use {@link #onWrite(AbstractBuild, byte[], int)}
+     * 
      */
+    @Deprecated
     public void onWrite(AbstractBuild<?,?> build, int b) {}
+    
+    /**
+     * Called when some output to console.
+     * Override this to capture the activity.
+     * 
+     * @param build
+     * @param b output characters.
+     * @param length length of b to output
+     * 
+     */
+    public void onWrite(AbstractBuild<?,?> build, byte b[], int length) {
+        for(int i = 0; i < length; ++i) {
+            onWrite(build, b[i]);
+        }
+    }
     
     /**
      * Decides whether to call {@link BuildTimeOutStrategy.onWrite}
@@ -64,7 +83,8 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
     public boolean wantsCaptureLog() {
         try {
             Class<?> classOfOnWrite = getClass().getMethod("onWrite", AbstractBuild.class, int.class).getDeclaringClass();
-            return !BuildTimeOutStrategy.class.equals(classOfOnWrite);
+            Class<?> classOfNewOnWrite = getClass().getMethod("onWrite", AbstractBuild.class, byte[].class, int.class).getDeclaringClass();
+            return !BuildTimeOutStrategy.class.equals(classOfOnWrite) || !BuildTimeOutStrategy.class.equals(classOfNewOnWrite);
         } catch(SecurityException e) {
             LOG.log(Level.WARNING, "Unexpected exception in build-timeout-plugin", e);
             return false;
