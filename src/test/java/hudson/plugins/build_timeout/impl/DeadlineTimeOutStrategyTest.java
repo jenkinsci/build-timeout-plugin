@@ -27,6 +27,8 @@ package hudson.plugins.build_timeout.impl;
 import hudson.model.Result;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
+import hudson.model.ParametersAction;
+import hudson.model.StringParameterValue;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
@@ -70,25 +72,28 @@ public class DeadlineTimeOutStrategyTest {
     @Test
     public void testConfigurationWithParameter() throws Exception {
         // Deadline in next three seconds. Job should be aborted in three seconds after start
-        test(3, Result.ABORTED);
+        testWithParam(3, Result.ABORTED);
 
         // Deadline defined as a past time but inside tolerance period. Job should be aborted immediately
-        test(-TOLERANCE_PERIOD_IN_MINUTES * 60 / 2, Result.ABORTED);
+        testWithParam(-TOLERANCE_PERIOD_IN_MINUTES * 60 / 2, Result.ABORTED);
 
         // Deadline defined as a past time outside tolerance period, so effective deadline will be tomorro. Job should be executed normally.
-        test(-TOLERANCE_PERIOD_IN_MINUTES * 60 * 2, Result.SUCCESS);
+        testWithParam(-TOLERANCE_PERIOD_IN_MINUTES * 60 * 2, Result.SUCCESS);
     }
 
-    private void test(int timeToDeadlineInSecondsFromNow, Result expectedResult) throws Exception {
+    @SuppressWarnings("deprecation")
+    private void testWithParam(int timeToDeadlineInSecondsFromNow, Result expectedResult) throws Exception {
         String deadline = getDeadlineTimeFromNow(timeToDeadlineInSecondsFromNow);
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
-                new BuildTimeoutWrapper(new DeadlineTimeOutStrategy(deadline, TOLERANCE_PERIOD_IN_MINUTES),
-                        Arrays.<BuildTimeOutOperation> asList(new AbortOperation()), null));
+                new BuildTimeoutWrapper(new DeadlineTimeOutStrategy("${DEADLINE}",
+                        TOLERANCE_PERIOD_IN_MINUTES), Arrays
+                        .<BuildTimeOutOperation> asList(new AbortOperation()), null));
         p.getBuildersList().add(new SleepBuilder(5000));
-        // Job should be aborted immediately
-        j.assertBuildStatus(expectedResult, p.scheduleBuild2(0, new Cause.UserCause()).get());
+
+        j.assertBuildStatus(expectedResult, p.scheduleBuild2(0, new Cause.UserCause(),
+                new ParametersAction(new StringParameterValue("DEADLINE", deadline))).get());
     }
 
     private String getDeadlineTimeFromNow(int offsetInSeconds) {
