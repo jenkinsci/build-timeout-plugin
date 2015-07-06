@@ -1,19 +1,18 @@
 package hudson.plugins.build_timeout;
 
-import hudson.model.BuildListener;
-import hudson.model.Describable;
-import hudson.model.AbstractBuild;
-import hudson.model.Descriptor;
-import hudson.model.Run;
-
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.model.BuildListener;
 import jenkins.model.Jenkins;
-
+import hudson.model.AbstractBuild;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.model.Run;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
