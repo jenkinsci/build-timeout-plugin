@@ -1,5 +1,6 @@
 package hudson.plugins.build_timeout;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
@@ -41,7 +42,8 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public class BuildTimeoutWrapper extends BuildWrapper {
-    
+
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Diagnostic fields are left mutable so that groovy console can be used to dynamically turn/off probes.")
     public static long MINIMUM_TIMEOUT_MILLISECONDS = Long.getLong(BuildTimeoutWrapper.class.getName()+ ".MINIMUM_TIMEOUT_MILLISECONDS", 3 * 60 * 1000);
 
 
