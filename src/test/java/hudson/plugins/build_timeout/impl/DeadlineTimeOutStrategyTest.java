@@ -35,6 +35,7 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.BuildTimeoutWrapperIntegrationTest;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -100,6 +101,6 @@ public class DeadlineTimeOutStrategyTest {
         Calendar deadline = Calendar.getInstance();
         deadline.add(Calendar.SECOND, offsetInSeconds);
 
-        return DeadlineTimeOutStrategy.TIME_LONG_FORMAT.format(deadline.getTime());
+        return new SimpleDateFormat(DeadlineTimeOutStrategy.TIME_LONG_FORMAT_PATTERN).format(deadline.getTime());
     }
 }
