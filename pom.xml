@@ -52,6 +52,11 @@
       </dependency>
   </dependencies>
 
+  <properties>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>

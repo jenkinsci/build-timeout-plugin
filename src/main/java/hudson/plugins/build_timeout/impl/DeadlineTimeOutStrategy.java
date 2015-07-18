@@ -26,11 +26,11 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
 
     public static final int MINIMUM_DEADLINE_TOLERANCE_IN_MINUTES = 1;
 
-    protected static final String DEADLINE_REGEXP = new String("[0-2]?[0-9]:[0-5][0-9](:[0-5][0-9])?");
+    protected static final String DEADLINE_REGEXP = "[0-2]?[0-9]:[0-5][0-9](:[0-5][0-9])?";
 
-    protected static final SimpleDateFormat TIME_LONG_FORMAT = new SimpleDateFormat("H:mm:ss");
-    protected static final SimpleDateFormat TIME_SHORT_FORMAT = new SimpleDateFormat("H:mm");
-    protected static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd H:mm:ss");
+    protected static final String TIME_LONG_FORMAT_PATTERN = "H:mm:ss";
+    protected static final String TIME_SHORT_FORMAT_PATTERN = "H:mm";
+    protected static final String TIMESTAMP_FORMAT_PATTERN = "yyyy-MM-dd H:mm:ss";
 
     private final String deadlineTime;
     private final int deadlineToleranceInMinutes;
@@ -87,7 +87,7 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
         }
 
         listener.getLogger().println(
-                Messages.DeadlineTimeOutStrategy_NextDeadline(TIMESTAMP_FORMAT.format(deadlineTimestamp
+                Messages.DeadlineTimeOutStrategy_NextDeadline(new SimpleDateFormat(TIMESTAMP_FORMAT_PATTERN).format(deadlineTimestamp
                         .getTime())));
 
         return deadlineTimestamp.getTimeInMillis() - now.getTimeInMillis();
@@ -98,9 +98,9 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
         if (deadline.matches(DEADLINE_REGEXP)) {
             try {
                 if (deadline.length() > 5) {
-                    return TIME_LONG_FORMAT.parse(deadline);
+                    return new SimpleDateFormat(TIME_LONG_FORMAT_PATTERN).parse(deadline);
                 } else {
-                    return TIME_SHORT_FORMAT.parse(deadline);
+                    return new SimpleDateFormat(TIME_SHORT_FORMAT_PATTERN).parse(deadline);
                 }
             } catch (ParseException e) {
             }
