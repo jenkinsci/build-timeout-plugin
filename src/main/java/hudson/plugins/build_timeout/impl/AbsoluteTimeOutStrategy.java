@@ -56,7 +56,7 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
 
         @Override
         public String getDisplayName() {
-            return "Absolute";
+            return Messages.AbsoluteTimeOutStrategy_DisplayName();
         }
     }
 }

@@ -62,7 +62,7 @@ public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {
 
         @Override
         public String getDisplayName() {
-            return "Likely stuck";
+            return Messages.LikelyStuckTimeOutStrategy_DisplayName();
         }
     }
 }

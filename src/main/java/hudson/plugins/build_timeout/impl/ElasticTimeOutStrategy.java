@@ -109,7 +109,7 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
 
         @Override
         public String getDisplayName() {
-            return "Elastic";
+            return Messages.ElasticTimeOutStrategy_DisplayName();
         }
 
         public int[] getPercentages() {
