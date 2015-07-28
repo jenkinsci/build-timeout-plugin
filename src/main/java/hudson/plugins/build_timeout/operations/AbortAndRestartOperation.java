@@ -24,17 +24,13 @@
 
 package hudson.plugins.build_timeout.operations;
 
-import static hudson.util.TimeUnit2.MILLISECONDS;
-import static hudson.util.TimeUnit2.MINUTES;
-
 import org.kohsuke.stapler.DataBoundConstructor;
-
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import hudson.model.BuildListener;
-import hudson.model.Executor;
-import hudson.model.Result;
+import hudson.model.ParametersAction;
+import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 
@@ -65,20 +61,13 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, BuildListener listener, long effectiveTimeout) {
-        long effectiveTimeoutMinutes = MINUTES.convert(effectiveTimeout,MILLISECONDS);
-        // Use messages in hudson.plugins.build_timeout.Messages for historical reason.
-        listener.getLogger().println(hudson.plugins.build_timeout.Messages.Timeout_Message(
-                effectiveTimeoutMinutes,
-                hudson.plugins.build_timeout.Messages.Timeout_Aborted())
-        );
         
-        Executor e = build.getExecutor();
-        if (e != null) {
-            e.interrupt(Result.ABORTED);
-        }
-        
+        new AbortOperation().perform(build, listener, effectiveTimeout);
+                
         if (checkMaxRestarts(build)) {
-            build.getRootBuild().getProject().scheduleBuild(new BuildTimeoutAbortAndRestartCause());
+
+            ParametersAction action = build.getAction(ParametersAction.class);
+            build.getRootBuild().getProject().scheduleBuild(0, new BuildTimeoutAbortAndRestartCause(build), action);
         }
         return true;
     }
@@ -86,20 +75,22 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
     public class BuildTimeoutAbortAndRestartCause extends Cause {
         
 
+        Run<?, ?> build;
+        
         /**
          * Constructor.
          * 
          * @param s
          *            The reason/cause for restart.
          */
-        public BuildTimeoutAbortAndRestartCause() {
+        public BuildTimeoutAbortAndRestartCause(Run<?, ?> up) {
             super();
-            
+            this.build = up;
         }
-
+        
         @Override
         public String getShortDescription() {
-            return "Build Timeout - Abort and Restart";
+            return "Build Timeout - Abort and Restart: Aborted by build no.: " + build.getNumber();
         
         }
     }
@@ -111,9 +102,11 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         int count = 0;
 
         // count the number of restarts for the current project
-        while (build != null && build.getCause(BuildTimeoutAbortAndRestartCause.class) != null) {
+        while (build != null) {
             
-            count++;
+            if(build.getCause(BuildTimeoutAbortAndRestartCause.class) != null){
+                count++;
+            }
          
             if (count >= this.maxRestarts) {
                 return false;
