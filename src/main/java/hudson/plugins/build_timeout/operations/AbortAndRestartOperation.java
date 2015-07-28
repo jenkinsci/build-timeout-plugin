@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2015 Stefan Brausch
+ * Copyright (c) 2015 Stefan Brausch, Jochen A. Fuerbacher
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,55 @@
  */
 
 package hudson.plugins.build_timeout.operations;
-
 import static hudson.util.TimeUnit2.MILLISECONDS;
 import static hudson.util.TimeUnit2.MINUTES;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
 import hudson.model.AbstractBuild;
-import hudson.model.Cause;
-import hudson.model.BuildListener;
+import hudson.model.AbstractProject;
 import hudson.model.Executor;
 import hudson.model.Result;
+import hudson.model.BuildListener;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
+
+import com.chikli.hudson.plugin.naginator.FixedDelay;
 
 /**
  * Abort the build.
  */
 public class AbortAndRestartOperation extends BuildTimeOutOperation {
-    private final int maxRestarts;
+    
+    private final String maxRestarts;
+    
+    private static final Logger log = Logger.getLogger(AbortAndRestartOperation.class.getName());
     
     /**
      * @return max restarts.
      */
-    public int getMaxRestarts() {
+    public String getMaxRestarts() {
         return maxRestarts;
     }
-    
+        
     @DataBoundConstructor
-    public AbortAndRestartOperation(int maxRestarts){
+    public AbortAndRestartOperation(String maxRestarts){
         this.maxRestarts = maxRestarts;
+    }
+    
+    private static boolean isPresent() {
+        try {
+            Class.forName("com.chikli.hudson.plugin.naginator.NaginatorScheduleAction");
+            return true;
+        } catch (ClassNotFoundException ex) {
+            log.log(Level.FINEST, "Naginator not available. ", ex);
+            return false;
+        }
     }
        
     /**
@@ -65,6 +83,7 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, BuildListener listener, long effectiveTimeout) {
+              
         long effectiveTimeoutMinutes = MINUTES.convert(effectiveTimeout,MILLISECONDS);
         // Use messages in hudson.plugins.build_timeout.Messages for historical reason.
         listener.getLogger().println(hudson.plugins.build_timeout.Messages.Timeout_Message(
@@ -77,56 +96,31 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
             e.interrupt(Result.ABORTED);
         }
         
-        if (checkMaxRestarts(build)) {
-            build.getRootBuild().getProject().scheduleBuild(new BuildTimeoutAbortAndRestartCause());
-        }
-        return true;
-    }
-    
-    public class BuildTimeoutAbortAndRestartCause extends Cause {
-        
-
-        /**
-         * Constructor.
-         * 
-         * @param s
-         *            The reason/cause for restart.
-         */
-        public BuildTimeoutAbortAndRestartCause() {
-            super();
-            
-        }
-
-        @Override
-        public String getShortDescription() {
-            return "Build Timeout - Abort and Restart";
-        
-        }
-    }
-    
-    private boolean checkMaxRestarts(AbstractBuild<?, ?> build) {
-        if (this.maxRestarts <= 0) {
-            return true;
-        }
-        int count = 0;
-
-        // count the number of restarts for the current project
-        while (build != null && build.getCause(BuildTimeoutAbortAndRestartCause.class) != null) {
-            
-            count++;
-         
-            if (count >= this.maxRestarts) {
-                return false;
+        if(isPresent()){
+            FixedDelay sd = new FixedDelay(0); //Reschedule now!
+            int maxRestarts = 0;
+            try {
+                maxRestarts = Integer.parseInt(build.getEnvironment(listener).expand(this.maxRestarts));
+                build.addAction(new com.chikli.hudson.plugin.naginator.NaginatorScheduleAction(maxRestarts, sd, false));
+            } catch (IOException e1) {
+                listener.getLogger().println("Failed to expand environment variables. " + e1);
+            } catch (InterruptedException e1) {
+                listener.getLogger().println("Failed to expand environment variables. " + e1);
             }
-            build = build.getPreviousBuild();
         }
         return true;
     }
+        
     @Extension 
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         @Override
         public String getDisplayName() {
-            return "Abort and restart the build";//Messages.AbortAndRestartOperation_DisplayName();
+            return Messages.AbortAndRestartOperation_DisplayName();
+        }
+        
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
+            return AbortAndRestartOperation.isPresent();
         }
     }
 }
