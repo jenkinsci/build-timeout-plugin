@@ -66,7 +66,7 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
                 
         if (checkMaxRestarts(build)) {
 
-            ParametersAction action = build.getAction(ParametersAction.class);
+            ParametersAction action = build.getAction(ParametersAction.class);           
             build.getRootBuild().getProject().scheduleBuild(0, new BuildTimeoutAbortAndRestartCause(build), action);
         }
         return true;
@@ -103,15 +103,24 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
 
         // count the number of restarts for the current project
         while (build != null) {
-            
+                                              
             if(build.getCause(BuildTimeoutAbortAndRestartCause.class) != null){
                 count++;
+                System.out.println("BuildTimeoutAbortAndRestartCause != null");
+                System.out.println("count: " + count);
             }
          
             if (count >= this.maxRestarts) {
                 return false;
             }
-            build = build.getPreviousBuild();
+            
+            if(build.getCause(BuildTimeoutAbortAndRestartCause.class) != null){
+                System.out.println("getPreviousBuild");
+                build = build.getPreviousBuild();
+            }else{
+                System.out.println("break");
+                break;
+            }
         }
         return true;
     }
