@@ -29,8 +29,6 @@ import static hudson.util.TimeUnit2.MINUTES;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
-import hudson.matrix.MatrixBuild;
-import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import hudson.model.Executor;
@@ -41,8 +39,6 @@ import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 
 import com.chikli.hudson.plugin.naginator.FixedDelay;
-import com.chikli.hudson.plugin.naginator.NaginatorScheduleAction;
-import com.chikli.hudson.plugin.naginator.ScheduleDelay;
 
 /**
  * Abort the build.
