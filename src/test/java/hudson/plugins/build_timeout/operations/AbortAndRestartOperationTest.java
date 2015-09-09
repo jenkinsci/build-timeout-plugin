@@ -7,6 +7,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 
 import hudson.model.AbstractProject;
 import hudson.model.Cause;
@@ -24,9 +25,10 @@ public class AbortAndRestartOperationTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
+    @WithPlugin("build-timeout")
     @LocalData
     public void testAbortAndRestart() throws Exception {
-        
+                
         AbstractProject<?,?> testProject = (AbstractProject<?,?>)j.getInstance().getItem("Test01");
         
         Cause cause = new Cause.UserIdCause();
