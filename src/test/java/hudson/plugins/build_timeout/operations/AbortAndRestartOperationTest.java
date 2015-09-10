@@ -25,7 +25,7 @@ public class AbortAndRestartOperationTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    @WithPlugin("build-timeout")
+    @WithPlugin("naginator")
     @LocalData
     public void testAbortAndRestart() throws Exception {
                 
