@@ -97,28 +97,28 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         return true;
     }
     
-    public class BuildTimeoutAbortAndRestartCause extends Cause {
-        
-
-        Run<?, ?> build;
-        
-        /**
-         * Constructor.
-         * 
-         * @param s
-         *            The reason/cause for restart.
-         */
-        public BuildTimeoutAbortAndRestartCause(Run<?, ?> up) {
-            super();
-            this.build = up;
-        }
-        
-        @Override
-        public String getShortDescription() {
-            return "Build Timeout - Abort and Restart: Aborted by build no.: " + build.getNumber();
-        
-        }
-    }
+//    public class BuildTimeoutAbortAndRestartCause extends Cause {
+//        
+//
+//        Run<?, ?> build;
+//        
+//        /**
+//         * Constructor.
+//         * 
+//         * @param s
+//         *            The reason/cause for restart.
+//         */
+//        public BuildTimeoutAbortAndRestartCause(Run<?, ?> up) {
+//            super();
+//            this.build = up;
+//        }
+//        
+//        @Override
+//        public String getShortDescription() {
+//            return "Build Timeout - Abort and Restart: Aborted by build no.: " + build.getNumber();
+//        
+//        }
+//    }
     
     @Extension 
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
