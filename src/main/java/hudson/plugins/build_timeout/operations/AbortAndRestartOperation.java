@@ -1,7 +1,7 @@
 /*
  * The MIT License
  * 
- * Copyright (c) 2015 Stefan Brausch
+ * Copyright (c) 2015 Stefan Brausch, Jochen A. Fuerbacher
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,28 @@
  */
 
 package hudson.plugins.build_timeout.operations;
+import static hudson.util.TimeUnit2.MILLISECONDS;
+import static hudson.util.TimeUnit2.MINUTES;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.Cause;
+import hudson.model.Executor;
+import hudson.model.Result;
 import hudson.model.BuildListener;
-import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
+
+import com.chikli.hudson.plugin.naginator.FixedDelay;
 
 /**
  * Abort the build.
  */
 public class AbortAndRestartOperation extends BuildTimeOutOperation {
+    
     private final int maxRestarts;
     
     /**
@@ -46,10 +53,19 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
     public int getMaxRestarts() {
         return maxRestarts;
     }
-    
+        
     @DataBoundConstructor
     public AbortAndRestartOperation(int maxRestarts){
         this.maxRestarts = maxRestarts;
+    }
+    
+    private static boolean isPresent() {
+        try {
+            Class.forName("com.chikli.hudson.plugin.naginator.NaginatorScheduleAction");
+            return true;
+        } catch (Throwable ex) {
+            return false;
+        }
     }
        
     /**
@@ -61,65 +77,54 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, BuildListener listener, long effectiveTimeout) {
+              
+        long effectiveTimeoutMinutes = MINUTES.convert(effectiveTimeout,MILLISECONDS);
+        // Use messages in hudson.plugins.build_timeout.Messages for historical reason.
+        listener.getLogger().println(hudson.plugins.build_timeout.Messages.Timeout_Message(
+                effectiveTimeoutMinutes,
+                hudson.plugins.build_timeout.Messages.Timeout_Aborted())
+        );
         
-        new AbortOperation().perform(build, listener, effectiveTimeout);
-                
-        if (checkMaxRestarts(build)) {
-
-            ParametersAction action = build.getAction(ParametersAction.class);
-            build.getRootBuild().getProject().scheduleBuild(0, new BuildTimeoutAbortAndRestartCause(build), action);
+        Executor e = build.getExecutor();
+        if (e != null) {
+            e.interrupt(Result.ABORTED);
+        }
+        
+        if(isPresent()){
+            FixedDelay sd = new FixedDelay(0); //Reschedule now!
+            build.addAction(new com.chikli.hudson.plugin.naginator.NaginatorScheduleAction(this.maxRestarts, sd, false));
         }
         return true;
     }
     
-    public class BuildTimeoutAbortAndRestartCause extends Cause {
-        
-
-        Run<?, ?> build;
-        
-        /**
-         * Constructor.
-         * 
-         * @param s
-         *            The reason/cause for restart.
-         */
-        public BuildTimeoutAbortAndRestartCause(Run<?, ?> up) {
-            super();
-            this.build = up;
-        }
-        
-        @Override
-        public String getShortDescription() {
-            return "Build Timeout - Abort and Restart: Aborted by build no.: " + build.getNumber();
-        
-        }
-    }
+//    public class BuildTimeoutAbortAndRestartCause extends Cause {
+//        
+//
+//        Run<?, ?> build;
+//        
+//        /**
+//         * Constructor.
+//         * 
+//         * @param s
+//         *            The reason/cause for restart.
+//         */
+//        public BuildTimeoutAbortAndRestartCause(Run<?, ?> up) {
+//            super();
+//            this.build = up;
+//        }
+//        
+//        @Override
+//        public String getShortDescription() {
+//            return "Build Timeout - Abort and Restart: Aborted by build no.: " + build.getNumber();
+//        
+//        }
+//    }
     
-    private boolean checkMaxRestarts(AbstractBuild<?, ?> build) {
-        if (this.maxRestarts <= 0) {
-            return true;
-        }
-        int count = 0;
-
-        // count the number of restarts for the current project
-        while (build != null) {
-            
-            if(build.getCause(BuildTimeoutAbortAndRestartCause.class) != null){
-                count++;
-            }
-         
-            if (count >= this.maxRestarts) {
-                return false;
-            }
-            build = build.getPreviousBuild();
-        }
-        return true;
-    }
     @Extension 
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         @Override
         public String getDisplayName() {
-            return "Abort and restart the build";//Messages.AbortAndRestartOperation_DisplayName();
+            return "Abort and restart the build";
         }
     }
 }
