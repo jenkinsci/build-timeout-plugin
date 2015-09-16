@@ -32,6 +32,8 @@ import java.util.LinkedList;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
@@ -40,8 +42,6 @@ import hudson.plugins.build_timeout.*;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
-import hudson.tasks.BatchFile;
-import hudson.tasks.Shell;
 
 
 public class AbortAndRestartOperationTest {
@@ -54,7 +54,7 @@ public class AbortAndRestartOperationTest {
         
         FreeStyleProject testproject = j.createFreeStyleProject();
 
-        AbsoluteTimeOutStrategy strategy = new AbsoluteTimeOutStrategy(Integer.toString(3)); //timeoutMinutes
+        QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
         AbortAndRestartOperation operation = new AbortAndRestartOperation(1); //Number of restarts
         LinkedList<BuildTimeOutOperation> list = new LinkedList<BuildTimeOutOperation>();
         list.add(operation);
@@ -62,38 +62,18 @@ public class AbortAndRestartOperationTest {
         BuildTimeoutWrapper wrapper = new BuildTimeoutWrapper(strategy,list,"");
         testproject.getBuildWrappersList().add(wrapper);
         
-        if(System.getProperty("os.name").contains("Windows")){
-            BatchFile builder = new BatchFile("ping -n 500 127.0.0.1 &amp;gt;nul");
-            testproject.getBuildersList().add(builder);
-        }else{
-            Shell builder = new Shell("sleep 500");
-            testproject.getBuildersList().add(builder);
-        }
         
-        assertTrue(testproject.getBuilds().size()==0);
-                
+        testproject.getBuildersList().add(new SleepBuilder(5*60*1000)); //5 minutes
+                       
         
         testproject.scheduleBuild(new Cause.UserIdCause());
-        try{
-            Thread.sleep((3*60*1000)+20000);
-        }catch(InterruptedException e){
-            //Nothing todo here.
-        }
-        assertTrue(testproject.getFirstBuild() != null);
-        assertTrue(testproject.getFirstBuild().equals(testproject.getLastBuild()));
-        assertEquals(testproject.getBuilds().size(), 1);
-        
-        try{
-            Thread.sleep((3*60*1000)+20000);
-        }catch(InterruptedException e){
-            //Nothing todo here.
-        }
+
+        j.waitUntilNoActivityUpTo(25000);
+            
         assertTrue(testproject.getFirstBuild() != null);
         assertFalse(testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 2);
         
-        Thread.sleep(5000);
-        assertEquals(testproject.getBuilds().size(), 2);
         assertEquals(Result.ABORTED, testproject.getFirstBuild().getResult());
         assertEquals(Result.ABORTED, testproject.getLastBuild().getResult());
     }
@@ -103,7 +83,7 @@ public class AbortAndRestartOperationTest {
         
         FreeStyleProject testproject = j.createFreeStyleProject();
 
-        AbsoluteTimeOutStrategy strategy = new AbsoluteTimeOutStrategy(Integer.toString(3)); //timeoutMinutes
+        QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
         AbortAndRestartOperation operation = new AbortAndRestartOperation(2); //Number of restarts
         LinkedList<BuildTimeOutOperation> list = new LinkedList<BuildTimeOutOperation>();
         list.add(operation);
@@ -111,45 +91,20 @@ public class AbortAndRestartOperationTest {
         BuildTimeoutWrapper wrapper = new BuildTimeoutWrapper(strategy,list,"");
         testproject.getBuildWrappersList().add(wrapper);
         
-        if(System.getProperty("os.name").contains("Windows")){
-            BatchFile builder = new BatchFile("ping -n 500 127.0.0.1 &amp;gt;nul");
-            testproject.getBuildersList().add(builder);
-        }else{
-            Shell builder = new Shell("sleep 500");
-            testproject.getBuildersList().add(builder);
-        }
+
+        testproject.getBuildersList().add(new SleepBuilder(5*60*1000)); //5 minutes
         
         assertTrue(testproject.getBuilds().size()==0);
                 
         
         testproject.scheduleBuild(new Cause.UserIdCause());
-        try{
-            Thread.sleep((3*60*1000)+20000);
-        }catch(InterruptedException e){
-            //Nothing todo here.
-        }
-        assertTrue(testproject.getFirstBuild() != null);
-        assertTrue(testproject.getFirstBuild().equals(testproject.getLastBuild()));
-        assertEquals(testproject.getBuilds().size(), 1);
         
-        try{
-            Thread.sleep((3*60*1000)+20000);
-        }catch(InterruptedException e){
-            //Nothing todo here.
-        }
-        
-        try{
-            Thread.sleep((3*60*1000)+20000);
-        }catch(InterruptedException e){
-            //Nothing todo here.
-        }
+        j.waitUntilNoActivityUpTo(25000);
         
         assertTrue(testproject.getFirstBuild() != null);
         assertFalse(testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 3);
         
-        Thread.sleep(5000);
-        assertEquals(testproject.getBuilds().size(), 3);
         assertEquals(Result.ABORTED, testproject.getBuildByNumber(1).getResult());
         assertEquals(Result.ABORTED, testproject.getBuildByNumber(2).getResult());
         assertEquals(Result.ABORTED, testproject.getBuildByNumber(3).getResult());

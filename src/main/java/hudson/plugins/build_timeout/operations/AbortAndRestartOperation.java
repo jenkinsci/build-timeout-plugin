@@ -30,11 +30,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
 import hudson.model.AbstractBuild;
-import hudson.model.Cause;
 import hudson.model.Executor;
 import hudson.model.Result;
 import hudson.model.BuildListener;
-import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 
@@ -96,30 +94,7 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         }
         return true;
     }
-    
-//    public class BuildTimeoutAbortAndRestartCause extends Cause {
-//        
-//
-//        Run<?, ?> build;
-//        
-//        /**
-//         * Constructor.
-//         * 
-//         * @param s
-//         *            The reason/cause for restart.
-//         */
-//        public BuildTimeoutAbortAndRestartCause(Run<?, ?> up) {
-//            super();
-//            this.build = up;
-//        }
-//        
-//        @Override
-//        public String getShortDescription() {
-//            return "Build Timeout - Abort and Restart: Aborted by build no.: " + build.getNumber();
-//        
-//        }
-//    }
-    
+        
     @Extension 
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         @Override
