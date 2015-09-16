@@ -30,11 +30,9 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
 import hudson.model.AbstractBuild;
-import hudson.model.Cause;
 import hudson.model.Executor;
 import hudson.model.Result;
 import hudson.model.BuildListener;
-import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 
