@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
@@ -75,16 +76,17 @@ public class AbortAndRestartOperationTest {
         
         testproject.scheduleBuild(new Cause.UserIdCause());
         try{
-            Thread.sleep((3*60*1000)+20000);
+            j.waitUntilNoActivityUpTo((3*60*1000)+20000);
         }catch(InterruptedException e){
             //Nothing todo here.
         }
+        
         assertTrue(testproject.getFirstBuild() != null);
         assertTrue(testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 1);
         
         try{
-            Thread.sleep((3*60*1000)+20000);
+            j.waitUntilNoActivityUpTo((3*60*1000)+20000);
         }catch(InterruptedException e){
             //Nothing todo here.
         }
@@ -125,7 +127,7 @@ public class AbortAndRestartOperationTest {
         
         testproject.scheduleBuild(new Cause.UserIdCause());
         try{
-            Thread.sleep((3*60*1000)+20000);
+            j.waitUntilNoActivityUpTo((3*60*1000)+20000);
         }catch(InterruptedException e){
             //Nothing todo here.
         }
@@ -134,13 +136,13 @@ public class AbortAndRestartOperationTest {
         assertEquals(testproject.getBuilds().size(), 1);
         
         try{
-            Thread.sleep((3*60*1000)+20000);
+            j.waitUntilNoActivityUpTo((3*60*1000)+20000);
         }catch(InterruptedException e){
             //Nothing todo here.
         }
         
         try{
-            Thread.sleep((3*60*1000)+20000);
+            j.waitUntilNoActivityUpTo((3*60*1000)+20000);
         }catch(InterruptedException e){
             //Nothing todo here.
         }
