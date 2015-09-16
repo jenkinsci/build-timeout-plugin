@@ -79,7 +79,7 @@ public class AbortAndRestartOperationTest {
             //Nothing todo here.
         }
         assertTrue(testproject.getFirstBuild() != null);
-        assertTrue(testproject.getFirstBuild() == testproject.getLastBuild());
+        assertTrue(testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 1);
         
         try{
@@ -88,7 +88,7 @@ public class AbortAndRestartOperationTest {
             //Nothing todo here.
         }
         assertTrue(testproject.getFirstBuild() != null);
-        assertTrue(testproject.getFirstBuild() != testproject.getLastBuild());
+        assertTrue(!testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 2);
         
         Thread.sleep(5000);
@@ -128,7 +128,7 @@ public class AbortAndRestartOperationTest {
             //Nothing todo here.
         }
         assertTrue(testproject.getFirstBuild() != null);
-        assertTrue(testproject.getFirstBuild() == testproject.getLastBuild());
+        assertTrue(testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 1);
         
         try{
@@ -144,7 +144,7 @@ public class AbortAndRestartOperationTest {
         }
         
         assertTrue(testproject.getFirstBuild() != null);
-        assertTrue(testproject.getFirstBuild() != testproject.getLastBuild());
+        assertTrue(!testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 3);
         
         Thread.sleep(5000);
