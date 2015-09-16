@@ -115,7 +115,7 @@ public class AbortAndRestartOperationTest {
             BatchFile builder = new BatchFile("ping -n 500 127.0.0.1 &amp;gt;nul");
             testproject.getBuildersList().add(builder);
         }else{
-            Shell builder = new Shell("ping -n 500 127.0.0.1 &amp;gt;nul");
+            Shell builder = new Shell("sleep 500");
             testproject.getBuildersList().add(builder);
         }
         
