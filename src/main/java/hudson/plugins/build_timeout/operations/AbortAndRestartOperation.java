@@ -26,6 +26,9 @@ package hudson.plugins.build_timeout.operations;
 import static hudson.util.TimeUnit2.MILLISECONDS;
 import static hudson.util.TimeUnit2.MINUTES;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
@@ -46,6 +49,8 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
     
     private final int maxRestarts;
     
+    private static final Logger log = Logger.getLogger(AbortAndRestartOperation.class.getName());
+    
     /**
      * @return max restarts.
      */
@@ -62,7 +67,8 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         try {
             Class.forName("com.chikli.hudson.plugin.naginator.NaginatorScheduleAction");
             return true;
-        } catch (Throwable ex) {
+        } catch (ClassNotFoundException ex) {
+            log.log(Level.WARNING, "Naginator not available. ", ex);
             return false;
         }
     }
