@@ -20,7 +20,7 @@ import org.kohsuke.stapler.QueryParameter;
 /**
  * If the build reaches <tt>deadlineTime</tt>, it will be terminated.
  * 
- * @author Fernando Miguelez Palomo <fernando.miguelez@gmail.com>
+ * @author Fernando Miguélez Palomo <fernando.miguelez@gmail.com>
  */
 public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
 
