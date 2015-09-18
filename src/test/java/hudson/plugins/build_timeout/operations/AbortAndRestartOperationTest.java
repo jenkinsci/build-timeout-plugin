@@ -26,6 +26,7 @@ package hudson.plugins.build_timeout.operations;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
@@ -70,7 +71,7 @@ public class AbortAndRestartOperationTest {
 
         j.waitUntilNoActivityUpTo(25000);
             
-        assertTrue(testproject.getFirstBuild() != null);
+        assertNotNull(testproject.getFirstBuild());
         assertFalse(testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 2);
         
@@ -101,7 +102,7 @@ public class AbortAndRestartOperationTest {
         
         j.waitUntilNoActivityUpTo(25000);
         
-        assertTrue(testproject.getFirstBuild() != null);
+        assertNotNull(testproject.getFirstBuild());
         assertFalse(testproject.getFirstBuild().equals(testproject.getLastBuild()));
         assertEquals(testproject.getBuilds().size(), 3);
         
@@ -110,3 +111,4 @@ public class AbortAndRestartOperationTest {
         assertEquals(Result.ABORTED, testproject.getBuildByNumber(3).getResult());
     }
 }
+
