@@ -30,6 +30,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Executor;
 import hudson.model.Result;
 import hudson.model.BuildListener;
@@ -99,7 +100,12 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         @Override
         public String getDisplayName() {
-            return Messages.AbortOperation_DisplayName();
+            return Messages.AbortAndRestartOperation_DisplayName();
+        }
+        
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
+            return true;
         }
     }
 }
