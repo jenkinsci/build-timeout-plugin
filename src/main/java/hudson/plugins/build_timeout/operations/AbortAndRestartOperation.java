@@ -26,6 +26,7 @@ package hudson.plugins.build_timeout.operations;
 import static hudson.util.TimeUnit2.MILLISECONDS;
 import static hudson.util.TimeUnit2.MINUTES;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,19 +48,19 @@ import com.chikli.hudson.plugin.naginator.FixedDelay;
  */
 public class AbortAndRestartOperation extends BuildTimeOutOperation {
     
-    private final int maxRestarts;
+    private final String maxRestarts;
     
     private static final Logger log = Logger.getLogger(AbortAndRestartOperation.class.getName());
     
     /**
      * @return max restarts.
      */
-    public int getMaxRestarts() {
+    public String getMaxRestarts() {
         return maxRestarts;
     }
         
     @DataBoundConstructor
-    public AbortAndRestartOperation(int maxRestarts){
+    public AbortAndRestartOperation(String maxRestarts){
         this.maxRestarts = maxRestarts;
     }
     
@@ -97,7 +98,15 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         
         if(isPresent()){
             FixedDelay sd = new FixedDelay(0); //Reschedule now!
-            build.addAction(new com.chikli.hudson.plugin.naginator.NaginatorScheduleAction(this.maxRestarts, sd, false));
+            int maxRestarts = 0;
+            try {
+                maxRestarts = Integer.parseInt(build.getEnvironment(listener).expand(this.maxRestarts));
+                build.addAction(new com.chikli.hudson.plugin.naginator.NaginatorScheduleAction(maxRestarts, sd, false));
+            } catch (IOException e1) {
+                log.log(Level.WARNING, "Failed to expand environment variables. ", e1);
+            } catch (InterruptedException e1) {
+                log.log(Level.WARNING, "Failed to expand environment variables. ", e1);
+            }
         }
         return true;
     }

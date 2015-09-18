@@ -56,7 +56,7 @@ public class AbortAndRestartOperationTest {
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
-        AbortAndRestartOperation operation = new AbortAndRestartOperation(1); //Number of restarts
+        AbortAndRestartOperation operation = new AbortAndRestartOperation("1"); //Number of restarts
         LinkedList<BuildTimeOutOperation> list = new LinkedList<BuildTimeOutOperation>();
         list.add(operation);
         
@@ -85,7 +85,7 @@ public class AbortAndRestartOperationTest {
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
-        AbortAndRestartOperation operation = new AbortAndRestartOperation(2); //Number of restarts
+        AbortAndRestartOperation operation = new AbortAndRestartOperation("2"); //Number of restarts
         LinkedList<BuildTimeOutOperation> list = new LinkedList<BuildTimeOutOperation>();
         list.add(operation);
         
