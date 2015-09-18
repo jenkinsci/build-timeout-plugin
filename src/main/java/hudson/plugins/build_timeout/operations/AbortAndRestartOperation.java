@@ -99,7 +99,7 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         @Override
         public String getDisplayName() {
-            return "Abort and restart the build";
+            return Messages.AbortOperation_DisplayName();
         }
     }
 }
