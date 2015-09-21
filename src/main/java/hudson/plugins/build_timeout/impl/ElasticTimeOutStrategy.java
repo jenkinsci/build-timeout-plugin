@@ -95,7 +95,7 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
         }
 
 
-        return nonFailingBuilds >=numberOfBuilds ? ((double)durationSum) / nonFailingBuilds : 0;
+        return (nonFailingBuilds >= numberOfBuilds) ? ((double)durationSum) / nonFailingBuilds : 0;
     }
 
     public Descriptor<BuildTimeOutStrategy> getDescriptor() {
