@@ -120,7 +120,7 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         
         @Override
         public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
-            return true;
+            return AbortAndRestartOperation.isPresent();
         }
     }
 }
