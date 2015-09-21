@@ -103,9 +103,9 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
                 maxRestarts = Integer.parseInt(build.getEnvironment(listener).expand(this.maxRestarts));
                 build.addAction(new com.chikli.hudson.plugin.naginator.NaginatorScheduleAction(maxRestarts, sd, false));
             } catch (IOException e1) {
-                log.log(Level.WARNING, "Failed to expand environment variables. ", e1);
+                listener.getLogger().println("Failed to expand environment variables. " + e1);
             } catch (InterruptedException e1) {
-                log.log(Level.WARNING, "Failed to expand environment variables. ", e1);
+                listener.getLogger().println("Failed to expand environment variables. " + e1);
             }
         }
         return true;
@@ -120,7 +120,7 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         
         @Override
         public boolean isApplicable(Class<? extends AbstractProject<?,?>> jobType) {
-            return true;
+            return AbortAndRestartOperation.isPresent();
         }
     }
 }
