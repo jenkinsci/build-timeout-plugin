@@ -69,7 +69,7 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
             Class.forName("com.chikli.hudson.plugin.naginator.NaginatorScheduleAction");
             return true;
         } catch (ClassNotFoundException ex) {
-            log.log(Level.WARNING, "Naginator not available. ", ex);
+            log.log(Level.FINEST, "Naginator not available. ", ex);
             return false;
         }
     }
