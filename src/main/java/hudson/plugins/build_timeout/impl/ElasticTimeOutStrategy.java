@@ -81,14 +81,10 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
             throws InterruptedException, MacroEvaluationException, IOException {
         double elasticTimeout = getElasticTimeout(Integer.parseInt(expandAll(build,listener,getTimeoutPercentage())), build, listener);
         if (elasticTimeout == 0) {
-            if (isFailSafeTimeoutDuration()) {
-                return Math.max(Integer.parseInt(getTimeoutMinutesElasticDefault()) * 60L * 1000L, Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES);
-            } else {
-                return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES);
-            }
+            return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES);
         } else {
             if (isFailSafeTimeoutDuration()) {
-                return Math.max(Integer.parseInt(getTimeoutMinutesElasticDefault()) * 60L * 1000L, (long) elasticTimeout);
+                return Math.max(Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES, (long) elasticTimeout);
             } else {
                 return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);
             }
