@@ -43,6 +43,22 @@ public class ElasticTimeOutStrategyTest extends TestCase {
         assertEquals("Timeout should be the elastic default.", 90 * MINUTES, strategy.getTimeOut(b,null));
     }
 
+    public void testFailSafeTimeoutDurationWithOneBuild() throws Exception {
+        BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy("200", "60", "3", true);
+
+        Build b = new Build(new Build(20 * MINUTES, SUCCESS));
+
+        assertEquals("Timeout should be the elastic default.", 60 * MINUTES, strategy.getTimeOut(b,null));
+    }
+
+    public void testFailSafeTimeoutDurationWithTwoBuilds() throws Exception {
+        BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy("200", "60", "3", true);
+
+        Build b = new Build(new Build(20 * MINUTES, SUCCESS, new Build(5 * MINUTES, SUCCESS)));
+
+        assertEquals("Timeout should be the elastic default.", 60 * MINUTES, strategy.getTimeOut(b,null));
+    }
+
     private class Build extends FreeStyleBuild {
         Build previous;
         long duration;
