@@ -177,6 +177,8 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             public synchronized void reschedule() {
                 if (task != null) {
                     task.cancel();
+                    // avoid memory leaks for the case where this timer is in the future (JENKINS-31627)
+                    Trigger.timer.purge();
                 }
                 task = new TimeoutTimerTask();
                 Trigger.timer.schedule(task, effectiveTimeout);
@@ -193,6 +195,8 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             public synchronized boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
                 if (task != null) {
                     task.cancel();
+                    // avoid memory leaks for the case where this timer is in the future (JENKINS-31627).
+                    Trigger.timer.purge();
                     task = null;
                 }
                 
