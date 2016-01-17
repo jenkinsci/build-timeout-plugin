@@ -59,6 +59,23 @@ public class ElasticTimeOutStrategyTest extends TestCase {
         assertEquals("Timeout should be the elastic default.", 60 * MINUTES, strategy.getTimeOut(b,null));
     }
 
+    public void testFailSafeTimeoutIsNotUsed() throws Exception {
+        BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy("200", "60", "3", true);
+
+        Build b = new Build(
+                new Build(120 * MINUTES, SUCCESS,
+                        new Build(150 * MINUTES, SUCCESS)
+                )
+        );
+
+        // Timeout should be 200 % of average of builds.
+        assertEquals(
+                "Timeout should not be the elastic default.",
+                270 * MINUTES,
+                strategy.getTimeOut(b,null)
+        );
+    }
+
     private class Build extends FreeStyleBuild {
         Build previous;
         long duration;
