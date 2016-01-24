@@ -28,7 +28,11 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
+import hudson.model.FreeStyleBuild;
+import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
+import hudson.model.ParametersAction;
+import hudson.model.StringParameterValue;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
@@ -37,6 +41,7 @@ import hudson.plugins.build_timeout.operations.AbortOperation;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -85,5 +90,34 @@ public class ElasticTimeOutStrategyJenkinsTest {
             assertEquals("3", strategy.getTimeoutMinutesElasticDefault());
             assertEquals("10", strategy.getNumberOfBuilds());
         }
+    }
+    
+    @Test
+    public void testFailSafeTimeoutWithVariable() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                new ElasticTimeOutStrategy("200", "${FailSafeTimeout}", "3", true),
+                null,
+                "TIMEOUT"
+        ));
+        CaptureEnvironmentBuilder ceb = new CaptureEnvironmentBuilder();
+        p.getBuildersList().add(ceb);
+        
+        FreeStyleBuild b = j.assertBuildStatusSuccess(
+                p.scheduleBuild2(
+                        0,
+                        new Cause.UserIdCause(),
+                        new ParametersAction(new StringParameterValue(
+                                "FailSafeTimeout",
+                                "30",   // 30 minutes
+                                ""
+                        ))
+               )
+        );
+        
+        assertEquals(
+                "1800000",      // value specified with FailSafeTimeout
+                ceb.getEnvVars().get("TIMEOUT")
+        );
     }
 }
