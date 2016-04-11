@@ -12,5 +12,7 @@
            description="${%Timeout to use if there are no previous successful or unstable builds}" >
         <f:textbox default="60" />
     </f:entry>
-
+    <f:entry title="${%Timeout minutes as the shortest timeout}" field="failSafeTimeoutDuration">
+        <f:checkbox/>
+    </f:entry>
 </j:jelly>

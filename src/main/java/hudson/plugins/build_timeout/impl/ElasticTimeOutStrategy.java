@@ -22,6 +22,8 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
 
     private final String numberOfBuilds;
 
+    private final boolean failSafeTimeoutDuration;
+
     /**
      * The timeout to use if there are no valid builds in the build
      * history (ie, no successful or unstable builds)
@@ -49,18 +51,29 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
         return timeoutMinutesElasticDefault;
     }
 
+    /**
+     * @return if fail-safe timeout needs to be used
+     */
+    public boolean isFailSafeTimeoutDuration() {
+        return failSafeTimeoutDuration;
+    }
+
     @Deprecated
     public ElasticTimeOutStrategy(int timeoutPercentage, int timeoutMinutesElasticDefault, int numberOfBuilds) {
-        this.timeoutPercentage = Integer.toString(timeoutPercentage);
-        this.timeoutMinutesElasticDefault = Integer.toString(timeoutMinutesElasticDefault);
-        this.numberOfBuilds = Integer.toString(numberOfBuilds);
+        this(Integer.toString(timeoutPercentage), Integer.toString(timeoutMinutesElasticDefault), Integer.toString(numberOfBuilds), false);
+    }
+
+    @Deprecated
+    public ElasticTimeOutStrategy(String timeoutPercentage, String timeoutMinutesElasticDefault, String numberOfBuilds) {
+        this(timeoutPercentage, timeoutMinutesElasticDefault, numberOfBuilds, false);
     }
 
     @DataBoundConstructor
-    public ElasticTimeOutStrategy(String timeoutPercentage, String timeoutMinutesElasticDefault, String numberOfBuilds) {
+    public ElasticTimeOutStrategy(String timeoutPercentage, String timeoutMinutesElasticDefault, String numberOfBuilds, boolean failSafeTimeoutDuration) {
         this.timeoutPercentage = timeoutPercentage;
         this.timeoutMinutesElasticDefault = timeoutMinutesElasticDefault;
         this.numberOfBuilds = numberOfBuilds;
+        this.failSafeTimeoutDuration = failSafeTimeoutDuration;
     }
 
     @Override
@@ -70,7 +83,11 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
         if (elasticTimeout == 0) {
             return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES);
         } else {
-            return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);
+            if (isFailSafeTimeoutDuration()) {
+                return Math.max(Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES, (long) elasticTimeout);
+            } else {
+                return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);
+            }
         }
     }
 
@@ -93,7 +110,6 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
                 nonFailingBuilds++;
             }
         }
-
 
         return nonFailingBuilds > 0 ? ((double)durationSum) / nonFailingBuilds : 0;
     }
