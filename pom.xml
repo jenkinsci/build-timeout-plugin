@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.466</version>
+    <version>2.9</version>
   </parent>
   
   <licenses>
@@ -28,6 +28,12 @@
     <tag>HEAD</tag>
   </scm>
 
+  <properties>
+    <jenkins.version>1.580.1</jenkins.version>
+    <java.level>6</java.level>
+    <findbugs.failOnError>false</findbugs.failOnError>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -46,17 +52,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-      <dependency>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>annotations</artifactId>
-          <version>3.0.0</version>
-      </dependency>
   </dependencies>
-
-  <properties>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
 
     <repositories>
         <repository>
@@ -71,25 +67,6 @@
             <url>http://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.1</version>
-                <configuration>
-                    <xmlOutput>true</xmlOutput>
-                    <failOnError>false</failOnError>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>  
   
 

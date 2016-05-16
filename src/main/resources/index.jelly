@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <div>
   This plugin allows builds to be automatically terminated after the
   specified amount of time has elapsed.
