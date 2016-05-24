@@ -39,4 +39,14 @@ public class BuildTimeOutJenkinsRule extends JenkinsRule {
     public FreeStyleProject createFreeStyleProject() throws IOException {
         return super.createFreeStyleProject();
     }
+    
+    @Override
+    public void waitUntilNoActivity() throws Exception {
+        super.waitUntilNoActivity();
+    }
+    
+    @Override
+    public void waitUntilNoActivityUpTo(int timeout) throws Exception {
+        super.waitUntilNoActivityUpTo(timeout);
+    }
 }

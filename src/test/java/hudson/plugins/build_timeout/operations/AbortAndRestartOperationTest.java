@@ -34,7 +34,6 @@ import java.util.LinkedList;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.SleepBuilder;
-import org.jvnet.hudson.test.JenkinsRule;
 
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
@@ -42,7 +41,6 @@ import hudson.model.Result;
 import hudson.plugins.build_timeout.*;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
-import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
 
 
 public class AbortAndRestartOperationTest {
