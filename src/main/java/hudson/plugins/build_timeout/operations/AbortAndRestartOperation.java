@@ -23,8 +23,6 @@
  */
 
 package hudson.plugins.build_timeout.operations;
-import static hudson.util.TimeUnit2.MILLISECONDS;
-import static hudson.util.TimeUnit2.MINUTES;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -35,8 +33,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Executor;
-import hudson.model.Result;
 import hudson.model.BuildListener;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
@@ -73,7 +69,35 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
             return false;
         }
     }
-       
+    
+    private void rescheduleBuild(AbstractBuild<?, ?> build, BuildListener listener) {
+        FixedDelay sd = new FixedDelay(0); //Reschedule now!
+        
+        String maxRestartsStr = null;
+        try {
+            maxRestartsStr = build.getEnvironment(listener).expand(this.maxRestarts);
+        } catch (IOException e1) {
+            listener.error("Failed to expand environment variables.");
+            e1.printStackTrace(listener.getLogger());
+            return;
+        } catch (InterruptedException e1) {
+            listener.error("Failed to expand environment variables.");
+            e1.printStackTrace(listener.getLogger());
+            return;
+        }
+        
+        int maxRestarts = 0;
+        try {
+            maxRestarts = Integer.parseInt(maxRestartsStr);
+        } catch (NumberFormatException e) {
+            listener.error("Invalid Maximum restarts: {0}", maxRestartsStr);
+            e.printStackTrace(listener.getLogger());
+            return;
+        }
+        build.addAction(new com.chikli.hudson.plugin.naginator.NaginatorScheduleAction(maxRestarts, sd, false));
+        listener.getLogger().println(Messages.AbortAndRestartOperation_ScheduledRestart(maxRestarts));
+    }
+    
     /**
      * @param build
      * @param listener
@@ -83,35 +107,15 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
      */
     @Override
     public boolean perform(AbstractBuild<?, ?> build, BuildListener listener, long effectiveTimeout) {
-              
-        long effectiveTimeoutMinutes = MINUTES.convert(effectiveTimeout,MILLISECONDS);
-        // Use messages in hudson.plugins.build_timeout.Messages for historical reason.
-        listener.getLogger().println(hudson.plugins.build_timeout.Messages.Timeout_Message(
-                effectiveTimeoutMinutes,
-                hudson.plugins.build_timeout.Messages.Timeout_Aborted())
-        );
-        
-        if(isPresent()){
-            FixedDelay sd = new FixedDelay(0); //Reschedule now!
-            int maxRestarts = 0;
-            try {
-                maxRestarts = Integer.parseInt(build.getEnvironment(listener).expand(this.maxRestarts));
-                build.addAction(new com.chikli.hudson.plugin.naginator.NaginatorScheduleAction(maxRestarts, sd, false));
-            } catch (IOException e1) {
-                listener.getLogger().println("Failed to expand environment variables. " + e1);
-            } catch (InterruptedException e1) {
-                listener.getLogger().println("Failed to expand environment variables. " + e1);
-            }
+        if (isPresent()) {
+            rescheduleBuild(build, listener);
+        } else {
+            listener.error(Messages.AbortAndRestartOperation_InstallNaginator());
         }
         
-        Executor e = build.getExecutor();
-        if (e != null) {
-            e.interrupt(Result.ABORTED);
-        }
-        
-        return true;
+        return new AbortOperation().perform(build, listener, effectiveTimeout);
     }
-        
+   
     @Extension 
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         @Override

@@ -29,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import org.junit.Rule;
@@ -37,9 +38,12 @@ import org.jvnet.hudson.test.SleepBuilder;
 
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
+import hudson.model.ParametersAction;
+import hudson.model.StringParameterValue;
 import hudson.model.Result;
-import hudson.plugins.build_timeout.*;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
+import hudson.plugins.build_timeout.BuildTimeOutOperation;
+import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
 
@@ -108,5 +112,55 @@ public class AbortAndRestartOperationTest {
         assertEquals(Result.ABORTED, testproject.getBuildByNumber(2).getResult());
         assertEquals(Result.ABORTED, testproject.getBuildByNumber(3).getResult());
     }
+    
+    @Test
+    public void testUsingVariable() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                     new QuickBuildTimeOutStrategy(1000),
+                     Arrays.<BuildTimeOutOperation>asList(new AbortAndRestartOperation("${RESTART}")),
+                     ""
+        ));
+        
+        p.getBuildersList().add(new SleepBuilder(5*60*1000)); //5 minutes
+        
+        j.assertBuildStatus(
+                Result.ABORTED,
+                p.scheduleBuild2(
+                        0,
+                        new Cause.UserIdCause(),
+                        new ParametersAction(new StringParameterValue("RESTART", "1"))
+                ).get()
+        );
+        j.waitUntilNoActivityUpTo(25000);
+        
+        assertEquals(2, p.getBuilds().size());
+    }
+    
+    @Test
+    public void testUsingBadRestart() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildWrappersList().add(new BuildTimeoutWrapper(
+                     new QuickBuildTimeOutStrategy(1000),
+                     Arrays.<BuildTimeOutOperation>asList(new AbortAndRestartOperation("${RESTART}")),
+                     ""
+        ));
+        
+        p.getBuildersList().add(new SleepBuilder(5*60*1000)); //5 minutes
+        
+        j.assertBuildStatus(
+                Result.ABORTED,
+                p.scheduleBuild2(
+                        0,
+                        new Cause.UserIdCause(),
+                        new ParametersAction(new StringParameterValue("RESTART", "xxx"))
+                ).get()
+        );
+        j.waitUntilNoActivityUpTo(25000);
+        
+        // Build is not restarted
+        assertEquals(1, p.getBuilds().size());
+    }
+    
 }
 
