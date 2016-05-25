@@ -91,11 +91,6 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
                 hudson.plugins.build_timeout.Messages.Timeout_Aborted())
         );
         
-        Executor e = build.getExecutor();
-        if (e != null) {
-            e.interrupt(Result.ABORTED);
-        }
-        
         if(isPresent()){
             FixedDelay sd = new FixedDelay(0); //Reschedule now!
             int maxRestarts = 0;
@@ -108,6 +103,12 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
                 listener.getLogger().println("Failed to expand environment variables. " + e1);
             }
         }
+        
+        Executor e = build.getExecutor();
+        if (e != null) {
+            e.interrupt(Result.ABORTED);
+        }
+        
         return true;
     }
         
