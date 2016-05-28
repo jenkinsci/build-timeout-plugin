@@ -31,7 +31,9 @@
   <properties>
     <jenkins-test-harness.version>1.466</jenkins-test-harness.version>
     <jenkins.version>1.466</jenkins.version>
-    <java.level>6</java.level>
+    <java.level>5</java.level>
+    <!-- old jenkins-test-harness doesn't allow concurrent tests -->
+    <concurrency>1</concurrency>
   </properties>
 
   <dependencies>
@@ -85,6 +87,12 @@
                                         <exclude>commons-logging:commons-logging:*:jar:runtime</exclude>
                                     </excludes>
                                 </bannedDependencies>
+                               <enforceBytecodeVersion>
+                                   <excludes combine.children="append">
+                                       <!-- dependencies via jenkins-core-1.466 -->
+                                       <exclude>org.kohsuke:asm3</exclude>
+                                   </excludes>
+                               </enforceBytecodeVersion>
                             </rules>
                         </configuration>
                     </execution>
