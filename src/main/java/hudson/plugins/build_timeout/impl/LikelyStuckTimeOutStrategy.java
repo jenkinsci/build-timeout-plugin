@@ -19,7 +19,7 @@ import java.io.IOException;
 /**
  * Get the time considered it stuck.
  *
- * @return 10 times as much as eta if eta is available, else 24 hours.
+ * Return 10 times as much as eta if eta is available, else 24 hours.
  * @see Executor#isLikelyStuck()
  */
 public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {

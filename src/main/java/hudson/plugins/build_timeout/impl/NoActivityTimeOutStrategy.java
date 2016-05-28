@@ -75,7 +75,7 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
     }
     
     /**
-     * @param timeoutSeconds
+     * @param timeoutSecondsString
      */
     @DataBoundConstructor
     public NoActivityTimeOutStrategy(String timeoutSecondsString) {

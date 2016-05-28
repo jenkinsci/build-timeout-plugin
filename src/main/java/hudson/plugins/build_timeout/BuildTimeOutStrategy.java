@@ -73,12 +73,12 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
     }
     
     /**
-     * Decides whether to call {@link BuildTimeOutStrategy.onWrite}
+     * Decides whether to call {@link #onWrite(AbstractBuild, byte[], int)}
      * 
-     * For performance reason, {@link BuildTimeOutStrategy.onWrite} is called
+     * For performance reason, {@link #onWrite(AbstractBuild, byte[], int)} is called
      * only when subclass overrides it.
      * 
-     * @return true to call {@link BuildTimeOutStrategy.onWrite}
+     * @return true to call {@link #onWrite(AbstractBuild, byte[], int)}
      */
     public boolean wantsCaptureLog() {
         try {
