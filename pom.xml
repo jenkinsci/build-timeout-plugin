@@ -32,8 +32,6 @@
     <jenkins-test-harness.version>1.466</jenkins-test-harness.version>
     <jenkins.version>1.466</jenkins.version>
     <java.level>5</java.level>
-    <!-- old jenkins-test-harness doesn't allow concurrent tests -->
-    <concurrency>1</concurrency>
   </properties>
 
   <dependencies>
@@ -78,6 +76,13 @@
     
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- jenkins-test-harness < 1.545 doesn't support concurrent tests. -->
+                    <forkCount>1</forkCount>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <executions>
