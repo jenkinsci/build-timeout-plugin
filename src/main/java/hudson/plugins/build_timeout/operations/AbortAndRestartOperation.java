@@ -116,7 +116,7 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         return new AbortOperation().perform(build, listener, effectiveTimeout);
     }
    
-    @Extension 
+    @Extension(optional = true)
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         @Override
         public String getDisplayName() {
