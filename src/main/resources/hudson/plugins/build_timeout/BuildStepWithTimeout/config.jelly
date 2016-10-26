@@ -5,7 +5,7 @@
     <f:dropdownDescriptorSelector title="${%Time-out strategy}" field="strategy" descriptors="${descriptor.strategies}" />
 
     <f:entry>
-        <f:dropdownDescriptorSelector title="${%Build Step}" field="buildStep" descriptors="${descriptor.buildStepRunners}" />
+        <f:dropdownDescriptorSelector title="${%Build Step}" field="buildStep" descriptors="${descriptor.buildStepWithTimeoutRunners}" />
     </f:entry>
 
     <f:entry title="${%Time-out actions}" field="operationList">

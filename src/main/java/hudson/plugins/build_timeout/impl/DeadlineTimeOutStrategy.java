@@ -128,5 +128,10 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
                 }
             }
         }
+
+        @Override
+        public boolean isApplicableAsBuildStep() {
+            return true;
+        }
     }
 }

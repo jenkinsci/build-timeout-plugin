@@ -2,14 +2,20 @@ package hudson.plugins.build_timeout;
 
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.*;
-import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
-import hudson.plugins.build_timeout.impl.DeadlineTimeOutStrategy;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Build;
+import hudson.model.BuildListener;
+import hudson.model.Descriptor;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
+import hudson.triggers.SafeTimerTask;
+import hudson.triggers.Trigger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -17,13 +23,17 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class BuildStepWithTimeout extends Builder implements BuildStep {
-    private /* final */ BuildTimeOutStrategy strategy;
-    private BuildStep buildStep;
+    private final BuildTimeOutStrategy strategy;
+    private final BuildStep buildStep;
     private final List<BuildTimeOutOperation> operationList;
 
     @DataBoundConstructor
@@ -48,10 +58,6 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
         return buildStep;
     }
 
-    public void setBuildStep(BuildStep buildStep) {
-        this.buildStep = buildStep;
-    }
-
     private long getTimeout(Run run, TaskListener listener) throws IOException, InterruptedException {
         try {
             return strategy.getTimeOut((AbstractBuild<?, ?>) run, (BuildListener) listener);
@@ -62,33 +68,41 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
         }
     }
 
+    @Override
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        return perform((Build)build, launcher, listener);
+    }
 
+    @Override
     public boolean perform(final Build<?,?> build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
-        final Timer timer = new Timer("Timer-" + build.getDisplayName().replace(" ", "_"), true);
+        final Timer timer = Trigger.timer;
         final AtomicBoolean stopped = new AtomicBoolean(false);
-        try {
-            final long delay = getTimeout(build, listener);
+        final long delay = getTimeout(build, listener);
 
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    if (operationList.isEmpty()) {
-                        new AbortOperation().perform(build, listener, delay);
-                    }
+        final TimerTask task = new SafeTimerTask() {
+            @Override
+            public void doRun() {
+                stopped.set(true);
 
-                    for (BuildTimeOutOperation op : operationList) {
-                        op.perform(build, listener, delay);
-                    }
-                    stopped.set(true);
-                    timer.cancel();
+                if (operationList.isEmpty()) {
+                    new AbortOperation().perform(build, listener, delay);
                 }
-            }, delay);
 
+                for (BuildTimeOutOperation op : operationList) {
+                    op.perform(build, listener, delay);
+                }
+            }
+        };
+
+        try {
+            timer.schedule(task, delay);
             return buildStep.perform((AbstractBuild) build, launcher, listener);
-        } catch(InterruptedException e) {
+        } catch (InterruptedException e) {
             if (!stopped.get()) {
                 throw e;
             }
+        } finally {
+            task.cancel();
         }
 
         return false;
@@ -100,24 +114,16 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
-        return BuildStepMonitor.NONE;
+        return buildStep.getRequiredMonitorService();
     }
 
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
-        public DescriptorImpl() {
-            load();
-        }
-
         @Override
         public BuildStepWithTimeout newInstance(StaplerRequest req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
             BuildStep buildstep = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "buildStep", BuildStep.class);
             BuildTimeOutStrategy strategy = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "strategy", BuildTimeOutStrategy.class);
-
-            if (!(strategy instanceof AbsoluteTimeOutStrategy || strategy instanceof DeadlineTimeOutStrategy)) {
-                throw new IllegalArgumentException("Unsupported strategy");
-            }
             List<BuildTimeOutOperation> operationList = newInstancesFromHeteroList(req, formData, "operationList", getOperations());
             return new BuildStepWithTimeout(buildstep, strategy, operationList);
         }
@@ -127,18 +133,28 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
             return "Run with timeout";
         }
 
+        @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
 
-        public List<Descriptor<?>> getBuildStepRunners() {
+        public List<Descriptor<?>> getBuildStepWithTimeoutRunners() {
             List<Descriptor<?>> buildsteps = new ArrayList<Descriptor<?>>(Builder.all());
             buildsteps.remove(this);
             return buildsteps;
         }
 
         public List<BuildTimeOutStrategyDescriptor> getStrategies() {
-            return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
+            List<BuildTimeOutStrategyDescriptor> descriptors = Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
+            List<BuildTimeOutStrategyDescriptor> supportedStrategies = new ArrayList<BuildTimeOutStrategyDescriptor>(descriptors.size());
+
+            for(BuildTimeOutStrategyDescriptor descriptor : descriptors) {
+                if (descriptor.isApplicableAsBuildStep()) {
+                    supportedStrategies.add(descriptor);
+                }
+            }
+
+            return supportedStrategies;
         }
 
         @SuppressWarnings("unchecked")
