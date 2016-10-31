@@ -65,7 +65,6 @@ public class AbortOperation extends BuildTimeOutOperation {
         if (e != null) {
             e.interrupt(Result.ABORTED);
         }
-        build.setResult(Result.ABORTED);
 
         return true;
     }

@@ -61,7 +61,6 @@ public class FailOperation extends BuildTimeOutOperation {
         if (e != null) {
             e.interrupt(Result.FAILURE);
         }
-        build.setResult(Result.FAILURE);
         
         return true;
     }

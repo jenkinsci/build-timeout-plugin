@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class BuildStepWithTimeout extends Builder implements BuildStep {
@@ -76,14 +75,11 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
     @Override
     public boolean perform(final Build<?,?> build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
         final Timer timer = Trigger.timer;
-        final AtomicBoolean stopped = new AtomicBoolean(false);
         final long delay = getTimeout(build, listener);
 
         final TimerTask task = new SafeTimerTask() {
             @Override
             public void doRun() {
-                stopped.set(true);
-
                 if (operationList.isEmpty()) {
                     new AbortOperation().perform(build, listener, delay);
                 }
@@ -96,16 +92,10 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
 
         try {
             timer.schedule(task, delay);
-            return buildStep.perform((AbstractBuild) build, launcher, listener);
-        } catch (InterruptedException e) {
-            if (!stopped.get()) {
-                throw e;
-            }
+            return buildStep.perform(build, launcher, listener);
         } finally {
             task.cancel();
         }
-
-        return false;
     }
 
     public BuildTimeOutStrategy getStrategy() {
