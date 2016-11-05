@@ -46,10 +46,6 @@ public class FailOperation extends BuildTimeOutOperation {
     }
     
     /**
-     * @param build
-     * @param listener
-     * @param effectiveTimeout
-     * @return
      * @see hudson.plugins.build_timeout.BuildTimeOutOperation#perform(hudson.model.AbstractBuild, hudson.model.BuildListener, long)
      */
     @Override

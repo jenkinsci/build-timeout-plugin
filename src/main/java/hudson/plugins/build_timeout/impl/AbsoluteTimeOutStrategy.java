@@ -9,7 +9,6 @@ import hudson.model.Descriptor;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -45,6 +44,7 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
                 expandAll(build, listener, getTimeoutMinutes())));
     }
 
+    @Override
     public Descriptor<BuildTimeOutStrategy> getDescriptor() {
         return DESCRIPTOR;
     }
@@ -57,6 +57,11 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
         @Override
         public String getDisplayName() {
             return Messages.AbsoluteTimeOutStrategy_DisplayName();
+        }
+
+        @Override
+        public boolean isApplicableAsBuildStep() {
+            return true;
         }
     }
 }
