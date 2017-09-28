@@ -14,6 +14,7 @@ import hudson.util.TimeUnit2;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -30,7 +31,7 @@ public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(AbstractBuild<?, ?> run, BuildListener listener)
+    public long getTimeOut(@Nonnull AbstractBuild<?, ?> run, @Nonnull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         Executor executor = run.getExecutor();
         if (executor == null) {

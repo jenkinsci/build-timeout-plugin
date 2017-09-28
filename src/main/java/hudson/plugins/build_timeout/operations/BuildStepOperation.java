@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import hudson.model.Node;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -54,6 +55,8 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+
+import javax.annotation.Nonnull;
 
 /**
  * Timeout Action to perform any specified {@link BuildStep}, which includes {@link Builder} and {@link Publisher}.
@@ -130,26 +133,24 @@ public class BuildStepOperation extends BuildTimeOutOperation {
     };
     
     /**
-     * @param build
-     * @param listener
      * @return launcher specified with launcherOption.
      */
-    protected Launcher createLauncher(AbstractBuild<?, ?> build, BuildListener listener) {
+    protected Launcher createLauncher(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener) {
         if(!isCreateLauncher()) {
             return new DummyLauncher();
         }
-        
-        Launcher l = build.getBuiltOn().createLauncher(listener);
+
+        Node builtOn = build.getBuiltOn();
+        if (builtOn == null) {
+            throw new IllegalStateException("current build's builtOn is null");
+        }
+        Launcher l = builtOn.createLauncher(listener);
         if (build.getParent() instanceof BuildableItemWithBuildWrappers) {
             BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers)build.getParent();
             for (BuildWrapper bw : biwbw.getBuildWrappersList()) {
                 try {
                     l = bw.decorateLauncher(build,l,listener);
-                } catch(RunnerAbortedException e) {
-                    e.printStackTrace(listener.getLogger());
-                } catch(IOException e) {
-                    e.printStackTrace(listener.getLogger());
-                } catch(InterruptedException e) {
+                } catch(RunnerAbortedException|IOException|InterruptedException e) {
                     e.printStackTrace(listener.getLogger());
                 }
             }
@@ -158,26 +159,16 @@ public class BuildStepOperation extends BuildTimeOutOperation {
         return l;
     }
     
-    /**
-     * @param build
-     * @param listener
-     * @param effectiveTimeout
-     * @return
-     * @see hudson.plugins.build_timeout.BuildTimeOutOperation#perform(hudson.model.AbstractBuild, hudson.model.BuildListener, long)
-     */
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, BuildListener listener, long effectiveTimeout) {
-        boolean result = false;
+    public boolean perform(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener, long effectiveTimeout) {
+        boolean result;
         try {
             result = getBuildstep().perform(build, createLauncher(build, listener), listener);
-        } catch(InterruptedException e) {
-            e.printStackTrace(listener.getLogger());
-            result = false;
-        } catch(IOException e) {
+        } catch(InterruptedException|IOException e) {
             e.printStackTrace(listener.getLogger());
             result = false;
         }
-        return isContinueEvenFailed()?true:result;
+        return isContinueEvenFailed() || result;
     }
     
     @Extension
@@ -200,20 +191,10 @@ public class BuildStepOperation extends BuildTimeOutOperation {
             return enabled;
         }
         
-        /**
-         * @param enabled
-         */
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
         }
         
-        /**
-         * @param req
-         * @param json
-         * @return
-         * @throws hudson.model.Descriptor.FormException
-         * @see hudson.model.Descriptor#configure(org.kohsuke.stapler.StaplerRequest, net.sf.json.JSONObject)
-         */
         @Override
         public boolean configure(StaplerRequest req, JSONObject json)
                 throws hudson.model.Descriptor.FormException {
@@ -229,11 +210,6 @@ public class BuildStepOperation extends BuildTimeOutOperation {
          * it is required to handle to call {@link Descriptor#newInstance(StaplerRequest, JSONObject)}
          * manually.
          * 
-         * @param req
-         * @param formData
-         * @return
-         * @throws hudson.model.Descriptor.FormException
-         * @see hudson.model.Descriptor#newInstance(org.kohsuke.stapler.StaplerRequest, net.sf.json.JSONObject)
          */
         @Override
         public BuildStepOperation newInstance(StaplerRequest req, JSONObject formData)
@@ -245,28 +221,18 @@ public class BuildStepOperation extends BuildTimeOutOperation {
         }
         
         /**
-         * @param jobType
          * @return true when {@link BuildStepOperation} is enabled in system configuration.
-         * @see hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor#isApplicable(java.lang.Class)
          */
         @Override
         public boolean isApplicable(Class<? extends AbstractProject<?, ?>> jobType) {
             return isEnabled();
         }
-        
-        /**
-         * @return
-         * @see hudson.model.Descriptor#getDisplayName()
-         */
+
         @Override
         public String getDisplayName() {
             return Messages.BuildStepOperation_DisplayName();
         }
-        
-        /**
-         * @param project
-         * @return
-         */
+
         public List<Descriptor<?>> getBuildStepDescriptors(AbstractProject<?,?> project) {
             List<Descriptor<?>> buildsteps = new ArrayList<Descriptor<?>>();
             buildsteps.addAll(BuildStepDescriptor.filter(Builder.all(), project.getClass()));

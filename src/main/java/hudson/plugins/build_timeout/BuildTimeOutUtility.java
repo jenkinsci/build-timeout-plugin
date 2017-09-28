@@ -33,21 +33,12 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-/**
- *
- */
 public class BuildTimeOutUtility {
     /**
      * Construct an object from parameters input by a user.
      * 
      * Not using {@link DataBoundConstructor},
      * but using {@link Descriptor#newInstance(StaplerRequest, JSONObject)}.
-     * 
-     * @param req
-     * @param formData
-     * @param fieldName
-     * @return
-     * @throws hudson.model.Descriptor.FormException
      */
     public static <T> T bindJSONWithDescriptor(StaplerRequest req, JSONObject formData, String fieldName, Class<T> expectedClazz)
             throws hudson.model.Descriptor.FormException {
@@ -65,8 +56,8 @@ public class BuildTimeOutUtility {
         }
         try {
             @SuppressWarnings("unchecked")
-            Class<? extends Describable<?>> clazz = (Class<? extends Describable<?>>)Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass(clazzName);
-            Descriptor<?> d = Jenkins.getInstance().getDescriptorOrDie(clazz);
+            Class<? extends Describable<?>> clazz = (Class<? extends Describable<?>>)Jenkins.getActiveInstance().getPluginManager().uberClassLoader.loadClass(clazzName);
+            Descriptor<?> d = Jenkins.getActiveInstance().getDescriptorOrDie(clazz);
             @SuppressWarnings("unchecked")
             T ret = (T)d.newInstance(req, formData);
             return ret;

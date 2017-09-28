@@ -1,5 +1,6 @@
 package hudson.plugins.build_timeout;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -73,8 +74,9 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
     }
 
     @Override
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "No adequate replacement for Trigger.timer found")
     public boolean perform(final Build<?,?> build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
-        final Timer timer = Trigger.timer;
+        final Timer timer = Trigger.timer; // FIXME TODO replace with Timer
         final long delay = getTimeout(build, listener);
 
         final TimerTask task = new SafeTimerTask() {
@@ -135,7 +137,7 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
         }
 
         public List<BuildTimeOutStrategyDescriptor> getStrategies() {
-            List<BuildTimeOutStrategyDescriptor> descriptors = Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
+            List<BuildTimeOutStrategyDescriptor> descriptors = Jenkins.getActiveInstance().getDescriptorList(BuildTimeOutStrategy.class);
             List<BuildTimeOutStrategyDescriptor> supportedStrategies = new ArrayList<BuildTimeOutStrategyDescriptor>(descriptors.size());
 
             for(BuildTimeOutStrategyDescriptor descriptor : descriptors) {

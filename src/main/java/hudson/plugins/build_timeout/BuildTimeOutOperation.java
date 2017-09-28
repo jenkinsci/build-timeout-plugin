@@ -31,6 +31,8 @@ import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 
+import javax.annotation.Nonnull;
+
 /**
  * Defines an operation performed when timeout occurs.
  * They are called "Timeout Actions", but the class is BuildTimeOutOperation
@@ -47,13 +49,12 @@ public abstract class BuildTimeOutOperation
      * @param effectiveTimeout  timeout (milliseconds)
      * @return false not to run subsequent operations. It also mark the build as failure.
      */
-    public abstract boolean perform(AbstractBuild<?,?> build, BuildListener listener, long effectiveTimeout);
+    public abstract boolean perform(@Nonnull AbstractBuild<?,?> build, @Nonnull BuildListener listener, long effectiveTimeout);
     
     /**
-     * @return
      * @see hudson.model.Describable#getDescriptor()
      */
     public BuildTimeOutOperationDescriptor getDescriptor() {
-        return (BuildTimeOutOperationDescriptor)Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (BuildTimeOutOperationDescriptor)Jenkins.getActiveInstance().getDescriptorOrDie(getClass());
     }
 }

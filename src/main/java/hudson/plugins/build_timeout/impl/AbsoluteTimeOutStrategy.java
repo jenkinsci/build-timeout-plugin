@@ -1,16 +1,16 @@
 package hudson.plugins.build_timeout.impl;
 
-import static hudson.plugins.build_timeout.BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS;
-
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
+import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -29,7 +29,7 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
 
     @Deprecated
     public AbsoluteTimeOutStrategy(int timeoutMinutes) {
-        this.timeoutMinutes = Integer.toString(Math.max((int) (MINIMUM_TIMEOUT_MILLISECONDS / MINUTES), timeoutMinutes));
+        this.timeoutMinutes = Integer.toString(Math.max((int) (BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS / MINUTES), timeoutMinutes));
     }
 
     @DataBoundConstructor
@@ -38,9 +38,9 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(AbstractBuild<?,?> build, BuildListener listener)
+    public long getTimeOut(@Nonnull AbstractBuild<?,?> build, @Nonnull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
-        return MINUTES * Math.max((int) (MINIMUM_TIMEOUT_MILLISECONDS / MINUTES), Integer.parseInt(
+        return MINUTES * Math.max((int) (BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS / MINUTES), Integer.parseInt(
                 expandAll(build, listener, getTimeoutMinutes())));
     }
 

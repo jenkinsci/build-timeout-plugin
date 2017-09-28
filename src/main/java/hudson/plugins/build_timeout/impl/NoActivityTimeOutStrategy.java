@@ -34,6 +34,7 @@ import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -46,7 +47,6 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
     private final String timeoutSecondsString;
     
     /**
-     * @return
      * @deprecated use {@link NoActivityTimeOutStrategy#getTimeoutSecondsString()} instead.
      */
     @Deprecated
@@ -58,9 +58,6 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
         }
     }
     
-    /**
-     * @return
-     */
     public String getTimeoutSecondsString()
     {
         return timeoutSecondsString;
@@ -74,9 +71,6 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
         return this;
     }
     
-    /**
-     * @param timeoutSecondsString
-     */
     @DataBoundConstructor
     public NoActivityTimeOutStrategy(String timeoutSecondsString) {
         this.timeoutSecondsString = timeoutSecondsString;
@@ -88,17 +82,11 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
     }
     
     @Override
-    public long getTimeOut(AbstractBuild<?, ?> build, BuildListener listener)
+    public long getTimeOut(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         return Long.parseLong(expandAll(build, listener, getTimeoutSecondsString())) * 1000L;
     }
 
-    /**
-     * @param build
-     * @param b
-     * @param length
-     * @see hudson.plugins.build_timeout.BuildTimeOutStrategy#onWrite(AbstractBuild, byte[], int)
-     */
     @Override
     public void onWrite(AbstractBuild<?,?> build, byte b[], int length) {
         BuildTimeoutWrapper.EnvironmentImpl env = build.getEnvironments().get(BuildTimeoutWrapper.EnvironmentImpl.class);

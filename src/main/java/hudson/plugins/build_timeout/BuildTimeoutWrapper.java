@@ -111,9 +111,6 @@ public class BuildTimeoutWrapper extends BuildWrapper {
      * Don't forget to update {@link DescriptorImpl#newInstance(StaplerRequest, JSONObject)}
      * when you add new arguments.
      * 
-     * @param strategy
-     * @param operationList
-     * @param timeoutEnvVar
      */
     @DataBoundConstructor
     public BuildTimeoutWrapper(BuildTimeOutStrategy strategy, List<BuildTimeOutOperation> operationList, String timeoutEnvVar) {
@@ -169,19 +166,20 @@ public class BuildTimeoutWrapper extends BuildWrapper {
 
             @Override
             public void buildEnvVars(Map<String, String> env) {
-            	if (timeoutEnvVar != null) {
-            		env.put(timeoutEnvVar, String.valueOf(effectiveTimeout));
-           		}
+                if (timeoutEnvVar != null) {
+                    env.put(timeoutEnvVar, String.valueOf(effectiveTimeout));
+                }
             }
 
+            @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "No adequate replacement for Trigger.timer found")
             public synchronized void reschedule() {
                 if (task != null) {
                     task.cancel();
                     // avoid memory leaks for the case where this timer is in the future (JENKINS-31627)
-                    Trigger.timer.purge();
+                    Trigger.timer.purge(); // FIXME TODO replace with Timer
                 }
                 task = new TimeoutTimerTask();
-                Trigger.timer.schedule(task, effectiveTimeout);
+                Trigger.timer.schedule(task, effectiveTimeout); // FIXME TODO replace with Timer
             }
 
             public synchronized void rescheduleIfScheduled() {
@@ -191,12 +189,13 @@ public class BuildTimeoutWrapper extends BuildWrapper {
                 reschedule();
             }
 
+            @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "No adequate replacement for Trigger.timer found")
             @Override
             public synchronized boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
                 if (task != null) {
                     task.cancel();
                     // avoid memory leaks for the case where this timer is in the future (JENKINS-31627).
-                    Trigger.timer.purge();
+                    Trigger.timer.purge(); // FIXME TODO replace with Timer
                     task = null;
                 }
                 
@@ -259,11 +258,6 @@ public class BuildTimeoutWrapper extends BuildWrapper {
          * but here it is required to construct object manually to call {@link Descriptor#newInstance(StaplerRequest, JSONObject)}
          * of downstream classes.
          * 
-         * @param req
-         * @param formData
-         * @return
-         * @throws hudson.model.Descriptor.FormException
-         * @see hudson.model.Descriptor#newInstance(org.kohsuke.stapler.StaplerRequest, net.sf.json.JSONObject)
          */
         @Override
         public BuildTimeoutWrapper newInstance(StaplerRequest req, JSONObject formData)
@@ -283,7 +277,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         }
 
         public List<BuildTimeOutStrategyDescriptor> getStrategies() {
-            return Jenkins.getInstance().getDescriptorList(BuildTimeOutStrategy.class);
+            return Jenkins.getActiveInstance().getDescriptorList(BuildTimeOutStrategy.class);
         }
         
         @SuppressWarnings("unchecked")
@@ -304,15 +298,6 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         return timeoutEnvVar;
     }
 
-    /**
-     * @param build
-     * @param logger
-     * @return
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws RunnerAbortedException
-     * @see hudson.tasks.BuildWrapper#decorateLogger(hudson.model.AbstractBuild, java.io.OutputStream)
-     */
     @Override
     public OutputStream decorateLogger(@SuppressWarnings("rawtypes") final AbstractBuild build, final OutputStream logger)
             throws IOException, InterruptedException, RunnerAbortedException {
