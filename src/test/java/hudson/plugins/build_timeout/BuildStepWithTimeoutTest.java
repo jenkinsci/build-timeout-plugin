@@ -7,7 +7,6 @@ import hudson.model.Result;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.plugins.build_timeout.operations.FailOperation;
 import hudson.tasks.Builder;
-import hudson.util.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,8 +14,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.assertFalse;
 
 public class BuildStepWithTimeoutTest {
     @Rule
@@ -37,7 +34,7 @@ public class BuildStepWithTimeoutTest {
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
 
         j.assertBuildStatusSuccess(build);
-        j.assertLogContains("Test", build);
+        j.assertLogContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
     }
 
     @Test
@@ -47,7 +44,7 @@ public class BuildStepWithTimeoutTest {
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
 
         j.assertBuildStatus(Result.ABORTED, build);
-        assertLogDoesNotContain("Test", build);
+        j.assertLogNotContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
     }
 
 
@@ -58,7 +55,7 @@ public class BuildStepWithTimeoutTest {
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
 
         j.assertBuildStatus(Result.ABORTED, build);
-        assertLogDoesNotContain("Test", build);
+        j.assertLogNotContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
     }
 
     @Test
@@ -68,7 +65,7 @@ public class BuildStepWithTimeoutTest {
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
 
         j.assertBuildStatus(Result.FAILURE, build);
-        assertLogDoesNotContain("Test", build);
+        j.assertLogNotContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
     }
 
     private FreeStyleProject createProjectWithBuildStepWithTimeout(long delay, BuildTimeOutOperation operation) throws IOException {
@@ -76,7 +73,7 @@ public class BuildStepWithTimeoutTest {
         final List<BuildTimeOutOperation> operations;
 
         if (operation!=null) {
-            operations = new ArrayList<BuildTimeOutOperation>();
+            operations = new ArrayList<>();
             operations.add(operation);
         }
         else {
@@ -89,9 +86,5 @@ public class BuildStepWithTimeoutTest {
         project.getBuildersList().add(step);
 
         return project;
-    }
-
-    private static void assertLogDoesNotContain(String text, FreeStyleBuild build) throws IOException {
-        assertFalse(IOUtils.toString(build.getLogReader()).contains(text));
     }
 }
