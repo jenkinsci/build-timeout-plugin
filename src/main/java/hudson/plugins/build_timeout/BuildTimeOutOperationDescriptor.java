@@ -41,7 +41,6 @@ public abstract class BuildTimeOutOperationDescriptor extends Descriptor<BuildTi
      * 
      * Override this to restrict project types this action can be applied.
      * 
-     * @param jobType
      * @return
      *      true to allow user to configure this timeout action to given project.
      * @see BuildStepDescriptor#isApplicable(Class)
@@ -51,8 +50,8 @@ public abstract class BuildTimeOutOperationDescriptor extends Descriptor<BuildTi
     }
     
     public static List<BuildTimeOutOperationDescriptor> all(Class<? extends AbstractProject<?,?>> jobType) {
-        List<BuildTimeOutOperationDescriptor> alldescs = Jenkins.getInstance().getDescriptorList(BuildTimeOutOperation.class);
-        List<BuildTimeOutOperationDescriptor> descs = new ArrayList<BuildTimeOutOperationDescriptor>();
+        List<BuildTimeOutOperationDescriptor> alldescs = Jenkins.getActiveInstance().getDescriptorList(BuildTimeOutOperation.class);
+        List<BuildTimeOutOperationDescriptor> descs = new ArrayList<>();
         for (BuildTimeOutOperationDescriptor d: alldescs) {
             if (jobType == null || d.isApplicable(jobType)) {
                 descs.add(d);

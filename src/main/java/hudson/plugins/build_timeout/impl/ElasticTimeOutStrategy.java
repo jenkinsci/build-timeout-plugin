@@ -1,19 +1,18 @@
 package hudson.plugins.build_timeout.impl;
 
-import static hudson.plugins.build_timeout.BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS;
-
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
-import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
+import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.util.ListBoxModel;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
@@ -77,34 +76,34 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(AbstractBuild<?, ?> build, BuildListener listener)
+    public long getTimeOut(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         double elasticTimeout = getElasticTimeout(Integer.parseInt(expandAll(build,listener,getTimeoutPercentage())), build, listener);
         if (elasticTimeout == 0) {
-            return Math.max(MINIMUM_TIMEOUT_MILLISECONDS, Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES);
+            return Math.max(BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS, Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES);
         } else {
             if (isFailSafeTimeoutDuration()) {
                 return Math.max(Integer.parseInt(expandAll(build, listener, getTimeoutMinutesElasticDefault())) * MINUTES, (long) elasticTimeout);
             } else {
-                return (long) Math.max(MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);
+                return (long) Math.max(BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS, elasticTimeout);
             }
         }
     }
 
-    private double getElasticTimeout(int timeoutPercentage, AbstractBuild<?, ?> build, BuildListener listener)
+    private double getElasticTimeout(int timeoutPercentage, @Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         return timeoutPercentage * .01D * (timeoutPercentage > 0 ? averageDuration(build,listener) : 0);
     }
 
-    private double averageDuration(AbstractBuild<?, ?> build, BuildListener listener)
+    private double averageDuration(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         int nonFailingBuilds = 0;
         int durationSum = 0;
         int numberOfBuilds = Integer.parseInt(expandAll(build, listener, getNumberOfBuilds()));
 
-        while(build.getPreviousBuild() != null && nonFailingBuilds < numberOfBuilds) {
+        while(build != null && build.getPreviousBuild() != null && nonFailingBuilds < numberOfBuilds) {
             build = build.getPreviousBuild();
-            if (build.getResult() != null &&
+            if (build != null && build.getResult() != null &&
                     build.getResult().isBetterOrEqualTo(Result.UNSTABLE)) {
                 durationSum += build.getDuration();
                 nonFailingBuilds++;

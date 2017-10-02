@@ -12,9 +12,10 @@ import hudson.tasks.Builder;
 import java.io.IOException;
 
 public class FakeBuildStep extends Builder implements BuildStep {
+    static final String FAKE_BUILD_STEP_OUTPUT = "fake-build-step-output";
     private long delay = 0;
     
-    public FakeBuildStep(long delay) {
+    FakeBuildStep(long delay) {
         this.delay = delay;
     }
 
@@ -22,7 +23,7 @@ public class FakeBuildStep extends Builder implements BuildStep {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         Thread.sleep(delay);
 
-        listener.getLogger().print("Test");
+        listener.getLogger().print(FAKE_BUILD_STEP_OUTPUT);
 
         return true;
     }
