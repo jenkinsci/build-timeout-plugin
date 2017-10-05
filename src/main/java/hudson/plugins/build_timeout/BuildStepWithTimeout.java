@@ -122,7 +122,7 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Run with timeout";
+            return Messages.BuildStepWithTimeout_DisplayName();
         }
 
         @Override
