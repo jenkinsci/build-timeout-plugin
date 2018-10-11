@@ -3,7 +3,6 @@ package hudson.plugins.build_timeout;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import hudson.EnvVars;
 import hudson.Launcher;

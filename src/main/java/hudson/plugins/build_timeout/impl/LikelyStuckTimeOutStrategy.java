@@ -6,7 +6,6 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
 import hudson.model.Queue;
-import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;

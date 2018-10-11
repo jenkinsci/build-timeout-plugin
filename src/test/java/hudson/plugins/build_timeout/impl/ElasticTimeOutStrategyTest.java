@@ -1,11 +1,8 @@
 package hudson.plugins.build_timeout.impl;
 
-import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Project;
 import hudson.model.Result;
-import hudson.model.Run;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import junit.framework.TestCase;
 
