@@ -10,12 +10,12 @@ import hudson.model.Run;
 import hudson.model.queue.Executables;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
-import hudson.util.TimeUnit2;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Get the time considered it stuck.
@@ -35,19 +35,19 @@ public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {
             throws InterruptedException, MacroEvaluationException, IOException {
         Executor executor = run.getExecutor();
         if (executor == null) {
-            return TimeUnit2.HOURS.toMillis(24);
+            return TimeUnit.HOURS.toMillis(24);
         }
 
         Queue.Executable executable = executor.getCurrentExecutable();
         if (executable == null) {
-            return TimeUnit2.HOURS.toMillis(24);
+            return TimeUnit.HOURS.toMillis(24);
         }
 
         long eta = Executables.getEstimatedDurationFor(executable);
         if (eta >= 0) {
             return eta * 10;
         } else {
-            return TimeUnit2.HOURS.toMillis(24);
+            return TimeUnit.HOURS.toMillis(24);
         }
     }
 
