@@ -7,7 +7,6 @@ import hudson.model.Descriptor;
 import hudson.model.Executor;
 import hudson.model.Queue;
 import hudson.model.Run;
-import hudson.model.queue.Executables;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -43,7 +42,7 @@ public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {
             return TimeUnit.HOURS.toMillis(24);
         }
 
-        long eta = Executables.getEstimatedDurationFor(executable);
+        long eta = executable.getEstimatedDuration();
         if (eta >= 0) {
             return eta * 10;
         } else {
