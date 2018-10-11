@@ -130,7 +130,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
                 FilePath arg2, Map<String, String> arg3) throws IOException, InterruptedException {
             throw new UnsupportedOperationException("Launcher does not supported in BuildStep timeout operation");
         }
-    };
+    }
     
     /**
      * @return launcher specified with launcherOption.
