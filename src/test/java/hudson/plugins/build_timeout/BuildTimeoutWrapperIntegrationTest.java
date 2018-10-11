@@ -651,7 +651,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         FreeStyleProject p = createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
-                Arrays.<BuildTimeOutOperation>asList(
+                Arrays.asList(
                         new WriteDescriptionOperation("test"),
                         new AbortOperation()
                 ),
