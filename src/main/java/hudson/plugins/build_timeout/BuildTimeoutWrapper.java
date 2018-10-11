@@ -221,7 +221,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         
         if ("elastic".equalsIgnoreCase(timeoutType)) {
             strategy = new ElasticTimeOutStrategy(timeoutPercentage,
-                    timeoutMinutesElasticDefault != null ? timeoutMinutesElasticDefault.intValue() : 60,
+                    timeoutMinutesElasticDefault != null ? timeoutMinutesElasticDefault : 60,
                     3);
         } else if ("likelyStuck".equalsIgnoreCase(timeoutType)) {
             strategy = new LikelyStuckTimeOutStrategy();
