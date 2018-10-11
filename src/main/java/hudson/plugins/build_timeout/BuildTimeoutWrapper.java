@@ -122,7 +122,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             private final AbstractBuild<?,?> build;
             private final BuildListener listener;
             
-            //Did some opertion failed?
+            //Did some operation fail?
             protected boolean operationFailed = false;
             
             final class TimeoutTimerTask extends SafeTimerTask {
