@@ -59,7 +59,7 @@ public class AbortAndRestartOperationTest {
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
         AbortAndRestartOperation operation = new AbortAndRestartOperation("1"); //Number of restarts
-        LinkedList<BuildTimeOutOperation> list = new LinkedList<BuildTimeOutOperation>();
+        LinkedList<BuildTimeOutOperation> list = new LinkedList<>();
         list.add(operation);
         
         BuildTimeoutWrapper wrapper = new BuildTimeoutWrapper(strategy,list,"");
@@ -88,7 +88,7 @@ public class AbortAndRestartOperationTest {
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
         AbortAndRestartOperation operation = new AbortAndRestartOperation("2"); //Number of restarts
-        LinkedList<BuildTimeOutOperation> list = new LinkedList<BuildTimeOutOperation>();
+        LinkedList<BuildTimeOutOperation> list = new LinkedList<>();
         list.add(operation);
         
         BuildTimeoutWrapper wrapper = new BuildTimeoutWrapper(strategy,list,"");

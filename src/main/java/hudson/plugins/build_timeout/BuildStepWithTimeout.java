@@ -138,7 +138,7 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
 
         public List<BuildTimeOutStrategyDescriptor> getStrategies() {
             List<BuildTimeOutStrategyDescriptor> descriptors = Jenkins.getActiveInstance().getDescriptorList(BuildTimeOutStrategy.class);
-            List<BuildTimeOutStrategyDescriptor> supportedStrategies = new ArrayList<BuildTimeOutStrategyDescriptor>(descriptors.size());
+            List<BuildTimeOutStrategyDescriptor> supportedStrategies = new ArrayList<>(descriptors.size());
 
             for(BuildTimeOutStrategyDescriptor descriptor : descriptors) {
                 if (descriptor.isApplicableAsBuildStep()) {

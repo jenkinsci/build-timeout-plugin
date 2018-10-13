@@ -76,16 +76,12 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         String maxRestartsStr = null;
         try {
             maxRestartsStr = build.getEnvironment(listener).expand(this.maxRestarts);
-        } catch (IOException e1) {
+        } catch (IOException | InterruptedException e) {
             listener.error("Failed to expand environment variables.");
-            e1.printStackTrace(listener.getLogger());
-            return;
-        } catch (InterruptedException e1) {
-            listener.error("Failed to expand environment variables.");
-            e1.printStackTrace(listener.getLogger());
+            e.printStackTrace(listener.getLogger());
             return;
         }
-        
+
         int maxRestarts = 0;
         try {
             maxRestarts = Integer.parseInt(maxRestartsStr);

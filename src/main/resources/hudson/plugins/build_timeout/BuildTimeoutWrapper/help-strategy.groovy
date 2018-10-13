@@ -22,18 +22,18 @@
  * THE SOFTWARE.
  */
 
-package hudson.plugins.build_timeout;
+package hudson.plugins.build_timeout
 
-import jenkins.model.Jenkins;
+import jenkins.model.Jenkins
 
-st = namespace("jelly:stapler");
+st = namespace("jelly:stapler")
 
-def descriptor = Jenkins.instance.getDescriptorOrDie(BuildTimeoutWrapper.class);
+def descriptor = Jenkins.instance.getDescriptorOrDie(BuildTimeoutWrapper.class)
 
-def myselfName = descriptor.plugin.shortName;
+def myselfName = descriptor.plugin.shortName
 
 // help file for strategy itself.
-def strategyRawHelpFile = descriptor.getHelpFile("strategyRaw");
+def strategyRawHelpFile = descriptor.getHelpFile("strategyRaw")
 
 if (strategyRawHelpFile != null) {
   div(
@@ -41,24 +41,24 @@ if (strategyRawHelpFile != null) {
       helpURL: String.format("%s%s", rootURL, strategyRawHelpFile),
       myselfName: myselfName,
   ) {
-    text("Loading...");
+    text("Loading...")
   }
 }
 
 dl() {
   descriptor.strategies.each() { d ->
-    def helpFile = d.getHelpFile();
-    dt(d.displayName);
+    def helpFile = d.getHelpFile()
+    dt(d.displayName)
     if (helpFile != null) {
       dd(
           class: "build-timeout-nested-help",
           helpURL: String.format("%s%s", rootURL, helpFile),
           myselfName: myselfName,
       ) {
-        text("Loading...");
+        text("Loading...")
       }
     } else {
-      dd("No help available.");
+      dd("No help available.")
     }
   }
 }

@@ -24,8 +24,8 @@
 
 package hudson.plugins.build_timeout.operations;
 
-import static hudson.util.TimeUnit2.MILLISECONDS;
-import static hudson.util.TimeUnit2.MINUTES;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -63,14 +63,11 @@ public class WriteDescriptionOperation extends BuildTimeOutOperation {
         String msg = getDescription();
         try {
             msg = build.getEnvironment(listener).expand(msg);
-        } catch (IOException e) {
-            listener.getLogger().println(String.format("failed to expand string: %s", msg));
-            e.printStackTrace(listener.getLogger());
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             listener.getLogger().println(String.format("failed to expand string: %s", msg));
             e.printStackTrace(listener.getLogger());
         }
-        
+
         msg = MessageFormat.format(msg, effectiveTimeoutMinutes);
         
         try {

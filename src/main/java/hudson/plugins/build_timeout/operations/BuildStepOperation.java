@@ -130,7 +130,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
                 FilePath arg2, Map<String, String> arg3) throws IOException, InterruptedException {
             throw new UnsupportedOperationException("Launcher does not supported in BuildStep timeout operation");
         }
-    };
+    }
     
     /**
      * @return launcher specified with launcherOption.
@@ -234,7 +234,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
         }
 
         public List<Descriptor<?>> getBuildStepDescriptors(AbstractProject<?,?> project) {
-            List<Descriptor<?>> buildsteps = new ArrayList<Descriptor<?>>();
+            List<Descriptor<?>> buildsteps = new ArrayList<>();
             buildsteps.addAll(BuildStepDescriptor.filter(Builder.all(), project.getClass()));
             buildsteps.addAll(BuildStepDescriptor.filter(Publisher.all(), project.getClass()));
             

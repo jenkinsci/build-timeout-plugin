@@ -1,11 +1,20 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>2.35</version>
   </parent>
-  
+
+  <artifactId>build-timeout</artifactId>
+  <version>1.20-SNAPSHOT</version>
+  <packaging>hpi</packaging>
+
+  <name>Build Timeout</name>
+  <description>Aborts a build if it's taking too long</description>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/Build-timeout+Plugin</url>
   <licenses>
     <license>
       <name>The MIT License (MIT)</name>
@@ -13,15 +22,8 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  
-  <artifactId>build-timeout</artifactId>
-  <packaging>hpi</packaging>
-  <name>Build Timeout</name>
-  <description>Aborts a build if it's taking too long</description>
-  <version>1.20-SNAPSHOT</version>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/Build-timeout+Plugin</url>
 
-   <scm>
+  <scm>
     <connection>scm:git:git://github.com/jenkinsci/build-timeout-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/build-timeout-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/build-timeout-plugin</url>
@@ -45,19 +47,19 @@
       <version>1.16</version>
       <optional>true</optional>
     </dependency>
-      <dependency>
-          <!-- naginator -->
-          <groupId>org.jenkins-ci.plugins</groupId>
-          <artifactId>matrix-project</artifactId>
-          <version>1.4</version>
-          <scope>test</scope>
-      </dependency>
-      <dependency>
-          <groupId>org.jenkins-ci.plugins</groupId>
-          <artifactId>junit</artifactId>
-          <version>1.10</version>
-          <scope>test</scope>
-      </dependency>
+    <dependency>
+      <!-- naginator -->
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>1.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <version>1.10</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -72,19 +74,16 @@
     </dependency>
   </dependencies>
 
-    <repositories>
-        <repository>
-            <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
-</project>  
-  
-
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+</project>

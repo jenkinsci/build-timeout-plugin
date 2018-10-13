@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import hudson.util.IOException2;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
@@ -123,7 +122,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             private final AbstractBuild<?,?> build;
             private final BuildListener listener;
             
-            //Did some opertion failed?
+            //Did some operation fail?
             protected boolean operationFailed = false;
             
             final class TimeoutTimerTask extends SafeTimerTask {
@@ -210,7 +209,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
             return new EnvironmentImpl(build, listener);
         } catch (MacroEvaluationException e) {
             e.printStackTrace(listener.fatalError("Could not evaluate macro"));
-            throw new IOException2(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
@@ -222,7 +221,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         
         if ("elastic".equalsIgnoreCase(timeoutType)) {
             strategy = new ElasticTimeOutStrategy(timeoutPercentage,
-                    timeoutMinutesElasticDefault != null ? timeoutMinutesElasticDefault.intValue() : 60,
+                    timeoutMinutesElasticDefault != null ? timeoutMinutesElasticDefault : 60,
                     3);
         } else if ("likelyStuck".equalsIgnoreCase(timeoutType)) {
             strategy = new LikelyStuckTimeOutStrategy();

@@ -61,7 +61,7 @@ public class WriteDescriptionOperationTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(5000),
-                Arrays.<BuildTimeOutOperation>asList(
+                Arrays.asList(
                         new WriteDescriptionOperation(DESCRIPTION),
                         new AbortOperation()
                 )
@@ -103,7 +103,7 @@ public class WriteDescriptionOperationTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(5000),
-                Arrays.<BuildTimeOutOperation>asList(
+                Arrays.asList(
                         new WriteDescriptionOperation(DESCRIPTION1),
                         new AbortOperation(),
                         new WriteDescriptionOperation(DESCRIPTION2)

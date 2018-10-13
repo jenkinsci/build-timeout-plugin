@@ -87,7 +87,7 @@ public class BuildStepOperationTest {
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
                 throws InterruptedException, IOException {
             listener.getLogger().println(String.format(
-                    "%s is exectuted: times=%d",
+                    "%s is executed: times=%d",
                     getClass().getName(), ++executed
             ));
             return result;
@@ -106,7 +106,7 @@ public class BuildStepOperationTest {
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
                 throws InterruptedException, IOException {
             listener.getLogger().println(String.format(
-                    "%s is exectuted: times=%d",
+                    "%s is executed: times=%d",
                     getClass().getName(), ++executed
             ));
             return result;
@@ -114,7 +114,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testDisalbed() throws Exception {
+    public void testDisabled() throws Exception {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         // should be disabled by default.
@@ -376,7 +376,7 @@ public class BuildStepOperationTest {
     public static class NoDataBoundConstructorBuilder extends Builder {
         private String descriptionToSet;
         
-        // @DataBoundConstuctor
+        // @DataBoundConstructor
         public NoDataBoundConstructorBuilder() {
         }
         
