@@ -36,6 +36,7 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
 import hudson.model.Cause;
@@ -43,7 +44,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
 import hudson.model.StringParameterValue;
 import hudson.model.Result;
-import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
@@ -52,7 +52,7 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 public class AbortAndRestartOperationTest {
     
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
+    public JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testAbortAndRestartOnce() throws Exception {
