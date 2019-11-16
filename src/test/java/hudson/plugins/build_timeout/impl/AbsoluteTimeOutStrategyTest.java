@@ -66,7 +66,7 @@ public class AbsoluteTimeOutStrategyTest {
     }
     
     @Test
-    public void testConfigurationWithParameter() throws Exception {
+    public void configurationWithParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(

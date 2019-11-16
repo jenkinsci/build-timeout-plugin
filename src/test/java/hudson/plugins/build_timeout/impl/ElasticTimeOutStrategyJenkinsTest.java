@@ -54,7 +54,7 @@ public class ElasticTimeOutStrategyJenkinsTest {
     public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
     
     @Test
-    public void testCanConfigureWithWebPage() throws Exception {
+    public void canConfigureWithWebPage() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
@@ -93,7 +93,7 @@ public class ElasticTimeOutStrategyJenkinsTest {
     }
     
     @Test
-    public void testFailSafeTimeoutWithVariable() throws Exception {
+    public void failSafeTimeoutWithVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new ElasticTimeOutStrategy("200", "${FailSafeTimeout}", "3", true),

@@ -28,7 +28,7 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    public void testTimeoutWasNotTriggered() throws Exception {
+    public void timeoutWasNotTriggered() throws Exception {
         final FreeStyleProject project = createProjectWithBuildStepWithTimeout(TINY_DELAY, null);
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
@@ -38,7 +38,7 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    public void testTimeoutWasTriggeredWithoutAction() throws Exception {
+    public void timeoutWasTriggeredWithoutAction() throws Exception {
         final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, null);
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
@@ -47,9 +47,8 @@ public class BuildStepWithTimeoutTest {
         j.assertLogNotContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
     }
 
-
     @Test
-    public void testTimeoutWasTriggeredWithAbortOperation() throws Exception {
+    public void timeoutWasTriggeredWithAbortOperation() throws Exception {
         final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, new AbortOperation());
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
@@ -59,7 +58,7 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    public void testTimeoutWasTriggeredWithFailOperation() throws Exception {
+    public void timeoutWasTriggeredWithFailOperation() throws Exception {
         final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, new FailOperation());
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
@@ -75,8 +74,7 @@ public class BuildStepWithTimeoutTest {
         if (operation!=null) {
             operations = new ArrayList<>();
             operations.add(operation);
-        }
-        else {
+        } else {
             operations = null;
         }
 

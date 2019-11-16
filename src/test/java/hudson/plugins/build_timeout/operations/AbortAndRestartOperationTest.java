@@ -46,15 +46,13 @@ import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
-
 public class AbortAndRestartOperationTest {
     
     @Rule
     public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
 
     @Test
-    public void testAbortAndRestartOnce() throws Exception {
-        
+    public void abortAndRestartOnce() throws Exception {
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
@@ -68,7 +66,6 @@ public class AbortAndRestartOperationTest {
         
         testproject.getBuildersList().add(new SleepBuilder(5*60*1000)); //5 minutes
                        
-        
         testproject.scheduleBuild(new Cause.UserIdCause());
 
         j.waitUntilNoActivityUpTo(25000);
@@ -82,8 +79,7 @@ public class AbortAndRestartOperationTest {
     }
     
     @Test
-    public void testAbortAndRestartTwice() throws Exception {
-        
+    public void abortAndRestartTwice() throws Exception {
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
@@ -94,12 +90,10 @@ public class AbortAndRestartOperationTest {
         BuildTimeoutWrapper wrapper = new BuildTimeoutWrapper(strategy,list,"");
         testproject.getBuildWrappersList().add(wrapper);
         
-
         testproject.getBuildersList().add(new SleepBuilder(5*60*1000)); //5 minutes
         
         assertTrue(testproject.getBuilds().size()==0);
-                
-        
+
         testproject.scheduleBuild(new Cause.UserIdCause());
         
         j.waitUntilNoActivityUpTo(25000);
@@ -114,7 +108,7 @@ public class AbortAndRestartOperationTest {
     }
     
     @Test
-    public void testUsingVariable() throws Exception {
+    public void usingVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                      new QuickBuildTimeOutStrategy(1000),
@@ -138,7 +132,7 @@ public class AbortAndRestartOperationTest {
     }
     
     @Test
-    public void testUsingBadRestart() throws Exception {
+    public void usingBadRestart() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                      new QuickBuildTimeOutStrategy(1000),
@@ -161,6 +155,5 @@ public class AbortAndRestartOperationTest {
         // Build is not restarted
         assertEquals(1, p.getBuilds().size());
     }
-    
 }
 
