@@ -39,6 +39,8 @@ import hudson.model.Cause;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.Result;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
@@ -324,6 +326,7 @@ public class BuildStepOperationTest {
                 Arrays.<BuildTimeOutOperation>asList(op),
                 null
         );
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TESTSTRING", null)));
         p.getBuildWrappersList().add(timeout);
         p.getBuildersList().add(new SleepBuilder(9999));
         
@@ -354,6 +357,7 @@ public class BuildStepOperationTest {
                 Arrays.<BuildTimeOutOperation>asList(op),
                 null
         );
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TESTSTRING", null)));
         p.getBuildWrappersList().add(timeout);
         p.getBuildersList().add(new SleepBuilder(9999));
         

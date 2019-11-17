@@ -32,6 +32,8 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
@@ -95,6 +97,7 @@ public class ElasticTimeOutStrategyJenkinsTest {
     @Test
     public void testFailSafeTimeoutWithVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FailSafeTimeout", null)));
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new ElasticTimeOutStrategy("200", "${FailSafeTimeout}", "3", true),
                 null,

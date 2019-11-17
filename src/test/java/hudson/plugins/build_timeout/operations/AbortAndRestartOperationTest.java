@@ -39,6 +39,8 @@ import org.jvnet.hudson.test.SleepBuilder;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.Result;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
@@ -116,6 +118,7 @@ public class AbortAndRestartOperationTest {
     @Test
     public void testUsingVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("RESTART", null)));
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                      new QuickBuildTimeOutStrategy(1000),
                      Arrays.<BuildTimeOutOperation>asList(new AbortAndRestartOperation("${RESTART}")),
@@ -140,6 +143,7 @@ public class AbortAndRestartOperationTest {
     @Test
     public void testUsingBadRestart() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("RESTART", null)));
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                      new QuickBuildTimeOutStrategy(1000),
                      Arrays.<BuildTimeOutOperation>asList(new AbortAndRestartOperation("${RESTART}")),

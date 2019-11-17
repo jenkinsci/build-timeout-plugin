@@ -28,6 +28,8 @@ import hudson.model.Result;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
@@ -87,6 +89,7 @@ public class DeadlineTimeOutStrategyTest {
         String deadline = getDeadlineTimeFromNow(timeToDeadlineInSecondsFromNow);
 
         FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("DEADLINE", null)));
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(new DeadlineTimeOutStrategy("${DEADLINE}",
                         TOLERANCE_PERIOD_IN_MINUTES), Arrays
