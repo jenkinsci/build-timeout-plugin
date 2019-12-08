@@ -14,11 +14,11 @@
 
   <name>Build Timeout</name>
   <description>Aborts a build if it's taking too long</description>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/Build-timeout+Plugin</url>
+  <url>https://wiki.jenkins.io/display/JENKINS/Build-timeout+Plugin</url>
   <licenses>
     <license>
       <name>The MIT License (MIT)</name>
-      <url>http://opensource.org/licenses/MIT</url>
+      <url>https://opensource.org/licenses/MIT</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
