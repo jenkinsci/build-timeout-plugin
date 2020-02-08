@@ -14,7 +14,7 @@
 
   <name>Build Timeout</name>
   <description>Aborts a build if it's taking too long</description>
-  <url>https://wiki.jenkins.io/display/JENKINS/Build-timeout+Plugin</url>
+  <url>https://github.com/jenkinsci/build-timeout-plugin</url>
   <licenses>
     <license>
       <name>The MIT License (MIT)</name>
