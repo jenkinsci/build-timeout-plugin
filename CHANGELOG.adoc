@@ -1,0 +1,120 @@
+== Changelog
+
+=== Version 1.19 (Oct 8, 2017)
+
+* Targets Jenkins 1.625.1 (https://github.com/jenkinsci/build-timeout-plugin/pull/64[Pull request #64]) +
+** You no longer need matrix-project plugin and so on to install build-timeout plugin
+* Improved Japanese translations (https://github.com/jenkinsci/build-timeout-plugin/pull/63[Pull request #63])
+
+=== Version 1.18 (Nov 13, 2016)
+
+* Introduced "*Run with timeout*" build step (https://github.com/jenkinsci/build-timeout-plugin/pull/61/[PR61])
+
+=== Version 1.17.1 (Jul 19, 2016)
+
+* Fixed: a stacktrace is output when Jenkins launches without naginator-plugin (https://issues.jenkins-ci.org/browse/JENKINS-36696[JENKINS-36696])
+
+=== Version 1.17 (Jun 26, 2016)
+
+* A new timeout action: Abort and restart the build (https://issues.jenkins-ci.org/browse/JENKINS-8947[JENKINS-8947])
+** This feature is enabled when you install https://wiki.jenkins-ci.org/display/JENKINS/Naginator+Plugin[Naginator Plugin].
+* Clarified the help text of 'likely stuck' (https://github.com/jenkinsci/build-timeout-plugin/pull/48[#48])
+* The previous help text simply referenced the source code, which isn't helpful for most users.
+
+=== Version 1.16.1 (Jun 20, 2016)
+
+* No change from 1.16.
+* Just to suppress the wrong version in the update center (https://github.com/jenkinsci/build-timeout-plugin/pull/56[#56])
+
+=== Version 1.16 (Jan 24, 2015)
+
+* Introduced fail safe timeout duration for `ElasticTimeOutStrategy` (https://issues.jenkins-ci.org/browse/JENKINS-30564[JENKINS-30564]).
+
+=== Version 1.15.1 (Nov 21, 2015)
+
+* Fixed a memory leak `NoActivityTimeOutStrategy` (https://issues.jenkins-ci.org/browse/JENKINS-31627[JENKINS-31627])
+
+=== Version 1.15 (Jul 26, 2015)
+
+* Added Deadline timeout strategy (https://issues.jenkins-ci.org/browse/JENKINS-29163[JENKINS-29163])
+* Added Spanish translations (https://issues.jenkins-ci.org/browse/JENKINS-29506[JENKINS-29506])
+* Added Japanese translations (https://issues.jenkins-ci.org/browse/JENKINS-29483[JENKINS-29483])
+
+=== Version 1.14.1 (Jan 03, 2015)
+
+* FIXED: timeout actions don't defaults to 'abort build' when no option is selected (https://issues.jenkins-ci.org/browse/JENKINS-23740[JENKINS-23740])
+* Added license notice (MIT) (https://issues.jenkins-ci.org/browse/JENKINS-21270[JENKINS-21270])
+* Improved the performance of `NoActivityTimeOutStrategy` (https://issues.jenkins-ci.org/browse/JENKINS-26170[JENKINS-26170])
+
+=== Version 1.14 (Jun 01, 2014)
+
+* *Now targets Jenkins 1.466.*
+* *This version breaks binary compatibility.*
+** This can affect you onlt in following cases (In other words, this does not affect most users)
+*** When you have private plugins accessing inner information of Build-timeout plugin.
+*** When you have groovy scripts accessing inner information of Build-timeout plugin.
+* Resolved a performance problem introduced in 1.13 by capturing log outputs. (https://issues.jenkins-ci.org/browse/JENKINS-23012[JENKINS-23012])
+* Use dropdown for strategy instead of hetero-radio, as it can conflicts with other plugins. (https://issues.jenkins-ci.org/browse/JENKINS-20164[JENKINS-20164])
+* FIXED: Enable BuildStep Action in System Configuration page was not saved to the disk. (https://issues.jenkins-ci.org/browse/JENKINS-23118[JENKINS-23118])
+* Supported launcher in Perform Buildstep. (https://issues.jenkins-ci.org/browse/JENKINS-23117[JENKINS-23117])
+* Allow use of `$\{...}` style expressions in defining the build timeouts. (https://issues.jenkins-ci.org/browse/JENKINS-9457[JENKINS-9457], https://issues.jenkins-ci.org/browse/JENKINS-19773[JENKINS-19773], https://issues.jenkins-ci.org/browse/JENKINS-20526[JENKINS-20526])
+
+=== Version 1.13 (Mar 29, 2014)
+
+* Added "No Activity" timeout strategy, which triggers timeout when no log output for specified seconds. (https://issues.jenkins-ci.org/browse/JENKINS-13349[JENKINS-13349])
+* Actions performed when timeout occurs can be extended using extension points. (https://issues.jenkins-ci.org/browse/JENKINS-21929[issue #21919])
+* expose the build timeout milliseconds with an environment variable
+* "Perform BuildStep" timeout action is added. It allows you to trigger any build step when timeout.
+** It does not ensure any build steps work correctly.
+** As it is provided as an advanced feature, you need to enable it in System Configuration page to enable in project configuration pages.
+
+=== Version 1.12.2 (Oct 14, 2013)
+
+* Fixed missing strategies selection when a new job is created (https://issues.jenkins-ci.org/browse/JENKINS-19592[JENKINS-19592])
+* Fixed missing label selecting time-out strategy
+
+=== Version 1.12 (Sep 7, 2013)
+
+* Fix elastic timout (https://github.com/jenkinsci/build-timeout-plugin/pull/12[pull #12]).
+* Define an extension point for time-out strategy (https://github.com/jenkinsci/build-timeout-plugin/pull/14[pull #14]).
+* Build Timeout Plugin configuration interface shows all sub options (https://issues.jenkins-ci.org/browse/JENKINS-18618[JENKINS-18618]).
+
+=== Version 1.11 (Oct 28, 2012)
+
+* Change to build timeout job configuration not saved (https://issues.jenkins-ci.org/browse/JENKINS-14158[JENKINS-14158]).
+* Clarified timeoutMinutesElasticDefault's name (https://github.com/jenkinsci/build-timeout-plugin/pull/11[pull #11]).
+
+=== Version 1.10 (Jun 16, 2012)
+
+* Build timeout plugin 1.9 always sets timeout period to 3 minutes.
+* updated to LTS 1.447
+* updated Japanese localization.
+
+=== Version 1.9 (Mar 12, 2012)
+
+* amend build description on timeout
+* elastic timeout option to define timeout as a percent of previous build duration
+* "likely stuck" option
+
+=== Version 1.8 (Aug 27, 2011)
+
+* Marking a build as failed works now as expected.
+* Japanese translation
+
+=== Version 1.7 (Mar 20, 2011)
+
+* Clarify in help text that marking build as failed instead of aborted does still abort the build.
+* Write more detail in log when build is aborted.
+
+=== Version 1.6 (Dec 28, 2009)
+
+* Remove debug output
+* Update uses of deprecated APIs
+
+=== Version 1.5
+
+* Option to mark builds as failed or aborted.
+
+=== Version 1.4
+
+* The plugin now works with the native maven2 job type as well as the matrix job type.
