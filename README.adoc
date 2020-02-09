@@ -1,0 +1,31 @@
+= Build Timeout Plugin
+
+This plugin allows you to automatically abort a build if it's taking too long.
+
+Once the timeout is reached, Jenkins behaves as if an invisible hand has clicked the "abort build" button.
+
+This plugin isn't applicable to pipelines.
+
+Use https://jenkins.io/doc/pipeline/steps/workflow-basic-steps/#timeout-enforce-time-limit[`+timeout+` step in workflow-basic-steps] instead.
+
+== Instructions
+
+After installing the plugin, go to the "*Configure*" page for your job and select "*Abort the build if it's stuck*".
+
+Because Java only allows threads to be interrupted at a set of fixed locations, depending on how a build hangs, the abort operation might not take effect. For example,
+
+* if Jenkins is waiting for child processes to complete, it can abort right away.
+* if Jenkins is stuck in an infinite loop, it can never be aborted.
+* if Jenkins is doing a network or file I/O within the Java VM (such as lengthy file copy or SVN update), it cannot be aborted.
+
+So if you think the build timeout isn't taking effect, our default assumption is that the build is hanging at the place that cannot be interrupted. If you suspect otherwise, please https://wiki.jenkins-ci.org/display/JENKINS/Build+is+hanging[obtain the thread dump] and report it.
+
+== Time-out actions with notes
+
+[cols=",",options="header",]
+|===
+|Time-out action |Note
+|Abort and restart the build |Installing https://plugins.jenkins.io/naginator[Naginator Plugin] enables this action
+|===
+
+include::CHANGELOG.adoc[]
