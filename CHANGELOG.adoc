@@ -1,6 +1,6 @@
 == Changelog
 
-=== Version 1.19.1 (Feb 15, 2019)
+=== Version 1.19.1 (Feb 15, 2020)
 
 * Improve markups in help texts (https://github.com/jenkinsci/build-timeout-plugin/pull/69[Pull request #69])
 * Move wiki-documentation to Github repository (https://github.com/jenkinsci/build-timeout-plugin/pull/75[Pull request #75])
