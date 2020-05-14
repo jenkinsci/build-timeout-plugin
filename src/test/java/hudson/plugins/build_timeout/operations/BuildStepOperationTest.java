@@ -42,6 +42,8 @@ import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.Result;
 import hudson.model.User;
@@ -317,6 +319,8 @@ public class BuildStepOperationTest {
     @Test
     public void testLauncher() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        // needed since Jenkins 2.3
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TESTSTRING", null)));
         
         String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";
         

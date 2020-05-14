@@ -26,10 +26,12 @@ package hudson.plugins.build_timeout.impl;
 
 import java.util.Arrays;
 
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
@@ -68,6 +70,8 @@ public class AbsoluteTimeOutStrategyTest {
     @Test
     public void testConfigurationWithParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        // needed since Jenkins 2.3
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TIMEOUT", null)));
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
                         new AbsoluteTimeOutStrategy("${TIMEOUT}"),
