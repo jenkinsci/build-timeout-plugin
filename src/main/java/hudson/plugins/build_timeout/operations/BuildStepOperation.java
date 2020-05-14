@@ -35,7 +35,9 @@ import java.util.logging.Logger;
 
 import hudson.model.Node;
 import hudson.model.TaskListener;
+import hudson.security.Permission;
 import hudson.util.LogTaskListener;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -139,7 +141,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
             throw new UnsupportedOperationException("Launcher does not supported in BuildStep timeout operation");
         }
     }
-    
+
     /**
      * @return launcher specified with launcherOption.
      */
@@ -247,6 +249,12 @@ public class BuildStepOperation extends BuildTimeOutOperation {
             buildsteps.addAll(BuildStepDescriptor.filter(Publisher.all(), project.getClass()));
             
             return buildsteps;
+        }
+
+        @Nonnull
+        @Override
+        public Permission getRequiredGlobalConfigPagePermission() {
+            return Jenkins.MANAGE;
         }
     }
 }

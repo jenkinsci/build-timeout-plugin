@@ -33,6 +33,8 @@
   <properties>
     <jenkins.version>2.222.1</jenkins.version>
     <java.level>8</java.level>
+    <!-- To be removed once Jenkins.MANAGE permission gets out of beta -->
+    <useBeta>true</useBeta>
   </properties>
 
   <dependencies>
