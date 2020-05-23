@@ -28,6 +28,8 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
 
 import hudson.Extension;
 import hudson.Functions;
@@ -37,16 +39,22 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause;
 import hudson.model.BuildListener;
+import hudson.model.Descriptor;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.Result;
+import hudson.model.User;
 import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.impl.AbsoluteTimeOutStrategy;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
@@ -54,12 +62,15 @@ import hudson.tasks.Recorder;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -308,6 +319,8 @@ public class BuildStepOperationTest {
     @Test
     public void testLauncher() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        // needed since Jenkins 2.3
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TESTSTRING", null)));
         
         String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";
         
@@ -362,6 +375,31 @@ public class BuildStepOperationTest {
                 new Cause.UserCause(),
                 new ParametersAction(new StringParameterValue("TESTSTRING", TESTSTRING))
         ).get());
+    }
+
+    @Test
+    public void managePermissionShouldAccess() {
+        final String USER = "user";
+        final String MANAGER = "manager";
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                // Read access
+                .grant(Jenkins.READ).everywhere().to(USER)
+
+                // Read and Manage
+                .grant(Jenkins.READ).everywhere().to(MANAGER)
+                .grant(Jenkins.MANAGE).everywhere().to(MANAGER)
+        );
+
+        try (ACLContext c = ACL.as(User.getById(USER, true))) {
+            Collection<Descriptor> descriptors = Functions.getSortedDescriptorsForGlobalConfigUnclassified();
+            assertTrue("Global configuration should not be accessible to READ users", descriptors.size() == 0);
+        }
+        try (ACLContext c = ACL.as(User.getById(MANAGER, true))) {
+            Collection<Descriptor> descriptors = Functions.getSortedDescriptorsForGlobalConfigUnclassified();
+            Optional<Descriptor> found = descriptors.stream().filter(descriptor -> descriptor instanceof BuildStepOperation.DescriptorImpl).findFirst();
+            assertTrue("Global configuration should be accessible to MANAGE users", found.isPresent());
+        }
     }
     
     /**

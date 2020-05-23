@@ -26,11 +26,18 @@ package hudson.plugins.build_timeout.operations;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import hudson.model.Node;
+import hudson.model.TaskListener;
+import hudson.security.Permission;
+import hudson.util.LogTaskListener;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -111,8 +118,11 @@ public class BuildStepOperation extends BuildTimeOutOperation {
      * {@link Launcher} that cannot launch anything.
      */
     private static class DummyLauncher extends Launcher {
+
+        private static Logger LOG = Logger.getLogger(BuildStepOperation.DummyLauncher.class.getName());
+
         public DummyLauncher() {
-            super(null, null);
+            super(new LogTaskListener(LOG, Level.INFO), null);
         }
         
         @Override
@@ -131,7 +141,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
             throw new UnsupportedOperationException("Launcher does not supported in BuildStep timeout operation");
         }
     }
-    
+
     /**
      * @return launcher specified with launcherOption.
      */
@@ -239,6 +249,12 @@ public class BuildStepOperation extends BuildTimeOutOperation {
             buildsteps.addAll(BuildStepDescriptor.filter(Publisher.all(), project.getClass()));
             
             return buildsteps;
+        }
+
+        @Nonnull
+        @Override
+        public Permission getRequiredGlobalConfigPagePermission() {
+            return Jenkins.MANAGE;
         }
     }
 }

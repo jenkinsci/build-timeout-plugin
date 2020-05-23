@@ -31,6 +31,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -252,6 +254,8 @@ public class NoActivityTimeOutStrategyTest {
     @Test
     public void testConfigurationWithParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        // needed since Jenkins 2.3
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TIMEOUT", null)));
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
                         new NoActivityTimeOutStrategy("${TIMEOUT}"),

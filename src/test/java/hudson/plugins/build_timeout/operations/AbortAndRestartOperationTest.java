@@ -32,6 +32,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.StringParameterDefinition;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.SleepBuilder;
@@ -116,6 +118,8 @@ public class AbortAndRestartOperationTest {
     @Test
     public void testUsingVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
+        // needed since Jenkins 2.3
+        p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("RESTART", null)));
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                      new QuickBuildTimeOutStrategy(1000),
                      Arrays.<BuildTimeOutOperation>asList(new AbortAndRestartOperation("${RESTART}")),
