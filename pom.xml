@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>build-timeout</artifactId>
-  <version>1.20-SNAPSHOT</version>
+  <version>1.20</version>
   <packaging>hpi</packaging>
 
   <name>Build Timeout</name>
@@ -27,7 +27,7 @@
     <connection>scm:git:git://github.com/jenkinsci/build-timeout-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/build-timeout-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/build-timeout-plugin</url>
-    <tag>HEAD</tag>
+    <tag>build-timeout-1.20</tag>
   </scm>
 
   <properties>
