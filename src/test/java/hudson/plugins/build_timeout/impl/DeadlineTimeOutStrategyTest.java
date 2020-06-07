@@ -31,7 +31,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
-import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.BuildTimeoutWrapperIntegrationTest;
@@ -45,6 +44,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
 /**
@@ -53,8 +53,9 @@ import org.jvnet.hudson.test.SleepBuilder;
  * {@link BuildTimeoutWrapperIntegrationTest}
  */
 public class DeadlineTimeOutStrategyTest {
+
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
+    public JenkinsRule j = new JenkinsRule();
 
     private long origTimeout = 0;
 

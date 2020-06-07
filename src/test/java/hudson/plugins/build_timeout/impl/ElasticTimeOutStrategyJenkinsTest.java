@@ -35,13 +35,13 @@ import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
-import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 
@@ -52,9 +52,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * Tests for {@link ElasticTimeOutStrategy} using Jenkins
  */
 public class ElasticTimeOutStrategyJenkinsTest {
+
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
-    
+    public JenkinsRule j = new JenkinsRule();
+
     @Test
     public void testCanConfigureWithWebPage() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();

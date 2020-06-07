@@ -10,14 +10,17 @@ import hudson.tasks.Builder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BuildStepWithTimeoutTest {
+
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
+    public JenkinsRule j = new JenkinsRule();
+
     private final static long TINY_DELAY = 100L;
     private final static long HUGE_DELAY = 5000L;
 

@@ -31,12 +31,12 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
@@ -45,9 +45,10 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
  *
  */
 public class WriteDescriptionOperationTest {
+
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
-    
+    public JenkinsRule j = new JenkinsRule();
+
     @Before
     public void setUp() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
