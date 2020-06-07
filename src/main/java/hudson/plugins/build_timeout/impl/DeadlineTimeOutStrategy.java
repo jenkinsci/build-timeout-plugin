@@ -76,9 +76,9 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
         deadlineTimestampWithTolerance.add(Calendar.MINUTE, deadlineToleranceInMinutes);
 
         if (deadlineTimestamp.compareTo(now) <= 0 && deadlineTimestampWithTolerance.compareTo(now) > 0) {
-            // Deadline time is a past moment but inside tolerance period. Interrupt build immediately. 
+            // Deadline time is a past moment but inside tolerance period. Terminate build immediately.
             listener.getLogger().println(
-                    Messages.DeadlineTimeOutStrategy_ImmediatelyAbort(expandedDeadlineTime,
+                    Messages.DeadlineTimeOutStrategy_ImmediatelyTerminate(expandedDeadlineTime,
                             deadlineToleranceInMinutes));
             return 0;
         }
