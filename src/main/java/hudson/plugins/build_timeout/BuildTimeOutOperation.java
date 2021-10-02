@@ -57,4 +57,12 @@ public abstract class BuildTimeOutOperation
     public BuildTimeOutOperationDescriptor getDescriptor() {
         return (BuildTimeOutOperationDescriptor)Jenkins.getActiveInstance().getDescriptorOrDie(getClass());
     }
+
+    public void addAction(@Nonnull AbstractBuild<?,?> build, @Nonnull String reason) {
+        BuildTimeOutAction buildTimeoutAction = build.getAction(BuildTimeOutAction.class);
+        if(buildTimeoutAction == null) {
+            buildTimeoutAction = new BuildTimeOutAction(reason);
+        }
+        build.addAction(buildTimeoutAction);
+    }
 }
