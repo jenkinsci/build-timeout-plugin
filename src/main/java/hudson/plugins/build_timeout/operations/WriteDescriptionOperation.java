@@ -68,7 +68,8 @@ public class WriteDescriptionOperation extends BuildTimeOutOperation {
             e.printStackTrace(listener.getLogger());
         }
 
-        addAction("WriteDescriptionOperation");
+        addAction(build, "WriteDescriptionOperation");
+
 
         msg = MessageFormat.format(msg, effectiveTimeoutMinutes);
         
