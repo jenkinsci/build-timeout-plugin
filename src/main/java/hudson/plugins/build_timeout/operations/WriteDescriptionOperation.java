@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2014 IKEDA Yasuyuki
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,19 +43,19 @@ import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
  */
 public class WriteDescriptionOperation extends BuildTimeOutOperation {
     private final String description;
-    
+
     /**
      * @return description to set.
      */
     public String getDescription() {
         return description;
     }
-    
+
     @DataBoundConstructor
     public WriteDescriptionOperation(String description) {
         this.description = description;
     }
-    
+
     @Override
     public boolean perform(AbstractBuild<?, ?> build, BuildListener listener, long effectiveTimeout) {
         // timed out
@@ -68,18 +68,20 @@ public class WriteDescriptionOperation extends BuildTimeOutOperation {
             e.printStackTrace(listener.getLogger());
         }
 
+        addAction(build, "WriteDescriptionOperation");
+
         msg = MessageFormat.format(msg, effectiveTimeoutMinutes);
-        
+
         try {
             build.setDescription(msg);
         } catch (IOException e) {
             listener.getLogger().println("failed to write to the build description!");
             e.printStackTrace(listener.getLogger());
         }
-        
+
         return true;
     }
-    
+
     @Extension
     public static class DescriptorImpl extends BuildTimeOutOperationDescriptor {
         @Override
