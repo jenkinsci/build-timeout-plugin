@@ -61,8 +61,8 @@ public class AbortOperation extends BuildTimeOutOperation {
                 hudson.plugins.build_timeout.Messages.Timeout_Aborted())
         );
 
-        addAction(build, "AbortOperation");
-        
+        addAction(build, this.getClass().getSimpleName());
+
         Executor e = build.getExecutor();
         if (e != null) {
             e.interrupt(Result.ABORTED);

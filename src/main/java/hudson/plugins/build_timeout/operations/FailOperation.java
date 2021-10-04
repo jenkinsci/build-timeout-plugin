@@ -57,7 +57,7 @@ public class FailOperation extends BuildTimeOutOperation {
                 hudson.plugins.build_timeout.Messages.Timeout_Failed())
         );
 
-        addAction(build, "FailOperation");
+        addAction(build, this.getClass().getSimpleName());
         
         Executor e = build.getExecutor();
         if (e != null) {
