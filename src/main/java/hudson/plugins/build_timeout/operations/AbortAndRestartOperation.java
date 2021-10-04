@@ -108,6 +108,8 @@ public class AbortAndRestartOperation extends BuildTimeOutOperation {
         } else {
             listener.error(Messages.AbortAndRestartOperation_InstallNaginator());
         }
+
+        addAction(build, this.getClass().getSimpleName());
         
         return new AbortOperation().perform(build, listener, effectiveTimeout);
     }
