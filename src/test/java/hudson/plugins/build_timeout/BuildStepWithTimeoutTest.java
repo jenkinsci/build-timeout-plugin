@@ -15,6 +15,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 public class BuildStepWithTimeoutTest {
     @Rule
     public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
@@ -35,6 +39,7 @@ public class BuildStepWithTimeoutTest {
 
         j.assertBuildStatusSuccess(build);
         j.assertLogContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
+        assertNull(build.getAction(BuildTimeOutAction.class));
     }
 
     @Test
@@ -56,6 +61,9 @@ public class BuildStepWithTimeoutTest {
 
         j.assertBuildStatus(Result.ABORTED, build);
         j.assertLogNotContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
+        BuildTimeOutAction action = build.getAction(BuildTimeOutAction.class);
+        assertNotNull(action);
+        assertEquals(AbortOperation.class.getSimpleName(), action.getReason());
     }
 
     @Test
@@ -66,6 +74,9 @@ public class BuildStepWithTimeoutTest {
 
         j.assertBuildStatus(Result.FAILURE, build);
         j.assertLogNotContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
+        BuildTimeOutAction action = build.getAction(BuildTimeOutAction.class);
+        assertNotNull(action);
+        assertEquals(FailOperation.class.getSimpleName(), action.getReason());
     }
 
     private FreeStyleProject createProjectWithBuildStepWithTimeout(long delay, BuildTimeOutOperation operation) throws IOException {
