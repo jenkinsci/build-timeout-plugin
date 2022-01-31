@@ -47,7 +47,6 @@ import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.Result;
 import hudson.model.User;
-import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
@@ -82,9 +81,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  *
  */
 public class BuildStepOperationTest {
+
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
-    
+    public JenkinsRule j = new JenkinsRule();
+
     @Before
     public void setUp() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;

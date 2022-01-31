@@ -37,6 +37,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
@@ -51,7 +52,6 @@ import hudson.model.BuildListener;
 import hudson.model.ParametersAction;
 import hudson.model.Result;
 import hudson.model.StringParameterValue;
-import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.operations.AbortOperation;
@@ -61,9 +61,10 @@ import hudson.tasks.Builder;
  *
  */
 public class NoActivityTimeOutStrategyTest {
+
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
-    
+    public JenkinsRule j = new JenkinsRule();
+
     private long origTimeout = 0;
     
     @Before
