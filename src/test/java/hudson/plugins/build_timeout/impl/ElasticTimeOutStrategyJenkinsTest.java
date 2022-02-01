@@ -57,7 +57,7 @@ public class ElasticTimeOutStrategyJenkinsTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void testCanConfigureWithWebPage() throws Exception {
+    public void canConfigureWithWebPage() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
@@ -96,7 +96,7 @@ public class ElasticTimeOutStrategyJenkinsTest {
     }
     
     @Test
-    public void testFailSafeTimeoutWithVariable() throws Exception {
+    public void failSafeTimeoutWithVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FailSafeTimeout", null)));

@@ -74,7 +74,7 @@ public class DeadlineTimeOutStrategyTest {
     }
 
     @Test
-    public void testConfigurationWithParameter() throws Exception {
+    public void configurationWithParameter() throws Exception {
         // Deadline in next three seconds. Job should be aborted in three seconds after start
         testWithParam(3, Result.ABORTED);
 

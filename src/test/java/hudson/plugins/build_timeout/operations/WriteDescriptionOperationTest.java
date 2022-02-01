@@ -41,9 +41,6 @@ import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
-/**
- *
- */
 public class WriteDescriptionOperationTest {
 
     @Rule
@@ -55,7 +52,7 @@ public class WriteDescriptionOperationTest {
     }
     
     @Test
-    public void testSetDescription() throws Exception {
+    public void setDescription() throws Exception {
         final String DESCRIPTION = "description to test: {0}, {0}.";
         final String EXPECTED = "description to test: 0, 0.";
         
@@ -76,7 +73,7 @@ public class WriteDescriptionOperationTest {
     }
     
     @Test
-    public void testSetDescriptionWithoutAborting() throws Exception {
+    public void setDescriptionWithoutAborting() throws Exception {
         final String DESCRIPTION = "description to test: {0}, {0}.";
         final String EXPECTED = "description to test: 0, 0.";
         
@@ -96,7 +93,7 @@ public class WriteDescriptionOperationTest {
     }
     
     @Test
-    public void testSetDescriptionTwice() throws Exception {
+    public void setDescriptionTwice() throws Exception {
         final String DESCRIPTION1 = "description to test: {0}, {0}.";
         final String DESCRIPTION2 = "Another message.";
         final String EXPECTED = "Another message.";

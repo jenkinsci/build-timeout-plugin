@@ -77,9 +77,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
-/**
- *
- */
 public class BuildStepOperationTest {
 
     @Rule
@@ -125,7 +122,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testDisabled() throws Exception {
+    public void disabled() throws Exception {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         // should be disabled by default.
@@ -135,7 +132,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testEnabled() throws Exception {
+    public void enabled() throws Exception {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         d.setEnabled(true);
@@ -145,7 +142,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testBuilder() throws Exception {
+    public void builder() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -168,7 +165,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testBuilderFailContinue() throws Exception {
+    public void builderFailContinue() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -193,7 +190,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testBuilderFailStop() throws Exception {
+    public void builderFailStop() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -218,7 +215,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testPublisher() throws Exception {
+    public void publisher() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestPublisher publisher1 = new TestPublisher();
         TestPublisher publisher2 = new TestPublisher();
@@ -241,7 +238,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testConfiguration() throws Exception {
+    public void configuration() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         ArtifactArchiver archiver = new ArtifactArchiver("**/*.xml", "exclude.xml", false);
         
@@ -278,7 +275,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testConfigurationWithoutDbc() throws Exception {
+    public void configurationWithoutDbc() throws Exception {
         final String STRING_TO_TEST = "foobar";
         
         FreeStyleProject p = j.createFreeStyleProject();
@@ -317,7 +314,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testLauncher() throws Exception {
+    public void launcher() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TESTSTRING", null)));
@@ -349,7 +346,7 @@ public class BuildStepOperationTest {
     }
     
     @Test
-    public void testNoLauncher() throws Exception {
+    public void noLauncher() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         
         String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";

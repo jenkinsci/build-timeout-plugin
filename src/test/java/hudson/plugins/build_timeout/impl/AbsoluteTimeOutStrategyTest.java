@@ -69,7 +69,7 @@ public class AbsoluteTimeOutStrategyTest {
     }
     
     @Test
-    public void testConfigurationWithParameter() throws Exception {
+    public void configurationWithParameter() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TIMEOUT", null)));
