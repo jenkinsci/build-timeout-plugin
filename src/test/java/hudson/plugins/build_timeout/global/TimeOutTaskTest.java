@@ -5,10 +5,13 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
@@ -18,6 +21,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 
 public class TimeOutTaskTest {
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
     @Mock
     private TimeOutProvider timeOutProvider;
     @Mock
@@ -28,7 +33,6 @@ public class TimeOutTaskTest {
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
         task = TimeOutTask.create(timeOutProvider, build, listener, Duration.ofMillis(1));
     }
 

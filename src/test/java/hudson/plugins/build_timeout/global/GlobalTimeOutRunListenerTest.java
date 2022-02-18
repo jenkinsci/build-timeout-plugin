@@ -4,22 +4,27 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class GlobalTimeOutRunListenerTest {
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
     @Mock
     private TimeOutProvider timeOutProvider;
     @Mock
@@ -35,7 +40,6 @@ public class GlobalTimeOutRunListenerTest {
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
         listener = new GlobalTimeOutRunListener(
                 Executors.newSingleThreadScheduledExecutor(),
                 timeOutProvider,
@@ -59,6 +63,6 @@ public class GlobalTimeOutRunListenerTest {
 
         listener.setUpEnvironment(build, launcher, buildListener);
 
-        verifyZeroInteractions(timeOutStore);
+        verifyNoInteractions(timeOutStore);
     }
 }
