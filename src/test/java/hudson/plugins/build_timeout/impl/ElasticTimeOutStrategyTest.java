@@ -4,26 +4,25 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.plugins.build_timeout.BuildTimeOutStrategy;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static hudson.model.Result.SUCCESS;
 import static hudson.plugins.build_timeout.BuildTimeOutStrategy.MINUTES;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
 public class ElasticTimeOutStrategyTest {
 
-    @Rule
-    public final TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    Path directory;
 
     @Test
     public void percentageWithOneBuild() throws Exception {
@@ -31,7 +30,7 @@ public class ElasticTimeOutStrategyTest {
 
         Build b = new Build(new Build(60 * MINUTES, SUCCESS));
 
-        assertEquals("Timeout should be 200% of 60", 120 * MINUTES, strategy.getTimeOut(b,null));
+        assertEquals(120 * MINUTES, strategy.getTimeOut(b,null),"Timeout should be 200% of 60");
     }
 
     @Test
@@ -40,7 +39,7 @@ public class ElasticTimeOutStrategyTest {
 
         Build b = new Build(new Build(20 * MINUTES, SUCCESS, new Build(40 * MINUTES, SUCCESS)));
 
-        assertEquals("Timeout should be 200% of the average of 20 and 40", 60 * MINUTES, strategy.getTimeOut(b,null));
+        assertEquals(60 * MINUTES, strategy.getTimeOut(b,null),"Timeout should be 200% of the average of 20 and 40");
     }
 
     @Test
@@ -48,7 +47,7 @@ public class ElasticTimeOutStrategyTest {
         BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy(200, 90, 3);
 
         Build b = new Build(null);
-        assertEquals("Timeout should be the elastic default.", 90 * MINUTES, strategy.getTimeOut(b,null));
+        assertEquals(90 * MINUTES, strategy.getTimeOut(b,null),"Timeout should be the elastic default.");
     }
 
     @Test
@@ -57,7 +56,7 @@ public class ElasticTimeOutStrategyTest {
 
         Build b = new Build(new Build(20 * MINUTES, SUCCESS));
 
-        assertEquals("Timeout should be the elastic default.", 60 * MINUTES, strategy.getTimeOut(b,null));
+        assertEquals(60 * MINUTES, strategy.getTimeOut(b,null),"Timeout should be the elastic default.");
     }
 
     @Test
@@ -66,7 +65,7 @@ public class ElasticTimeOutStrategyTest {
 
         Build b = new Build(new Build(20 * MINUTES, SUCCESS, new Build(5 * MINUTES, SUCCESS)));
 
-        assertEquals("Timeout should be the elastic default.", 60 * MINUTES, strategy.getTimeOut(b,null));
+        assertEquals(60 * MINUTES, strategy.getTimeOut(b,null),"Timeout should be the elastic default.");
     }
 
     @Test
@@ -81,10 +80,9 @@ public class ElasticTimeOutStrategyTest {
 
         // Timeout should be 200 % of average of builds.
         assertEquals(
-                "Timeout should not be the elastic default.",
                 270 * MINUTES,
-                strategy.getTimeOut(b,null)
-        );
+                strategy.getTimeOut(b,null),"Timeout should not be the elastic default.");
+
     }
 
     private class Build extends FreeStyleBuild {
@@ -128,7 +126,7 @@ public class ElasticTimeOutStrategyTest {
         
         @Override
         public File getRootDir() {
-            return new File(tempDir.getRoot(), getId());
+            return new File(String.valueOf(directory.getRoot()), getId());
         }
     }
 }
