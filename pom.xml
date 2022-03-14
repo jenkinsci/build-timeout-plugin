@@ -126,19 +126,11 @@
       <id>repo.jenkins-ci.org</id>
       <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
-    <repository>
-      <id>repo.jenkins-ci.org/incrementals</id>
-      <url>https://repo.jenkins-ci.org/incrementals/</url>
-    </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
       <url>https://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>repo.jenkins-ci.org/incrementals</id>
-      <url>https://repo.jenkins-ci.org/incrementals/</url>
     </pluginRepository>
   </pluginRepositories>
 </project>
