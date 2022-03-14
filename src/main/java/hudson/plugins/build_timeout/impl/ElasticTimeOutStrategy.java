@@ -12,7 +12,7 @@ import hudson.util.ListBoxModel;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 
 public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
@@ -76,7 +76,7 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener)
+    public long getTimeOut(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         double elasticTimeout = getElasticTimeout(Integer.parseInt(expandAll(build,listener,getTimeoutPercentage())), build, listener);
         if (elasticTimeout == 0) {
@@ -90,12 +90,12 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
         }
     }
 
-    private double getElasticTimeout(int timeoutPercentage, @Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener)
+    private double getElasticTimeout(int timeoutPercentage, @NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         return timeoutPercentage * .01D * (timeoutPercentage > 0 ? averageDuration(build,listener) : 0);
     }
 
-    private double averageDuration(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener)
+    private double averageDuration(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         int nonFailingBuilds = 0;
         int durationSum = 0;

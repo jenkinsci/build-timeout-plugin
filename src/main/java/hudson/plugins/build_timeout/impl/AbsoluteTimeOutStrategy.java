@@ -10,7 +10,7 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 
 /**
@@ -38,7 +38,7 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(@Nonnull AbstractBuild<?,?> build, @Nonnull BuildListener listener)
+    public long getTimeOut(@NonNull AbstractBuild<?,?> build, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         return MINUTES * Math.max((int) (BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS / MINUTES), Integer.parseInt(
                 expandAll(build, listener, getTimeoutMinutes())));

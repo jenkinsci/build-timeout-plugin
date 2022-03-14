@@ -63,7 +63,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Timeout Action to perform any specified {@link BuildStep}, which includes {@link Builder} and {@link Publisher}.
@@ -145,7 +145,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
     /**
      * @return launcher specified with launcherOption.
      */
-    protected Launcher createLauncher(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener) {
+    protected Launcher createLauncher(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener) {
         if(!isCreateLauncher()) {
             return new DummyLauncher();
         }
@@ -170,7 +170,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
     }
     
     @Override
-    public boolean perform(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener, long effectiveTimeout) {
+    public boolean perform(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener, long effectiveTimeout) {
         boolean result;
         try {
             result = getBuildstep().perform(build, createLauncher(build, listener), listener);
@@ -251,7 +251,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
             return buildsteps;
         }
 
-        @Nonnull
+        @NonNull
         @Override
         public Permission getRequiredGlobalConfigPagePermission() {
             return Jenkins.MANAGE;
