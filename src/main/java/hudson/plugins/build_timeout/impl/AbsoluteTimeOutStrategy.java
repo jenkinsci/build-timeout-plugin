@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
- * If the build took longer than <tt>timeoutMinutes</tt> amount of minutes, it will be terminated.
+ * If the build took longer than {@code timeoutMinutes} amount of minutes, it will be terminated.
  */
 public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
 
