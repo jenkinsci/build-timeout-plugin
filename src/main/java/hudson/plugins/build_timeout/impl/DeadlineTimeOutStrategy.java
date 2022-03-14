@@ -20,7 +20,7 @@ import org.kohsuke.stapler.QueryParameter;
 import javax.annotation.Nonnull;
 
 /**
- * If the build reaches <tt>deadlineTime</tt>, it will be terminated.
+ * If the build reaches {@code deadlineTime}, it will be terminated.
  * 
  * @author Fernando Miguélez Palomo (fernando.miguelez@gmail.com)
  */
