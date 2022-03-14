@@ -17,7 +17,7 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * If the build reaches <tt>deadlineTime</tt>, it will be terminated.
@@ -59,7 +59,7 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener) throws InterruptedException,
+    public long getTimeOut(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener) throws InterruptedException,
             MacroEvaluationException, IOException, IllegalArgumentException {
 
         Calendar now = Calendar.getInstance();
@@ -95,7 +95,7 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
         return deadlineTimestamp.getTimeInMillis() - now.getTimeInMillis();
     }
 
-    private static Date parseDeadline(@Nonnull String deadline) throws IllegalArgumentException {
+    private static Date parseDeadline(@NonNull String deadline) throws IllegalArgumentException {
 
         if (deadline.matches(DEADLINE_REGEXP)) {
             try {
