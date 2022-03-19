@@ -36,6 +36,7 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.util.StringJoiner;
 
 /**
  * Timeout when specified time passed since the last output.
@@ -94,7 +95,15 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
             env.rescheduleIfScheduled();
         }
     }
-    
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", NoActivityTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("(deprecated)timeout=" + timeout)
+                .add("timeoutSecondsString='" + timeoutSecondsString + "'")
+                .toString();
+    }
+
     @Extension
     public static class DescriptorImpl extends BuildTimeOutStrategyDescriptor {
         @Override

@@ -13,6 +13,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -49,6 +50,13 @@ public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {
         }
     }
 
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", LikelyStuckTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("preferred='10 x estimated duration'")
+                .add("fallback='24 hours'")
+                .toString();
+    }
 
     public Descriptor<BuildTimeOutStrategy> getDescriptor() {
         return DESCRIPTOR;
