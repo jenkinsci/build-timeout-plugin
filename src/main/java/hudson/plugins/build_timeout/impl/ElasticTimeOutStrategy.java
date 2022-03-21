@@ -14,6 +14,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.util.StringJoiner;
 
 public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
 
@@ -111,6 +112,16 @@ public class ElasticTimeOutStrategy extends BuildTimeOutStrategy {
         }
 
         return nonFailingBuilds > 0 ? ((double)durationSum) / nonFailingBuilds : 0;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", ElasticTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("timeoutPercentage='" + timeoutPercentage + "'")
+                .add("numberOfBuilds='" + numberOfBuilds + "'")
+                .add("failSafeTimeoutDuration=" + failSafeTimeoutDuration)
+                .add("timeoutMinutesElasticDefault='" + timeoutMinutesElasticDefault + "'")
+                .toString();
     }
 
     public Descriptor<BuildTimeOutStrategy> getDescriptor() {

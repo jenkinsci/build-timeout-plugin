@@ -12,6 +12,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.util.StringJoiner;
 
 /**
  * If the build took longer than {@code timeoutMinutes} amount of minutes, it will be terminated.
@@ -47,6 +48,13 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
     @Override
     public Descriptor<BuildTimeOutStrategy> getDescriptor() {
         return DESCRIPTOR;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", AbsoluteTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("timeoutMinutes='" + timeoutMinutes + "'")
+                .toString();
     }
 
     @Extension(ordinal=100) // This is displayed at the top as the default

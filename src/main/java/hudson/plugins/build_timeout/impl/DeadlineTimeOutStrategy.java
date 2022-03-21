@@ -12,6 +12,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.StringJoiner;
 
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -109,6 +110,14 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
         }
 
         throw new IllegalArgumentException(Messages.DeadlineTimeOutStrategy_InvalidDeadlineFormat(deadline));
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", DeadlineTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("deadlineTime='" + deadlineTime + "'")
+                .add("deadlineToleranceInMinutes=" + deadlineToleranceInMinutes)
+                .toString();
     }
 
     @Extension
