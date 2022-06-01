@@ -131,23 +131,11 @@
       <id>repo.jenkins-ci.org</id>
       <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
-    <repository>
-      <!-- Required for using incremental versions of dependencies -->
-      <!-- Please do not remove -->
-      <id>repo.jenkins-ci.org.incrementals</id>
-      <url>https://repo.jenkins-ci.org/incrementals/</url>
-    </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
       <url>https://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-    <pluginRepository>
-      <!-- Required for using incremental versions of dependencies -->
-      <!-- Please do not remove -->
-      <id>repo.jenkins-ci.org.incrementals</id>
-      <url>https://repo.jenkins-ci.org/incrementals/</url>
     </pluginRepository>
   </pluginRepositories>
 </project>
