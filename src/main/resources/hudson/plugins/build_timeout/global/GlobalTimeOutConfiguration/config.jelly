@@ -10,7 +10,9 @@
               <f:hetero-list name="operations" hasHeader="true"
                 descriptors="${instance.allOperations}" items="${instance.operations}"
                 addCaption="${%Add action}" />
-            </f:entry>
+        </f:entry>
+        <f:optionalBlock field="overwriteable" name="overwriteable" inline="true" 
+                title="Are individual jobs allowed to override this global timeout?" checked="${instance.overwriteable}"/>
     </f:optionalBlock>
 
 </f:section>
