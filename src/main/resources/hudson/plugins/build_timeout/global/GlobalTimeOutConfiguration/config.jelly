@@ -12,7 +12,7 @@
                 addCaption="${%Add action}" />
         </f:entry>
         <f:optionalBlock field="overwriteable" name="overwriteable" inline="true" 
-                title="Are individual jobs allowed to override this global timeout?" checked="${instance.overwriteable}"/>
+                title="Are individual jobs allowed to overwrite this global timeout?" checked="${instance.overwriteable}"/>
     </f:optionalBlock>
 
 </f:section>
