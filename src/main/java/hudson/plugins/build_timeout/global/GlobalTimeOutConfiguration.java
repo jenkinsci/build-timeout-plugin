@@ -3,11 +3,11 @@ package hudson.plugins.build_timeout.global;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.plugins.build_timeout.BuildTimeOutOperation;
-import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
-import hudson.plugins.build_timeout.BuildTimeOutStrategy;
-import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
+import hudson.model.FreeStyleProject;
+import hudson.model.Project;
+import hudson.plugins.build_timeout.*;
 import hudson.plugins.build_timeout.operations.AbortOperation;
+import hudson.tasks.Builder;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -32,6 +32,7 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
     private transient Jenkins jenkins;
     private BuildTimeOutStrategy strategy;
     private List<BuildTimeOutOperation> operations;
+    private boolean overwriteable;
 
     public GlobalTimeOutConfiguration() {
         load();
@@ -60,6 +61,7 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
         if (settings.isNullObject()) {
             strategy = null;
             operations = null;
+            overwriteable = false;
             log.info("global timeout has been cleared");
         } else {
             req.bindJSON(this, settings);
@@ -83,7 +85,10 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
     @Override
     public Optional<Duration> timeOutFor(AbstractBuild<?, ?> build, BuildListener listener) {
         try {
-            if (strategy == null) {
+            List<Builder> builders = ((Project<?, ?>) build.getProject()).getBuilders();
+            Optional<Builder> timeoutBuildStep = builders.stream().filter(builder -> builder instanceof BuildStepWithTimeout).findAny();
+
+            if (strategy == null || (timeoutBuildStep.isPresent() && isOverwriteable())) {
                 return Optional.empty();
             }
             return Optional.of(Duration.ofMillis(strategy.getTimeOut(build, listener)));
@@ -95,6 +100,15 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
 
     public boolean isEnabled() {
         return strategy != null;
+    }
+
+    public boolean isOverwriteable() {
+        return overwriteable;
+    }
+    
+    
+    public void setOverwriteable(boolean overwriteable) {
+        this.overwriteable = overwriteable;
     }
 
     @Override
