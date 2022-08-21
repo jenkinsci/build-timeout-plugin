@@ -8,7 +8,24 @@ Use the https://jenkins.io/doc/pipeline/steps/workflow-basic-steps/#timeout-enfo
 
 == Instructions
 
-After installing the plugin, go to the "*Configure*" page for your job and select "*Terminate a build if it's stuck*".
+=== Global Configuration
+
+Go to `Manage Jenkins` and then `Configure System`. Under the item `Global Build Time Out` you can activate a global 
+timeout which will be applied to any job. Choose your timeout strategy, the duration and add actions which should be 
+executed at timeout.
+
+In addition, the option can be activated that individual jobs can overwrite the global timeout if they 
+provide a corresponding build step.
+
+image::doc/global-config.png[]
+
+=== Build environment
+
+Alternatively, the timeout can be specified in the build environment of a job. 
+To do this, click `Configure` in the job view and in the build environment section, select the item 
+`Terminate a build if it's stuck`.
+
+image::doc/build-environment.png[]
 
 Because Java only allows threads to be interrupted at a set of fixed locations, depending on how a build hangs, the abort operation might not take effect. For example,
 
@@ -17,6 +34,13 @@ Because Java only allows threads to be interrupted at a set of fixed locations, 
 * if Jenkins is doing a network or file I/O within the Java VM (such as lengthy file copy or SVN update), it cannot be aborted.
 
 So if you think the build timeout isn't taking effect, our default assumption is that the build is hanging at the place that cannot be interrupted. If you suspect otherwise, please https://wiki.jenkins-ci.org/display/JENKINS/Build+is+hanging[obtain the thread dump] and report it.
+
+=== Build step
+
+Add a new step `Run with timeout` at the section `Build`, add the timeout strategy and duration, add some actions and 
+the build step you want to execute within the timout step.
+
+image::doc/build-step.png[]
 
 == Time-out actions with notes
 
