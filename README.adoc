@@ -6,9 +6,9 @@ This plugin isn't applicable to pipelines.
 
 Use the https://jenkins.io/doc/pipeline/steps/workflow-basic-steps/#timeout-enforce-time-limit[`+timeout+` step in workflow-basic-steps] instead.
 
-== Instructions
+== Instructions for the user
 
-=== Global Configuration
+=== Global configuration
 
 Go to `Manage Jenkins` and then `Configure System`. Under the item `Global Build Time Out` you can activate a global 
 timeout which will be applied to any job. Choose your timeout strategy, the duration and add actions which should be 
@@ -18,6 +18,9 @@ In addition, the option can be activated that individual jobs can overwrite the 
 provide a corresponding build step.
 
 image::doc/global-config.png[]
+
+Note that sometimes if a project is not of the `hudson.model.Project` type,
+then the individual jobs would not be allowed to overwrite the global timeout.
 
 === Build environment
 
@@ -41,6 +44,27 @@ Add a new step `Run with timeout` at the section `Build`, add the timeout strate
 the build step you want to execute within the timout step.
 
 image::doc/build-step.png[]
+
+== For developers
+
+If you are interested in contributing,
+please pay attention to the below steps:
+
+=== To test
+
+[source,shell]
+----
+mvn verify
+----
+
+=== To build
+[source,shell]
+----
+mvn hpi:run
+----
+
+For newcomers,
+please see guide at https://www.jenkins.io/participate/[] for more information about how to participate and contribute.
 
 == Time-out actions with notes
 
