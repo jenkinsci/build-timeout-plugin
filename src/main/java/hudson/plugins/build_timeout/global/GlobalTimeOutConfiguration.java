@@ -3,9 +3,12 @@ package hudson.plugins.build_timeout.global;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.FreeStyleProject;
 import hudson.model.Project;
-import hudson.plugins.build_timeout.*;
+import hudson.plugins.build_timeout.BuildTimeOutOperation;
+import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
+import hudson.plugins.build_timeout.BuildTimeOutStrategy;
+import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
+import hudson.plugins.build_timeout.BuildStepWithTimeout;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.tasks.Builder;
 import jenkins.model.GlobalConfiguration;
@@ -92,6 +95,18 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
                 return Optional.empty();
             }
             return Optional.of(Duration.ofMillis(strategy.getTimeOut(build, listener)));
+
+        } catch (ClassCastException e) {
+            log.log(WARNING, e, () -> String.format("%s cannot allow individual jobs to overwrite timeout due to ClassCastException", build.getExternalizableId()));
+            if (strategy == null) {
+                return Optional.empty();
+            }
+            try {
+                return Optional.of(Duration.ofMillis(strategy.getTimeOut(build, listener)));
+            } catch (InterruptedException | MacroEvaluationException | IOException ex) {
+                log.log(WARNING, ex, () -> String.format("%s failed to determine time out", build.getExternalizableId()));
+                return Optional.empty();
+            }
         } catch (InterruptedException | MacroEvaluationException | IOException e) {
             log.log(WARNING, e, () -> String.format("%s failed to determine time out", build.getExternalizableId()));
             return Optional.empty();
