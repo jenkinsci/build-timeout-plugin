@@ -91,7 +91,7 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
             List<Builder> builders = ((Project<?, ?>) build.getProject()).getBuilders();
             Optional<Builder> timeoutBuildStep = builders.stream().filter(builder -> builder instanceof BuildStepWithTimeout).findAny();
 
-            if (strategy == null || (timeoutBuildStep.isPresent() && isOverwriteable())) {
+            if (strategy == null || (timeoutBuildStep.isPresent() && getOverwriteable())) {
                 return Optional.empty();
             }
             return Optional.of(Duration.ofMillis(strategy.getTimeOut(build, listener)));
@@ -117,11 +117,10 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
         return strategy != null;
     }
 
-    public boolean isOverwriteable() {
+    public boolean getOverwriteable() {
         return overwriteable;
     }
-    
-    
+
     public void setOverwriteable(boolean overwriteable) {
         this.overwriteable = overwriteable;
     }
