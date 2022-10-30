@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.47</version>
+    <version>4.48</version>
     <relativePath />
   </parent>
 
@@ -25,7 +25,7 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
+    <connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
     <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
     <tag>${scmTag}</tag>
     <url>https://github.com/${gitHubRepo}</url>
@@ -35,14 +35,9 @@
     <revision>1.25</revision>
     <changelist>-SNAPSHOT</changelist>
     <jenkins.version>2.332.3</jenkins.version>
-    <java.level>8</java.level>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <!-- To be removed once Jenkins.MANAGE permission gets out of beta -->
     <useBeta>true</useBeta>
-    <maven.version>3.8.5</maven.version>
-    <junit.version>5.8.2</junit.version>
-    <mockito.version>4.3.1</mockito.version>
-    <junit-platform-launcher.version>1.8.2</junit-platform-launcher.version>
   </properties>
 
   <build>
@@ -50,11 +45,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.10.1</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-<!--          <compilerVersion>1.8</compilerVersion>-->
           <!-- Start of logging for debugging -->
           <!-- Please feel free to uncomment during debugging -->
           <showDeprecation>true</showDeprecation>
@@ -75,20 +66,6 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>${junit.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-bom</artifactId>
-        <version>${mockito.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -103,25 +80,9 @@
       <version>1.18.1</version>
       <optional>true</optional>
     </dependency>
-
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
