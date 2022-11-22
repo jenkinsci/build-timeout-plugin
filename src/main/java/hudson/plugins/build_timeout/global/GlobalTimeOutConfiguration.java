@@ -61,10 +61,10 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) {
         JSONObject settings = json.getJSONObject("timeout").getJSONObject("global");
+        overwriteable = false;
         if (settings.isNullObject()) {
             strategy = null;
             operations = null;
-            overwriteable = false;
             log.info("global timeout has been cleared");
         } else {
             req.bindJSON(this, settings);
