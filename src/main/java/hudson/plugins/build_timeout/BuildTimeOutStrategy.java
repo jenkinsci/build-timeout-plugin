@@ -3,12 +3,8 @@ package hudson.plugins.build_timeout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import hudson.model.BuildListener;
+import hudson.model.*;
 import jenkins.model.Jenkins;
-import hudson.model.AbstractBuild;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Run;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
@@ -42,6 +38,11 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
     public long getTimeOut(@NonNull AbstractBuild<?,?> build, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         // call through to the old method.
+        return getTimeOut(build);
+    }
+
+    public long getTimeOut(@NonNull Run build, @NonNull BuildListener listener)
+        throws InterruptedException, MacroEvaluationException, IOException {
         return getTimeOut(build);
     }
 
@@ -109,5 +110,4 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
     protected final static boolean hasMacros(@NonNull String value) {
         return value.contains("${");
     }
-   
 }

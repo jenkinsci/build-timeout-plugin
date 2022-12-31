@@ -2,11 +2,7 @@ package hudson.plugins.build_timeout.global;
 
 import hudson.Extension;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
-import hudson.model.Environment;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.model.listeners.RunListener;
 
 import javax.annotation.Nonnull;
@@ -46,6 +42,9 @@ public class GlobalTimeOutRunListener extends RunListener<Run<?, ?>> {
                         TimeUnit.MILLISECONDS))
                 .ifPresent(future -> store.scheduled(build.getExternalizableId(), future));
         return super.setUpEnvironment(build, launcher, listener);
+    }
+
+    public void setUpEnvironment(AbstractProject build, Launcher launcher, BuildListener listener) {
     }
 
     @Override

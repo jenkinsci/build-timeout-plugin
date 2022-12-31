@@ -55,7 +55,7 @@ public class TimeOutTask implements Runnable {
         }
     }
 
-    public static TimeOutTask create(TimeOutProvider timeOutProvider, AbstractBuild<?, ?> build, BuildListener listener, Duration duration) {
+    public static TimeOutTask create(TimeOutProvider timeOutProvider, AbstractBuild<?,?> build, BuildListener listener, Duration duration) {
         return new TimeOutTask(timeOutProvider, build, listener, duration);
     }
 }
