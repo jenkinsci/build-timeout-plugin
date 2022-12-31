@@ -2,6 +2,7 @@ package hudson.plugins.build_timeout.global;
 
 import hudson.Extension;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Project;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
@@ -86,7 +87,7 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
     }
 
     @Override
-    public Optional<Duration> timeOutFor(AbstractBuild<?, ?> build, BuildListener listener) {
+    public Optional<Duration> timeOutFor(AbstractBuild<?,?> build, BuildListener listener) {
         try {
             List<Builder> builders = ((Project<?, ?>) build.getProject()).getBuilders();
             Optional<Builder> timeoutBuildStep = builders.stream().filter(builder -> builder instanceof BuildStepWithTimeout).findAny();
@@ -111,6 +112,11 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
             log.log(WARNING, e, () -> String.format("%s failed to determine time out", build.getExternalizableId()));
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<Duration> timeOutFor(AbstractProject<?,?> build, BuildListener listener) {
+        return Optional.empty();
     }
 
     public boolean isEnabled() {
