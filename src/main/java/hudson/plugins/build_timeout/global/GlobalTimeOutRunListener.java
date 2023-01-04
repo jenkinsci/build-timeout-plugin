@@ -9,6 +9,8 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -44,7 +46,13 @@ public class GlobalTimeOutRunListener extends RunListener<Run<?, ?>> {
         return super.setUpEnvironment(build, launcher, listener);
     }
 
-    public void setUpEnvironment(AbstractProject build, Launcher launcher, BuildListener listener) {
+    public Environment setUpEnvironment(AbstractProject<?,?> build, Launcher launcher, BuildListener listener) {
+        return new Environment() {
+            @Override
+            public void buildEnvVars(Map<String, String> env) {
+                super.buildEnvVars(env);
+            }
+        };
     }
 
     @Override
