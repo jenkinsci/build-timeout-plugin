@@ -87,6 +87,11 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
     }
 
     @Override
+    public Optional<Duration> timeOutFor(AbstractProject<?,?> build, BuildListener listener) {
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<Duration> timeOutFor(AbstractBuild<?,?> build, BuildListener listener) {
         try {
             List<Builder> builders = ((Project<?, ?>) build.getProject()).getBuilders();
@@ -96,27 +101,21 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
                 return Optional.empty();
             }
             return Optional.of(Duration.ofMillis(strategy.getTimeOut(build, listener)));
-
-        } catch (ClassCastException e) {
-            log.log(WARNING, e, () -> String.format("%s cannot allow individual jobs to overwrite timeout due to ClassCastException", build.getExternalizableId()));
-            if (strategy == null) {
-                return Optional.empty();
-            }
-            try {
-                return Optional.of(Duration.ofMillis(strategy.getTimeOut(build, listener)));
-            } catch (InterruptedException | MacroEvaluationException | IOException ex) {
-                log.log(WARNING, ex, () -> String.format("%s failed to determine time out", build.getExternalizableId()));
-                return Optional.empty();
-            }
+//        } catch (ClassCastException e) {
+//            log.log(WARNING, e, () -> String.format("%s cannot allow individual jobs to overwrite timeout due to ClassCastException", build.getExternalizableId()));
+//            if (strategy == null) {
+//                return Optional.empty();
+//            }
+//            try {
+//                return Optional.of(Duration.ofMillis(strategy.getTimeOut(build, listener)));
+//            } catch (InterruptedException | MacroEvaluationException | IOException ex) {
+//                log.log(WARNING, ex, () -> String.format("%s failed to determine time out", build.getExternalizableId()));
+//                return Optional.empty();
+//            }
         } catch (InterruptedException | MacroEvaluationException | IOException e) {
             log.log(WARNING, e, () -> String.format("%s failed to determine time out", build.getExternalizableId()));
             return Optional.empty();
         }
-    }
-
-    @Override
-    public Optional<Duration> timeOutFor(AbstractProject<?,?> build, BuildListener listener) {
-        return Optional.empty();
     }
 
     public boolean isEnabled() {
