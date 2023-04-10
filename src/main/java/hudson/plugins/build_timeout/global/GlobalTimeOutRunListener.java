@@ -46,15 +46,6 @@ public class GlobalTimeOutRunListener extends RunListener<Run<?, ?>> {
         return super.setUpEnvironment(build, launcher, listener);
     }
 
-    public Environment setUpEnvironment(AbstractProject<?,?> build, Launcher launcher, BuildListener listener) {
-        return new Environment() {
-            @Override
-            public void buildEnvVars(Map<String, String> env) {
-                super.buildEnvVars(env);
-            }
-        };
-    }
-
     @Override
     public void onCompleted(Run<?, ?> run, @Nonnull TaskListener listener) {
         store.cancel(run.getExternalizableId());

@@ -87,11 +87,6 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
     }
 
     @Override
-    public Optional<Duration> timeOutFor(AbstractProject<?,?> build, BuildListener listener) {
-        return Optional.empty();
-    }
-
-    @Override
     public Optional<Duration> timeOutFor(AbstractBuild<?,?> build, BuildListener listener) {
         try {
             List<Builder> builders = ((Project<?, ?>) build.getProject()).getBuilders();
