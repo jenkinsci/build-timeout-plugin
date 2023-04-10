@@ -1,6 +1,6 @@
 == Changelog
 
-See the https://github.com/jenkinsci/build-timeout-plugin/releases[Github releases page].
+See the https://github.com/jenkinsci/build-timeout-plugin/releases[GitHub releases page].
 
 Old changelogs:
 

@@ -34,8 +34,9 @@ import hudson.plugins.build_timeout.BuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.util.StringJoiner;
 
 /**
  * Timeout when specified time passed since the last output.
@@ -82,7 +83,7 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
     }
     
     @Override
-    public long getTimeOut(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener)
+    public long getTimeOut(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         return Long.parseLong(expandAll(build, listener, getTimeoutSecondsString())) * 1000L;
     }
@@ -94,7 +95,15 @@ public class NoActivityTimeOutStrategy extends BuildTimeOutStrategy {
             env.rescheduleIfScheduled();
         }
     }
-    
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", NoActivityTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("(deprecated)timeout=" + timeout)
+                .add("timeoutSecondsString='" + timeoutSecondsString + "'")
+                .toString();
+    }
+
     @Extension
     public static class DescriptorImpl extends BuildTimeOutStrategyDescriptor {
         @Override

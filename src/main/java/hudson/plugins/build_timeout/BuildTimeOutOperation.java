@@ -31,7 +31,7 @@ import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Defines an operation performed when timeout occurs.
@@ -49,7 +49,7 @@ public abstract class BuildTimeOutOperation
      * @param effectiveTimeout  timeout (milliseconds)
      * @return false not to run subsequent operations. It also mark the build as failure.
      */
-    public abstract boolean perform(@Nonnull AbstractBuild<?,?> build, @Nonnull BuildListener listener, long effectiveTimeout);
+    public abstract boolean perform(@NonNull AbstractBuild<?,?> build, @NonNull BuildListener listener, long effectiveTimeout);
     
     /**
      * @see hudson.model.Describable#getDescriptor()

@@ -12,15 +12,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.StringJoiner;
 
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * If the build reaches <tt>deadlineTime</tt>, it will be terminated.
+ * If the build reaches {@code deadlineTime}, it will be terminated.
  * 
  * @author Fernando Miguélez Palomo (fernando.miguelez@gmail.com)
  */
@@ -59,7 +60,7 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener) throws InterruptedException,
+    public long getTimeOut(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener) throws InterruptedException,
             MacroEvaluationException, IOException, IllegalArgumentException {
 
         Calendar now = Calendar.getInstance();
@@ -76,9 +77,9 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
         deadlineTimestampWithTolerance.add(Calendar.MINUTE, deadlineToleranceInMinutes);
 
         if (deadlineTimestamp.compareTo(now) <= 0 && deadlineTimestampWithTolerance.compareTo(now) > 0) {
-            // Deadline time is a past moment but inside tolerance period. Interrupt build immediately. 
+            // Deadline time is a past moment but inside tolerance period. Terminate build immediately.
             listener.getLogger().println(
-                    Messages.DeadlineTimeOutStrategy_ImmediatelyAbort(expandedDeadlineTime,
+                    Messages.DeadlineTimeOutStrategy_ImmediatelyTerminate(expandedDeadlineTime,
                             deadlineToleranceInMinutes));
             return 0;
         }
@@ -95,7 +96,7 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
         return deadlineTimestamp.getTimeInMillis() - now.getTimeInMillis();
     }
 
-    private static Date parseDeadline(@Nonnull String deadline) throws IllegalArgumentException {
+    private static Date parseDeadline(@NonNull String deadline) throws IllegalArgumentException {
 
         if (deadline.matches(DEADLINE_REGEXP)) {
             try {
@@ -109,6 +110,14 @@ public class DeadlineTimeOutStrategy extends BuildTimeOutStrategy {
         }
 
         throw new IllegalArgumentException(Messages.DeadlineTimeOutStrategy_InvalidDeadlineFormat(deadline));
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", DeadlineTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("deadlineTime='" + deadlineTime + "'")
+                .add("deadlineToleranceInMinutes=" + deadlineToleranceInMinutes)
+                .toString();
     }
 
     @Extension

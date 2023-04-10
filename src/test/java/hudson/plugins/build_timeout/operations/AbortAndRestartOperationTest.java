@@ -32,6 +32,7 @@ import hudson.model.StringParameterDefinition;
 import hudson.plugins.build_timeout.BuildTimeOutAction;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
 import hudson.model.Cause;
@@ -39,22 +40,19 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParametersAction;
 import hudson.model.StringParameterValue;
 import hudson.model.Result;
-import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
 import static org.junit.Assert.*;
 
-
 public class AbortAndRestartOperationTest {
 
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
+    public JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testAbortAndRestartOnce() throws Exception {
-
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
@@ -67,7 +65,6 @@ public class AbortAndRestartOperationTest {
 
 
         testproject.getBuildersList().add(new SleepBuilder(5*60*1000)); //5 minutes
-
 
         testproject.scheduleBuild(new Cause.UserIdCause());
 
@@ -97,12 +94,10 @@ public class AbortAndRestartOperationTest {
 
         BuildTimeoutWrapper wrapper = new BuildTimeoutWrapper(strategy,list,"");
         testproject.getBuildWrappersList().add(wrapper);
-
-
+        
         testproject.getBuildersList().add(new SleepBuilder(5*60*1000)); //5 minutes
 
         assertTrue(testproject.getBuilds().size()==0);
-
 
         testproject.scheduleBuild(new Cause.UserIdCause());
 
@@ -122,7 +117,7 @@ public class AbortAndRestartOperationTest {
     }
 
     @Test
-    public void testUsingVariable() throws Exception {
+    public void usingVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("RESTART", null)));
@@ -151,7 +146,7 @@ public class AbortAndRestartOperationTest {
     }
 
     @Test
-    public void testUsingBadRestart() throws Exception {
+    public void usingBadRestart() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                      new QuickBuildTimeOutStrategy(1000),
@@ -178,6 +173,5 @@ public class AbortAndRestartOperationTest {
         assertNotNull(action);
         assertEquals(AbortAndRestartOperation.class.getSimpleName(), action.getReason());
     }
-
 }
 

@@ -10,11 +10,12 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.util.StringJoiner;
 
 /**
- * If the build took longer than <tt>timeoutMinutes</tt> amount of minutes, it will be terminated.
+ * If the build took longer than {@code timeoutMinutes} amount of minutes, it will be terminated.
  */
 public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
 
@@ -38,7 +39,7 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(@Nonnull AbstractBuild<?,?> build, @Nonnull BuildListener listener)
+    public long getTimeOut(@NonNull AbstractBuild<?,?> build, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         return MINUTES * Math.max((int) (BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS / MINUTES), Integer.parseInt(
                 expandAll(build, listener, getTimeoutMinutes())));
@@ -47,6 +48,13 @@ public class AbsoluteTimeOutStrategy extends BuildTimeOutStrategy {
     @Override
     public Descriptor<BuildTimeOutStrategy> getDescriptor() {
         return DESCRIPTOR;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", AbsoluteTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("timeoutMinutes='" + timeoutMinutes + "'")
+                .toString();
     }
 
     @Extension(ordinal=100) // This is displayed at the top as the default

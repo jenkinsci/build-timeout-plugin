@@ -11,8 +11,9 @@ import hudson.plugins.build_timeout.BuildTimeOutStrategyDescriptor;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,7 +30,7 @@ public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {
     }
 
     @Override
-    public long getTimeOut(@Nonnull AbstractBuild<?, ?> run, @Nonnull BuildListener listener)
+    public long getTimeOut(@NonNull AbstractBuild<?, ?> run, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         Executor executor = run.getExecutor();
         if (executor == null) {
@@ -49,6 +50,13 @@ public class LikelyStuckTimeOutStrategy extends BuildTimeOutStrategy {
         }
     }
 
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", LikelyStuckTimeOutStrategy.class.getSimpleName() + "[", "]")
+                .add("preferred='10 x estimated duration'")
+                .add("fallback='24 hours'")
+                .toString();
+    }
 
     public Descriptor<BuildTimeOutStrategy> getDescriptor() {
         return DESCRIPTOR;

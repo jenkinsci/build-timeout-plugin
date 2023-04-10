@@ -31,30 +31,28 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import hudson.plugins.build_timeout.BuildTimeOutJenkinsRule;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
-/**
- *
- */
 public class WriteDescriptionOperationTest {
+
     @Rule
-    public BuildTimeOutJenkinsRule j = new BuildTimeOutJenkinsRule();
-    
+    public JenkinsRule j = new JenkinsRule();
+
     @Before
     public void setUp() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
     }
     
     @Test
-    public void testSetDescription() throws Exception {
+    public void setDescription() throws Exception {
         final String DESCRIPTION = "description to test: {0}, {0}.";
         final String EXPECTED = "description to test: 0, 0.";
         
@@ -75,7 +73,7 @@ public class WriteDescriptionOperationTest {
     }
     
     @Test
-    public void testSetDescriptionWithoutAborting() throws Exception {
+    public void setDescriptionWithoutAborting() throws Exception {
         final String DESCRIPTION = "description to test: {0}, {0}.";
         final String EXPECTED = "description to test: 0, 0.";
         
@@ -95,7 +93,7 @@ public class WriteDescriptionOperationTest {
     }
     
     @Test
-    public void testSetDescriptionTwice() throws Exception {
+    public void setDescriptionTwice() throws Exception {
         final String DESCRIPTION1 = "description to test: {0}, {0}.";
         final String DESCRIPTION2 = "Another message.";
         final String EXPECTED = "Another message.";

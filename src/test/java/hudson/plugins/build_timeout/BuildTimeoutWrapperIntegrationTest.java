@@ -23,8 +23,11 @@ import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
 import org.jvnet.hudson.test.SleepBuilder;
@@ -35,14 +38,23 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
+
+	@Rule
+	public JenkinsRule j = new JenkinsRule();
 
 	/*
 	 * Method to get environment variables when no timeout env variable is declared
 	 */
 	public EnvVars getEnvVars() throws Exception {
 		BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
-		FreeStyleProject project = createFreeStyleProject();
+		FreeStyleProject project = j.createFreeStyleProject();
 		project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(300000), false, false));
 		CaptureEnvironmentBuilder captureEnvBuilder = new CaptureEnvironmentBuilder();
 		project.getBuildersList().add(captureEnvBuilder);
@@ -53,10 +65,10 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 	/*
 	 * Test to verify setting a timeout environment variable to a valid string
 	 */
-	public void testBuildTimeoutEnvValid() throws Exception {
-
+	@Test
+	public void buildTimeoutEnvValid() throws Exception {
 		EnvVars expectedEnvVars = getEnvVars();
-	  	FreeStyleProject project = createFreeStyleProject();
+		FreeStyleProject project = j.createFreeStyleProject();
 	  	project.getBuildWrappersList().add(new BuildTimeoutWrapper(
               new QuickBuildTimeOutStrategy(12345),
               Arrays.<BuildTimeOutOperation>asList(),
@@ -74,10 +86,10 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 	/*
 	 * Test to verify setting timeout environment variable to null (this is the default)
 	 */
-	public void testBuildTimeoutEnvNull() throws Exception {
-
+	@Test
+	public void buildTimeoutEnvNull() throws Exception {
 	    EnvVars expectedEnvVars = getEnvVars();
-		FreeStyleProject project = createFreeStyleProject();
+		FreeStyleProject project = j.createFreeStyleProject();
 		project.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(12345),
                 Arrays.<BuildTimeOutOperation>asList(),
@@ -94,10 +106,10 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 	/*
 	 * Test to verify setting timeout environment variable to empty string.
 	 */
-	public void testBuildTimeoutEnvEmpty() throws Exception {
-
+	@Test
+	public void buildTimeoutEnvEmpty() throws Exception {
 		EnvVars expectedEnvVars = getEnvVars();
-		FreeStyleProject project = createFreeStyleProject();
+		FreeStyleProject project = j.createFreeStyleProject();
 		project.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(12345),
                 Arrays.<BuildTimeOutOperation>asList(),
@@ -110,17 +122,19 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
   		assertEquals(expectedEnvVars.size(), envVars.size());
 	}
-
-	@Bug(9203)
+	
+	@Issue("JENKINS-9203")
+	@Test
 	public void testIssue9203() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
-		FreeStyleProject project = createFreeStyleProject();
+		FreeStyleProject project = j.createFreeStyleProject();
 		project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(), true, false));
         project.getBuildersList().add(new SleepBuilder(9999));
 		FreeStyleBuild build = project.scheduleBuild2(0).get();
-		assertBuildStatus(Result.FAILURE, build);
-        System.err.println(getLog(build));
+		j.assertBuildStatus(Result.FAILURE, build);
+		System.err.println(j.getLog(build));
 	}
+
     public static class ExecutionCheckBuilder extends Builder {
         public boolean executed = false;
 
@@ -180,12 +194,12 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         }
     }
 
-    public void testAbort() throws Exception
-    {
+    @Test
+    public void testAbort() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
         // No description
         {
-            FreeStyleProject project = createFreeStyleProject();
+            FreeStyleProject project = j.createFreeStyleProject();
             project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(), false, false));
             project.getBuildersList().add(new SleepBuilder(9999));
 
@@ -199,7 +213,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-            assertBuildStatus(Result.ABORTED, build);
+            j.assertBuildStatus(Result.ABORTED, build);
             assertFalse(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNull(build.getDescription());
@@ -209,7 +223,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // Set description
         {
-            FreeStyleProject project = createFreeStyleProject();
+            FreeStyleProject project = j.createFreeStyleProject();
             project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(), false, true));
             project.getBuildersList().add(new SleepBuilder(9999));
 
@@ -222,8 +236,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatus(Result.ABORTED, build);
+            
+            j.assertBuildStatus(Result.ABORTED, build);
             assertFalse(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNotNull(build.getDescription());
@@ -234,7 +248,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // Not aborted
         {
-            FreeStyleProject project = createFreeStyleProject();
+            FreeStyleProject project = j.createFreeStyleProject();
             project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(), false, true));
             project.getBuildersList().add(new SleepBuilder(1000));
 
@@ -247,8 +261,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatusSuccess(build);
+            
+            j.assertBuildStatusSuccess(build);
             assertTrue(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNull(build.getDescription());
@@ -256,12 +270,12 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         }
     }
 
-    public void testFail() throws Exception
-    {
+    @Test
+    public void testFail() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
         // No description
         {
-            FreeStyleProject project = createFreeStyleProject();
+            FreeStyleProject project = j.createFreeStyleProject();
             project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(), true, false));
             project.getBuildersList().add(new SleepBuilder(9999));
 
@@ -274,8 +288,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatus(Result.FAILURE, build);
+            
+            j.assertBuildStatus(Result.FAILURE, build);
             assertFalse(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNull(build.getDescription());
@@ -285,7 +299,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // Set description
         {
-            FreeStyleProject project = createFreeStyleProject();
+            FreeStyleProject project = j.createFreeStyleProject();
             project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(), true, true));
             project.getBuildersList().add(new SleepBuilder(9999));
 
@@ -298,8 +312,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatus(Result.FAILURE, build);
+            
+            j.assertBuildStatus(Result.FAILURE, build);
             assertFalse(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNotNull(build.getDescription());
@@ -310,7 +324,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // Not aborted
         {
-            FreeStyleProject project = createFreeStyleProject();
+            FreeStyleProject project = j.createFreeStyleProject();
             project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(), true, true));
             project.getBuildersList().add(new SleepBuilder(1000));
 
@@ -323,8 +337,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatusSuccess(build);
+            
+            j.assertBuildStatusSuccess(build);
             assertTrue(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNull(build.getDescription());
@@ -333,11 +347,11 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
     }
 
     @LocalData
-    public void testMigrationFrom_1_12_2() throws Exception {
+    public void migrationFrom_1_12_2() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
         // Abort
         {
-            FreeStyleProject project = jenkins.getItem("AbortWithoutDescription", jenkins, FreeStyleProject.class);
+            FreeStyleProject project = j.jenkins.getItem("AbortWithoutDescription", j.jenkins, FreeStyleProject.class);
             assertNotNull(project);
 
             // assert migration of configuration
@@ -363,8 +377,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatus(Result.ABORTED, build);
+            
+            j.assertBuildStatus(Result.ABORTED, build);
             assertFalse(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNull(build.getDescription());
@@ -372,7 +386,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // Abort and Set description
         {
-            FreeStyleProject project = jenkins.getItem("AbortWithDescription", jenkins, FreeStyleProject.class);
+            FreeStyleProject project = j.jenkins.getItem("AbortWithDescription", j.jenkins, FreeStyleProject.class);
             assertNotNull(project);
 
             // assert migration of configuration
@@ -398,8 +412,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatus(Result.ABORTED, build);
+            
+            j.assertBuildStatus(Result.ABORTED, build);
             assertFalse(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNotNull(build.getDescription());
@@ -410,7 +424,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // Fail
         {
-            FreeStyleProject project = jenkins.getItem("FailWithoutDescription", jenkins, FreeStyleProject.class);
+            FreeStyleProject project = j.jenkins.getItem("FailWithoutDescription", j.jenkins, FreeStyleProject.class);
             assertNotNull(project);
 
             // assert migration of configuration
@@ -436,8 +450,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatus(Result.FAILURE, build);
+            
+            j.assertBuildStatus(Result.FAILURE, build);
             assertFalse(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNull(build.getDescription());
@@ -448,7 +462,7 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // Fail and Set description
         {
-            FreeStyleProject project = jenkins.getItem("FailWithDescription", jenkins, FreeStyleProject.class);
+            FreeStyleProject project = j.jenkins.getItem("FailWithDescription", j.jenkins, FreeStyleProject.class);
             assertNotNull(project);
 
             // assert migration of configuration
@@ -473,8 +487,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
             assertFalse(checkPublisher.executed);
 
             FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-            assertBuildStatus(Result.FAILURE, build);
+            
+            j.assertBuildStatus(Result.FAILURE, build);
             assertFalse(checkBuilder.executed);
             assertTrue(checkPublisher.executed);
             assertNotNull(build.getDescription());
@@ -501,9 +515,10 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         }
     }
 
+    @Test
     public void testMultipleOperations() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
-        FreeStyleProject project = createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         TestBuildTimeOutOperation op1 = new TestBuildTimeOutOperation();
         TestBuildTimeOutOperation op2 = new TestBuildTimeOutOperation();
         TestBuildTimeOutOperation op3 = new TestBuildTimeOutOperation();
@@ -525,8 +540,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         assertFalse(op3.executed);
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-        assertBuildStatusSuccess(build);
+        
+        j.assertBuildStatusSuccess(build);
         assertTrue(checkBuilder.executed);
         assertTrue(checkPublisher.executed);
         assertTrue(op1.executed);
@@ -534,9 +549,10 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         assertTrue(op3.executed);
     }
 
+    @Test
     public void testFailingOperations() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
-        FreeStyleProject project = createFreeStyleProject();
+        FreeStyleProject project = j.createFreeStyleProject();
         TestBuildTimeOutOperation op1 = new TestBuildTimeOutOperation();
         TestBuildTimeOutOperation op2 = new TestBuildTimeOutOperation(false); // Fail!
         TestBuildTimeOutOperation op3 = new TestBuildTimeOutOperation();
@@ -558,8 +574,8 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         assertFalse(op3.executed);
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-        assertBuildStatus(Result.FAILURE, build);
+        
+        j.assertBuildStatus(Result.FAILURE, build);
         assertTrue(checkBuilder.executed);
         assertTrue(checkPublisher.executed);
         assertTrue(op1.executed);
@@ -567,8 +583,9 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         assertFalse(op3.executed);
     }
 
+    @Test
     public void testConfigurationNoOperation() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
                 Collections.<BuildTimeOutOperation>emptyList(),
@@ -580,13 +597,14 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // reconfigure.
         // This should preserve configuration.
-        WebClient wc = createWebClient();
+        WebClient wc = j.createWebClient();
         HtmlPage page = wc.getPage(p, "configure");
         HtmlForm form = page.getFormByName("config");
-        submit(form);
 
-        p = jenkins.getItemByFullName(fullname, FreeStyleProject.class);
-
+        j.submit(form);
+        
+        p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
+        
         // assert strategy is preserved.
         assertEquals(
                 AbsoluteTimeOutStrategy.class,
@@ -609,8 +627,9 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         );
     }
 
+    @Test
     public void testConfigurationSingleOperation() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
                 Arrays.<BuildTimeOutOperation>asList(
@@ -624,13 +643,14 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // reconfigure.
         // This should preserve configuration.
-        WebClient wc = createWebClient();
+        WebClient wc = j.createWebClient();
         HtmlPage page = wc.getPage(p, "configure");
         HtmlForm form = page.getFormByName("config");
-        submit(form);
-
-        p = jenkins.getItemByFullName(fullname, FreeStyleProject.class);
-
+        
+        j.submit(form);
+        
+        p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
+        
         // assert strategy is preserved.
         assertEquals(
                 AbsoluteTimeOutStrategy.class,
@@ -664,9 +684,9 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
         );
     }
 
-
+    @Test
     public void testConfigurationMultipleOperation() throws Exception {
-        FreeStyleProject p = createFreeStyleProject();
+        FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
                 Arrays.asList(
@@ -681,13 +701,14 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
 
         // reconfigure.
         // This should preserve configuration.
-        WebClient wc = createWebClient();
+        WebClient wc = j.createWebClient();
         HtmlPage page = wc.getPage(p, "configure");
         HtmlForm form = page.getFormByName("config");
-        submit(form);
 
-        p = jenkins.getItemByFullName(fullname, FreeStyleProject.class);
-
+        j.submit(form);
+        
+        p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
+        
         // assert strategy is preserved.
         assertEquals(
                 AbsoluteTimeOutStrategy.class,
@@ -725,14 +746,15 @@ public class BuildTimeoutWrapperIntegrationTest extends HudsonTestCase {
     }
 
     @LocalData
-    public void testMigrationFrom_1_13() throws Exception {
+    @Test
+    public void migrationFrom_1_13() throws Exception {
         Thread.sleep(60000);
-        FreeStyleProject p = jenkins.getItemByFullName("NoActivityTimeOutStrategy", FreeStyleProject.class);
+        FreeStyleProject p = j.jenkins.getItemByFullName("NoActivityTimeOutStrategy", FreeStyleProject.class);
         assertNotNull(p);
         NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
         assertEquals("5", strategy.getTimeoutSecondsString());
         assertEquals(5, strategy.getTimeoutSeconds());
-
-        assertBuildStatus(Result.ABORTED, p.scheduleBuild2(0).get());
+        
+        j.assertBuildStatus(Result.ABORTED, p.scheduleBuild2(0).get());
     }
 }

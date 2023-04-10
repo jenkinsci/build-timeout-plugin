@@ -3,16 +3,12 @@ package hudson.plugins.build_timeout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import hudson.model.BuildListener;
+import hudson.model.*;
 import jenkins.model.Jenkins;
-import hudson.model.AbstractBuild;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
-import hudson.model.Run;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 
 /**
@@ -29,7 +25,7 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
      * @deprecated override {@link #getTimeOut(hudson.model.AbstractBuild, hudson.model.BuildListener)} instead.
      */
     @Deprecated
-    public long getTimeOut(@Nonnull Run run) {
+    public long getTimeOut(@NonNull Run run) {
         throw new UnsupportedOperationException("Implementation required");
     }
     
@@ -39,7 +35,7 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
      * @param listener the build listener
      */
     @SuppressWarnings("deprecation")
-    public long getTimeOut(@Nonnull AbstractBuild<?,?> build, @Nonnull BuildListener listener)
+    public long getTimeOut(@NonNull AbstractBuild<?,?> build, @NonNull BuildListener listener)
             throws InterruptedException, MacroEvaluationException, IOException {
         // call through to the old method.
         return getTimeOut(build);
@@ -101,13 +97,12 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
         return Jenkins.getActiveInstance().getDescriptorOrDie(getClass());
     }
 
-    protected final String expandAll(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener, @Nonnull String string)
+    protected final String expandAll(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener, @NonNull String string)
             throws MacroEvaluationException, IOException, InterruptedException {
         return hasMacros(string) ? TokenMacro.expandAll(build, listener, string) : string;
     }
 
-    protected final static boolean hasMacros(@Nonnull String value) {
+    protected final static boolean hasMacros(@NonNull String value) {
         return value.contains("${");
     }
-   
 }
