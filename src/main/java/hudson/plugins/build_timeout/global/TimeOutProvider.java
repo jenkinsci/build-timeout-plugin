@@ -12,7 +12,5 @@ import java.util.Optional;
 public interface TimeOutProvider {
     Optional<Duration> timeOutFor(AbstractBuild<?,?> build, BuildListener listener);
 
-    Optional<Duration> timeOutFor(AbstractProject<?,?> build, BuildListener listener);
-
     List<BuildTimeOutOperation> getOperations();
 }

@@ -41,11 +41,6 @@ public abstract class BuildTimeOutStrategy implements Describable<BuildTimeOutSt
         return getTimeOut(build);
     }
 
-    public long getTimeOut(@NonNull Run build, @NonNull BuildListener listener)
-        throws InterruptedException, MacroEvaluationException, IOException {
-        return getTimeOut(build);
-    }
-
     /**
      * Called when some output to console.
      * Override this to capture the activity.
