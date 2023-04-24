@@ -5,7 +5,7 @@ import hudson.Launcher;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class GlobalTimeOutRunListener extends RunListener<Run<?, ?>> {
     }
 
     @Override
-    public void onCompleted(Run<?, ?> run, @Nonnull TaskListener listener) {
+    public void onCompleted(Run<?, ?> run, @NonNull TaskListener listener) {
         store.cancel(run.getExternalizableId());
     }
 }
