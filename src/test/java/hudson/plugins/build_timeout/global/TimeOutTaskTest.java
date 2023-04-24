@@ -13,7 +13,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.time.Duration;
 
 import static org.junit.Assert.assertFalse;
@@ -80,7 +80,7 @@ public class TimeOutTaskTest {
         boolean performed = false;
 
         @Override
-        public boolean perform(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener, long effectiveTimeout) {
+        public boolean perform(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener, long effectiveTimeout) {
             performed = true;
             return true;
         }
@@ -90,7 +90,7 @@ public class TimeOutTaskTest {
         boolean performed = false;
 
         @Override
-        public boolean perform(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener, long effectiveTimeout) {
+        public boolean perform(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener, long effectiveTimeout) {
             performed = true;
             return false;
         }
@@ -100,7 +100,7 @@ public class TimeOutTaskTest {
         boolean performed = false;
 
         @Override
-        public boolean perform(@Nonnull AbstractBuild<?, ?> build, @Nonnull BuildListener listener, long effectiveTimeout) {
+        public boolean perform(@NonNull AbstractBuild<?, ?> build, @NonNull BuildListener listener, long effectiveTimeout) {
             performed = true;
             throw new RuntimeException("bad");
         }
