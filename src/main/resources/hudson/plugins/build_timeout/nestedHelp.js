@@ -23,23 +23,23 @@
  */
 Behaviour.register({".build-timeout-nested-help": function(e) {
   // ensure Behavior is applied only once.
-  $(e).removeClassName("build-timeout-nested-help");
-  new Ajax.Request(e.getAttribute("helpURL"), {
-    method : 'get',
-    onSuccess : function(x) {
-      e.innerHTML = x.responseText;
-      var myselfName = e.getAttribute("myselfName");
-      var pluginName = x.getResponseHeader("X-Plugin-Short-Name");
-      if (myselfName != pluginName) {
-        var from = x.getResponseHeader("X-Plugin-From");
-        if (from) {
-          e.innerHTML += "<div class='from-plugin'>"+from+"</div>";
+  e.classList.remove("build-timeout-nested-help");
+  fetch(e.getAttribute("helpURL")).then((rsp) => {
+    if (rsp.ok) {
+      rsp.text().then((responseText) => {
+        e.innerHTML = responseText;
+        var myselfName = e.getAttribute("myselfName");
+        var pluginName = rsp.headers.get("X-Plugin-Short-Name");
+        if (myselfName != pluginName) {
+          var from = rsp.headers.get("X-Plugin-From");
+          if (from) {
+            e.innerHTML += "<div class='from-plugin'>"+from+"</div>";
+          }
         }
-      }
-      layoutUpdateCallback.call();
-    },
-    onFailure : function(x) {
-      e.innerHTML = "<b>ERROR</b>: Failed to load help file: " + x.statusText;
+        layoutUpdateCallback.call();
+      });
+    } else {
+      e.innerHTML = "<b>ERROR</b>: Failed to load help file: " + rsp.statusText;
     }
   });
 }});
@@ -48,6 +48,6 @@ Behaviour.register({".build-timeout-nested-help": function(e) {
  * Allows run Behavior when help is loaded.
  */
 layoutUpdateCallback.add(function() {
-  $$(".build-timeout-nested-help").each(function(e){Behaviour.applySubtree(e, true)});
+  document.querySelectorAll(".build-timeout-nested-help").forEach(function(e){Behaviour.applySubtree(e, true)});
 });
 
