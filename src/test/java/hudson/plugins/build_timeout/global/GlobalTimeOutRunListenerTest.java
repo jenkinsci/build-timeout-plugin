@@ -3,13 +3,12 @@ package hudson.plugins.build_timeout.global;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.quality.Strictness;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -22,9 +21,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+@ExtendWith(MockitoExtension.class)
 public class GlobalTimeOutRunListenerTest {
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
     @Mock
     private TimeOutProvider timeOutProvider;
     @Mock
@@ -38,7 +36,7 @@ public class GlobalTimeOutRunListenerTest {
     @Mock
     private BuildListener buildListener;
 
-    @Before
+    @BeforeEach
     public void setup() {
         listener = new GlobalTimeOutRunListener(
                 Executors.newSingleThreadScheduledExecutor(),
@@ -48,7 +46,7 @@ public class GlobalTimeOutRunListenerTest {
     }
 
     @Test
-    public void shouldStoreIfPresent() throws IOException, InterruptedException {
+    void shouldStoreIfPresent() throws IOException, InterruptedException {
         given(timeOutProvider.timeOutFor(build, buildListener)).willReturn(Optional.of(Duration.ofMillis(1)));
         given(build.getExternalizableId()).willReturn("a#1");
 
@@ -58,7 +56,7 @@ public class GlobalTimeOutRunListenerTest {
     }
 
     @Test
-    public void shouldNotStoreIfAbsent() throws IOException, InterruptedException {
+    void shouldNotStoreIfAbsent() throws IOException, InterruptedException {
         given(timeOutProvider.timeOutFor(build, buildListener)).willReturn(Optional.empty());
 
         listener.setUpEnvironment(build, launcher, buildListener);

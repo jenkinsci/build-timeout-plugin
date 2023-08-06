@@ -1,13 +1,13 @@
 package hudson.plugins.build_timeout.global;
 
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -17,7 +17,7 @@ public class InMemoryTimeOutStoreTest {
     private final TimeOutStore store = new InMemoryTimeOutStore(map);
 
     @Test
-    public void shouldKeep() {
+    void shouldKeep() {
         store.scheduled("a", mock(ScheduledFuture.class));
 
         assertEquals(1, map.size());
@@ -25,7 +25,7 @@ public class InMemoryTimeOutStoreTest {
     }
 
     @Test
-    public void shouldNoOpIfKeyAlreadyExists() {
+    void shouldNoOpIfKeyAlreadyExists() {
         store.scheduled("a", mock(ScheduledFuture.class));
         assertEquals(1, map.size());
 
@@ -35,7 +35,7 @@ public class InMemoryTimeOutStoreTest {
     }
 
     @Test
-    public void shouldRemoveKeyFromMap() {
+    void shouldRemoveKeyFromMap() {
         store.scheduled("a", mock(ScheduledFuture.class));
         store.scheduled("b", mock(ScheduledFuture.class));
 
@@ -46,7 +46,7 @@ public class InMemoryTimeOutStoreTest {
     }
 
     @Test
-    public void shouldCancel() {
+    void shouldCancel() {
         ScheduledFuture<?> a = mock(ScheduledFuture.class);
         ScheduledFuture<?> b = mock(ScheduledFuture.class);
         store.scheduled("a", a);
@@ -59,7 +59,7 @@ public class InMemoryTimeOutStoreTest {
     }
 
     @Test
-    public void shouldNoOpIfAbsent() {
+    void shouldNoOpIfAbsent() {
         store.scheduled("a", mock(ScheduledFuture.class));
         assertEquals(1, map.size());
 

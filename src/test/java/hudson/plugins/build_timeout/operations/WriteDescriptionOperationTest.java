@@ -24,15 +24,16 @@
 
 package hudson.plugins.build_timeout.operations;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -41,18 +42,16 @@ import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
-public class WriteDescriptionOperationTest {
+@WithJenkins
+class WriteDescriptionOperationTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
     }
-    
+
     @Test
-    public void setDescription() throws Exception {
+    void setDescription(JenkinsRule j) throws Exception {
         final String DESCRIPTION = "description to test: {0}, {0}.";
         final String EXPECTED = "description to test: 0, 0.";
         
@@ -71,9 +70,9 @@ public class WriteDescriptionOperationTest {
         
         assertEquals(EXPECTED, b.getDescription());
     }
-    
+
     @Test
-    public void setDescriptionWithoutAborting() throws Exception {
+    void setDescriptionWithoutAborting(JenkinsRule j) throws Exception {
         final String DESCRIPTION = "description to test: {0}, {0}.";
         final String EXPECTED = "description to test: 0, 0.";
         
@@ -91,9 +90,9 @@ public class WriteDescriptionOperationTest {
         
         assertEquals(EXPECTED, b.getDescription());
     }
-    
+
     @Test
-    public void setDescriptionTwice() throws Exception {
+    void setDescriptionTwice(JenkinsRule j) throws Exception {
         final String DESCRIPTION1 = "description to test: {0}, {0}.";
         final String DESCRIPTION2 = "Another message.";
         final String EXPECTED = "Another message.";

@@ -24,7 +24,7 @@
 
 package hudson.plugins.build_timeout.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -33,13 +33,14 @@ import java.util.Date;
 
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
@@ -57,20 +58,18 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.tasks.Builder;
 
-public class NoActivityTimeOutStrategyTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class NoActivityTimeOutStrategyTest {
 
     private long origTimeout = 0;
     
-    @Before
+    @BeforeEach
     public void before() {
         origTimeout = BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS;
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
     }
     
-    @After
+    @AfterEach
     public void after() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = origTimeout;
     }
@@ -120,9 +119,9 @@ public class NoActivityTimeOutStrategyTest {
             return true;
         }
     }
-    
+
     @Test
-    public void timeout() throws Exception {
+    void timeout(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new NoActivityTimeOutStrategy(5),
@@ -133,9 +132,9 @@ public class NoActivityTimeOutStrategyTest {
         
         j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
     }
-    
+
     @Test
-    public void noTimeout() throws Exception {
+    void noTimeout(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new NoActivityTimeOutStrategy(15),
@@ -158,9 +157,9 @@ public class NoActivityTimeOutStrategyTest {
         }
         
     }
-    
+
     @Test
-    public void performedOnlyOnce() throws Exception {
+    void performedOnlyOnce(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CountOperation count = new CountOperation();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
@@ -174,9 +173,9 @@ public class NoActivityTimeOutStrategyTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(1, count.count);
     }
-    
+
     @Test
-    public void canConfigureWithWebPage() throws Exception {
+    void canConfigureWithWebPage(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
@@ -211,9 +210,9 @@ public class NoActivityTimeOutStrategyTest {
             assertEquals(60, strategy.getTimeoutSeconds());
         }
     }
-    
+
     @Test
-    public void canConfigureWithWebPageUsingStringExpression() throws Exception {
+    void canConfigureWithWebPageUsingStringExpression(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
@@ -248,9 +247,9 @@ public class NoActivityTimeOutStrategyTest {
             assertEquals(0, strategy.getTimeoutSeconds());
         }
     }
-    
+
     @Test
-    public void configurationWithParameter() throws Exception {
+    void configurationWithParameter(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TIMEOUT", null)));
