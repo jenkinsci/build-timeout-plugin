@@ -31,11 +31,11 @@ import java.util.LinkedList;
 
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import hudson.model.Cause;
 import hudson.model.FreeStyleProject;
@@ -46,13 +46,11 @@ import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 
-public class AbortAndRestartOperationTest {
+@WithJenkins
+class AbortAndRestartOperationTest {
     
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
-
     @Test
-    void abortAndRestartOnce() throws Exception {
+    void abortAndRestartOnce(JenkinsRule j) throws Exception {
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
@@ -79,7 +77,7 @@ public class AbortAndRestartOperationTest {
     }
 
     @Test
-    void abortAndRestartTwice() throws Exception {
+    void abortAndRestartTwice(JenkinsRule j) throws Exception {
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
@@ -108,7 +106,7 @@ public class AbortAndRestartOperationTest {
     }
 
     @Test
-    void usingVariable() throws Exception {
+    void usingVariable(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("RESTART", null)));
@@ -134,7 +132,7 @@ public class AbortAndRestartOperationTest {
     }
 
     @Test
-    void usingBadRestart() throws Exception {
+    void usingBadRestart(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                      new QuickBuildTimeOutStrategy(1000),

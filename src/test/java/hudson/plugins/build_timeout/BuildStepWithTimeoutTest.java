@@ -7,20 +7,18 @@ import hudson.model.Result;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.plugins.build_timeout.operations.FailOperation;
 import hudson.tasks.Builder;
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BuildStepWithTimeoutTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class BuildStepWithTimeoutTest {
 
     private final static long TINY_DELAY = 100L;
     private final static long HUGE_DELAY = 5000L;
@@ -32,8 +30,8 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    void timeoutWasNotTriggered() throws Exception {
-        final FreeStyleProject project = createProjectWithBuildStepWithTimeout(TINY_DELAY, null);
+    void timeoutWasNotTriggered(JenkinsRule j) throws Exception {
+        final FreeStyleProject project = createProjectWithBuildStepWithTimeout(TINY_DELAY, null, j);
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
 
@@ -42,8 +40,8 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    void timeoutWasTriggeredWithoutAction() throws Exception {
-        final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, null);
+    void timeoutWasTriggeredWithoutAction(JenkinsRule j) throws Exception {
+        final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, null, j);
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
 
@@ -52,8 +50,8 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    void timeoutWasTriggeredWithAbortOperation() throws Exception {
-        final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, new AbortOperation());
+    void timeoutWasTriggeredWithAbortOperation(JenkinsRule j) throws Exception {
+        final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, new AbortOperation(), j);
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
 
@@ -62,8 +60,8 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    void timeoutWasTriggeredWithFailOperation() throws Exception {
-        final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, new FailOperation());
+    void timeoutWasTriggeredWithFailOperation(JenkinsRule j) throws Exception {
+        final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, new FailOperation(), j);
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
 
@@ -71,7 +69,7 @@ public class BuildStepWithTimeoutTest {
         j.assertLogNotContains(FakeBuildStep.FAKE_BUILD_STEP_OUTPUT, build);
     }
 
-    private FreeStyleProject createProjectWithBuildStepWithTimeout(long delay, BuildTimeOutOperation operation) throws IOException {
+    private FreeStyleProject createProjectWithBuildStepWithTimeout(long delay, BuildTimeOutOperation operation, JenkinsRule j) throws IOException {
         final FreeStyleProject project = j.createFreeStyleProject();
         final List<BuildTimeOutOperation> operations;
 

@@ -24,8 +24,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 
 import org.junit.Rule;
-import org.junit.jupiter.api.Test;
-
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -39,7 +38,11 @@ import org.htmlunit.html.HtmlPage;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class BuildTimeoutWrapperIntegrationTest {
 
@@ -59,11 +62,11 @@ public class BuildTimeoutWrapperIntegrationTest {
 		return captureEnvBuilder.getEnvVars();
 	}
 
-    /*
-     * Test to verify setting a timeout environment variable to a valid string
-     */
-    @Test
-    void buildTimeoutEnvValid() throws Exception {
+	/*
+	 * Test to verify setting a timeout environment variable to a valid string
+	 */
+	@Test
+	public void buildTimeoutEnvValid() throws Exception {
 		EnvVars expectedEnvVars = getEnvVars();
 		FreeStyleProject project = j.createFreeStyleProject();
 	  	project.getBuildWrappersList().add(new BuildTimeoutWrapper(
@@ -80,11 +83,11 @@ public class BuildTimeoutWrapperIntegrationTest {
 		assertEquals("12345", envVars.get("BUILD_TIMEOUT"));
 	}
 
-    /*
-     * Test to verify setting timeout environment variable to null (this is the default)
-     */
-    @Test
-    void buildTimeoutEnvNull() throws Exception {
+	/*
+	 * Test to verify setting timeout environment variable to null (this is the default)
+	 */
+	@Test
+	public void buildTimeoutEnvNull() throws Exception {
 	    EnvVars expectedEnvVars = getEnvVars();
 		FreeStyleProject project = j.createFreeStyleProject();
 		project.getBuildWrappersList().add(new BuildTimeoutWrapper(
@@ -100,11 +103,11 @@ public class BuildTimeoutWrapperIntegrationTest {
   		assertEquals(expectedEnvVars.size(), envVars.size());
 	}
 
-    /*
-     * Test to verify setting timeout environment variable to empty string.
-     */
-    @Test
-    void buildTimeoutEnvEmpty() throws Exception {
+	/*
+	 * Test to verify setting timeout environment variable to empty string.
+	 */
+	@Test
+	public void buildTimeoutEnvEmpty() throws Exception {
 		EnvVars expectedEnvVars = getEnvVars();
 		FreeStyleProject project = j.createFreeStyleProject();
 		project.getBuildWrappersList().add(new BuildTimeoutWrapper(
@@ -119,10 +122,10 @@ public class BuildTimeoutWrapperIntegrationTest {
 
   		assertEquals(expectedEnvVars.size(), envVars.size());
 	}
-
-    @Issue("JENKINS-9203")
-    @Test
-    void issue9203() throws Exception {
+	
+	@Issue("JENKINS-9203")
+	@Test
+	public void issue9203() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
 		FreeStyleProject project = j.createFreeStyleProject();
 		project.getBuildWrappersList().add(new BuildTimeoutWrapper(new QuickBuildTimeOutStrategy(), true, false));
@@ -192,7 +195,7 @@ public class BuildTimeoutWrapperIntegrationTest {
     }
 
     @Test
-    void abort() throws Exception {
+    public void abort() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
         // No description
         {
@@ -263,7 +266,7 @@ public class BuildTimeoutWrapperIntegrationTest {
     }
 
     @Test
-    void fail() throws Exception {
+    public void fail() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
         // No description
         {
@@ -495,7 +498,7 @@ public class BuildTimeoutWrapperIntegrationTest {
     }
 
     @Test
-    void multipleOperations() throws Exception {
+    public void multipleOperations() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
         FreeStyleProject project = j.createFreeStyleProject();
         TestBuildTimeOutOperation op1 = new TestBuildTimeOutOperation();
@@ -529,7 +532,7 @@ public class BuildTimeoutWrapperIntegrationTest {
     }
 
     @Test
-    void failingOperations() throws Exception {
+    public void failingOperations() throws Exception {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
         FreeStyleProject project = j.createFreeStyleProject();
         TestBuildTimeOutOperation op1 = new TestBuildTimeOutOperation();
@@ -563,7 +566,7 @@ public class BuildTimeoutWrapperIntegrationTest {
     }
 
     @Test
-    void configurationNoOperation() throws Exception {
+    public void configurationNoOperation() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
@@ -606,7 +609,7 @@ public class BuildTimeoutWrapperIntegrationTest {
     }
 
     @Test
-    void configurationSingleOperation() throws Exception {
+    public void configurationSingleOperation() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
@@ -662,7 +665,7 @@ public class BuildTimeoutWrapperIntegrationTest {
     }
 
     @Test
-    void configurationMultipleOperation() throws Exception {
+    public void configurationMultipleOperation() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
@@ -720,10 +723,10 @@ public class BuildTimeoutWrapperIntegrationTest {
                 p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getTimeoutEnvVar()
         );
     }
-
+    
     @LocalData
     @Test
-    void migrationFrom_1_13() throws Exception {
+    public void migrationFrom_1_13() throws Exception {
         Thread.sleep(60000);
         FreeStyleProject p = j.jenkins.getItemByFullName("NoActivityTimeOutStrategy", FreeStyleProject.class);
         assertNotNull(p);

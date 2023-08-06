@@ -33,7 +33,6 @@ import java.util.Date;
 
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
@@ -58,10 +58,8 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.tasks.Builder;
 
-public class NoActivityTimeOutStrategyTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class NoActivityTimeOutStrategyTest {
 
     private long origTimeout = 0;
     
@@ -123,7 +121,7 @@ public class NoActivityTimeOutStrategyTest {
     }
 
     @Test
-    void timeout() throws Exception {
+    void timeout(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new NoActivityTimeOutStrategy(5),
@@ -136,7 +134,7 @@ public class NoActivityTimeOutStrategyTest {
     }
 
     @Test
-    void noTimeout() throws Exception {
+    void noTimeout(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new NoActivityTimeOutStrategy(15),
@@ -161,7 +159,7 @@ public class NoActivityTimeOutStrategyTest {
     }
 
     @Test
-    void performedOnlyOnce() throws Exception {
+    void performedOnlyOnce(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         CountOperation count = new CountOperation();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
@@ -177,7 +175,7 @@ public class NoActivityTimeOutStrategyTest {
     }
 
     @Test
-    void canConfigureWithWebPage() throws Exception {
+    void canConfigureWithWebPage(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
@@ -214,7 +212,7 @@ public class NoActivityTimeOutStrategyTest {
     }
 
     @Test
-    void canConfigureWithWebPageUsingStringExpression() throws Exception {
+    void canConfigureWithWebPageUsingStringExpression(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
@@ -251,7 +249,7 @@ public class NoActivityTimeOutStrategyTest {
     }
 
     @Test
-    void configurationWithParameter() throws Exception {
+    void configurationWithParameter(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TIMEOUT", null)));

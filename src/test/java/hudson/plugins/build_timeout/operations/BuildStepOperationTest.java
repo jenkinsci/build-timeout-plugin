@@ -64,7 +64,6 @@ import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -72,19 +71,18 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 
-public class BuildStepOperationTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class BuildStepOperationTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
     }
     
@@ -123,7 +121,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void disabled() throws Exception {
+    void disabled(JenkinsRule j) throws Exception {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         // should be disabled by default.
@@ -133,7 +131,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void enabled() throws Exception {
+    void enabled(JenkinsRule j) throws Exception {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         d.setEnabled(true);
@@ -143,7 +141,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void builder() throws Exception {
+    void builder(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -166,7 +164,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void builderFailContinue() throws Exception {
+    void builderFailContinue(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -191,7 +189,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void builderFailStop() throws Exception {
+    void builderFailStop(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -216,7 +214,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void publisher() throws Exception {
+    void publisher(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestPublisher publisher1 = new TestPublisher();
         TestPublisher publisher2 = new TestPublisher();
@@ -239,7 +237,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void configuration() throws Exception {
+    void configuration(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         ArtifactArchiver archiver = new ArtifactArchiver("**/*.xml", "exclude.xml", false);
         
@@ -276,7 +274,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void configurationWithoutDbc() throws Exception {
+    void configurationWithoutDbc(JenkinsRule j) throws Exception {
         final String STRING_TO_TEST = "foobar";
         
         FreeStyleProject p = j.createFreeStyleProject();
@@ -315,7 +313,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void launcher() throws Exception {
+    void launcher(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TESTSTRING", null)));
@@ -347,7 +345,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void noLauncher() throws Exception {
+    void noLauncher(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         
         String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";
@@ -376,7 +374,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    void managePermissionShouldAccess() {
+    void managePermissionShouldAccess(JenkinsRule j) {
         final String USER = "user";
         final String MANAGER = "manager";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());

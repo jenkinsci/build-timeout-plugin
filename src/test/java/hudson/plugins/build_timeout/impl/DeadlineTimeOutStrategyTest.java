@@ -40,23 +40,21 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests for {@link AbsoluteTimeOutStrategy}. Many tests for
  * {@link AbsoluteTimeOutStrategy} are also in
  * {@link BuildTimeoutWrapperIntegrationTest}
  */
-public class DeadlineTimeOutStrategyTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class DeadlineTimeOutStrategyTest {
 
     private long origTimeout = 0;
 
@@ -75,19 +73,19 @@ public class DeadlineTimeOutStrategyTest {
     }
 
     @Test
-    void configurationWithParameter() throws Exception {
+    void configurationWithParameter(JenkinsRule j) throws Exception {
         // Deadline in next three seconds. Job should be aborted in three seconds after start
-        testWithParam(3, Result.ABORTED);
+        testWithParam(3, Result.ABORTED, j);
 
         // Deadline defined as a past time but inside tolerance period. Job should be aborted immediately
-        testWithParam(-TOLERANCE_PERIOD_IN_MINUTES * 60 / 2, Result.ABORTED);
+        testWithParam(-TOLERANCE_PERIOD_IN_MINUTES * 60 / 2, Result.ABORTED, j);
 
         // Deadline defined as a past time outside tolerance period, so effective deadline will be tomorro. Job should be executed normally.
-        testWithParam(-TOLERANCE_PERIOD_IN_MINUTES * 60 * 2, Result.SUCCESS);
+        testWithParam(-TOLERANCE_PERIOD_IN_MINUTES * 60 * 2, Result.SUCCESS, j);
     }
 
     @SuppressWarnings("deprecation")
-    private void testWithParam(int timeToDeadlineInSecondsFromNow, Result expectedResult) throws Exception {
+    private void testWithParam(int timeToDeadlineInSecondsFromNow, Result expectedResult, JenkinsRule j) throws Exception {
         String deadline = getDeadlineTimeFromNow(timeToDeadlineInSecondsFromNow);
 
         FreeStyleProject p = j.createFreeStyleProject();

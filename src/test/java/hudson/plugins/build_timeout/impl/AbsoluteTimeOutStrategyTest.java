@@ -38,39 +38,37 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.BuildTimeoutWrapperIntegrationTest;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests for {@link AbsoluteTimeOutStrategy}.
  * Many tests for {@link AbsoluteTimeOutStrategy} are also in {@link BuildTimeoutWrapperIntegrationTest}
  */
-public class AbsoluteTimeOutStrategyTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class AbsoluteTimeOutStrategyTest {
 
     private long origTimeout = 0;
     
     @BeforeEach
-    public void before() {
+    void before() {
         // this allows timeout shorter than 3 minutes.
         origTimeout = BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS;
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 1000;
     }
     
     @AfterEach
-    public void after() {
+    void after() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = origTimeout;
     }
 
     @Test
-    void configurationWithParameter() throws Exception {
+    void configurationWithParameter(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TIMEOUT", null)));

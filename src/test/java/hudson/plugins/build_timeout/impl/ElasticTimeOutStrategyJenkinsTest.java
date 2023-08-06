@@ -39,12 +39,12 @@ import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
@@ -52,13 +52,11 @@ import org.htmlunit.html.HtmlPage;
 /**
  * Tests for {@link ElasticTimeOutStrategy} using Jenkins
  */
-public class ElasticTimeOutStrategyJenkinsTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class ElasticTimeOutStrategyJenkinsTest {
 
     @Test
-    void canConfigureWithWebPage() throws Exception {
+    void canConfigureWithWebPage(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
@@ -97,7 +95,7 @@ public class ElasticTimeOutStrategyJenkinsTest {
     }
 
     @Test
-    void failSafeTimeoutWithVariable() throws Exception {
+    void failSafeTimeoutWithVariable(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FailSafeTimeout", null)));
