@@ -4,25 +4,22 @@ import com.google.common.collect.Lists;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.plugins.build_timeout.BuildTimeOutOperation;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.quality.Strictness;
-
+import org.mockito.junit.jupiter.MockitoExtension;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.time.Duration;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 
+@ExtendWith(MockitoExtension.class)
 public class TimeOutTaskTest {
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
     @Mock
     private TimeOutProvider timeOutProvider;
     @Mock
@@ -31,13 +28,13 @@ public class TimeOutTaskTest {
     private BuildListener listener;
     private TimeOutTask task;
 
-    @Before
+    @BeforeEach
     public void setup() {
         task = TimeOutTask.create(timeOutProvider, build, listener, Duration.ofMillis(1));
     }
 
     @Test
-    public void shouldCallAllOperations() {
+    void shouldCallAllOperations() {
         TestOp one = new TestOp();
         TestOp two = new TestOp();
         given(timeOutProvider.getOperations()).willReturn(Lists.newArrayList(one, two));
@@ -49,7 +46,7 @@ public class TimeOutTaskTest {
     }
 
     @Test
-    public void shouldStopAtFirstFailure() {
+    void shouldStopAtFirstFailure() {
         TestOp one = new TestOp();
         FailsOp two = new FailsOp();
         TestOp three = new TestOp();
@@ -63,7 +60,7 @@ public class TimeOutTaskTest {
     }
 
     @Test
-    public void shouldStopAtFirstException() {
+    void shouldStopAtFirstException() {
         TestOp one = new TestOp();
         ThrowsOp two = new ThrowsOp();
         TestOp three = new TestOp();

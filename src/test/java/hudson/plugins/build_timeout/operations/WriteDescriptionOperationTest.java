@@ -24,13 +24,14 @@
 
 package hudson.plugins.build_timeout.operations;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
@@ -46,13 +47,13 @@ public class WriteDescriptionOperationTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
     }
-    
+
     @Test
-    public void setDescription() throws Exception {
+    void setDescription() throws Exception {
         final String DESCRIPTION = "description to test: {0}, {0}.";
         final String EXPECTED = "description to test: 0, 0.";
         
@@ -71,9 +72,9 @@ public class WriteDescriptionOperationTest {
         
         assertEquals(EXPECTED, b.getDescription());
     }
-    
+
     @Test
-    public void setDescriptionWithoutAborting() throws Exception {
+    void setDescriptionWithoutAborting() throws Exception {
         final String DESCRIPTION = "description to test: {0}, {0}.";
         final String EXPECTED = "description to test: 0, 0.";
         
@@ -91,9 +92,9 @@ public class WriteDescriptionOperationTest {
         
         assertEquals(EXPECTED, b.getDescription());
     }
-    
+
     @Test
-    public void setDescriptionTwice() throws Exception {
+    void setDescriptionTwice() throws Exception {
         final String DESCRIPTION1 = "description to test: {0}, {0}.";
         final String DESCRIPTION2 = "Another message.";
         final String EXPECTED = "Another message.";

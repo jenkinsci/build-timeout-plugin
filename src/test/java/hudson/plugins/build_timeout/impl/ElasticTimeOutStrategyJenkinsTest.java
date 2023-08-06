@@ -24,7 +24,7 @@
 
 package hudson.plugins.build_timeout.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 
@@ -40,7 +40,8 @@ import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.CaptureEnvironmentBuilder;
@@ -57,7 +58,7 @@ public class ElasticTimeOutStrategyJenkinsTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void canConfigureWithWebPage() throws Exception {
+    void canConfigureWithWebPage() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
@@ -94,9 +95,9 @@ public class ElasticTimeOutStrategyJenkinsTest {
             assertEquals("10", strategy.getNumberOfBuilds());
         }
     }
-    
+
     @Test
-    public void failSafeTimeoutWithVariable() throws Exception {
+    void failSafeTimeoutWithVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("FailSafeTimeout", null)));

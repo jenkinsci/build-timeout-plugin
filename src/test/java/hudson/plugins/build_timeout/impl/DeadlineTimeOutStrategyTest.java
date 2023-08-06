@@ -40,10 +40,11 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
@@ -61,20 +62,20 @@ public class DeadlineTimeOutStrategyTest {
 
     private static final int TOLERANCE_PERIOD_IN_MINUTES = 2;
 
-    @Before
+    @BeforeEach
     public void before() {
         // this allows timeout shorter than 3 minutes.
         origTimeout = BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS;
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 1000;
     }
 
-    @After
+    @AfterEach
     public void after() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = origTimeout;
     }
 
     @Test
-    public void configurationWithParameter() throws Exception {
+    void configurationWithParameter() throws Exception {
         // Deadline in next three seconds. Job should be aborted in three seconds after start
         testWithParam(3, Result.ABORTED);
 

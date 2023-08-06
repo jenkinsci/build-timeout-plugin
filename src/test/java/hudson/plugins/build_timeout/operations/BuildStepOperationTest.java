@@ -24,7 +24,7 @@
 
 package hudson.plugins.build_timeout.operations;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -64,9 +64,10 @@ import hudson.tasks.Shell;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -82,7 +83,7 @@ public class BuildStepOperationTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
     }
@@ -120,9 +121,9 @@ public class BuildStepOperationTest {
             return result;
         }
     }
-    
+
     @Test
-    public void disabled() throws Exception {
+    void disabled() throws Exception {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         // should be disabled by default.
@@ -130,9 +131,9 @@ public class BuildStepOperationTest {
         
         assertFalse(BuildTimeOutOperationDescriptor.all(FreeStyleProject.class).contains(d));
     }
-    
+
     @Test
-    public void enabled() throws Exception {
+    void enabled() throws Exception {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         d.setEnabled(true);
@@ -140,9 +141,9 @@ public class BuildStepOperationTest {
         
         assertTrue(BuildTimeOutOperationDescriptor.all(FreeStyleProject.class).contains(d));
     }
-    
+
     @Test
-    public void builder() throws Exception {
+    void builder() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -163,9 +164,9 @@ public class BuildStepOperationTest {
         assertEquals(1, builder1.executed);
         assertEquals(1, builder2.executed);
     }
-    
+
     @Test
-    public void builderFailContinue() throws Exception {
+    void builderFailContinue() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -188,9 +189,9 @@ public class BuildStepOperationTest {
         assertEquals(1, builder1.executed);
         assertEquals(1, builder2.executed);
     }
-    
+
     @Test
-    public void builderFailStop() throws Exception {
+    void builderFailStop() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestBuilder builder1 = new TestBuilder();
         TestBuilder builder2 = new TestBuilder();
@@ -213,9 +214,9 @@ public class BuildStepOperationTest {
         assertEquals(1, builder1.executed);
         assertEquals(0, builder2.executed);
     }
-    
+
     @Test
-    public void publisher() throws Exception {
+    void publisher() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         TestPublisher publisher1 = new TestPublisher();
         TestPublisher publisher2 = new TestPublisher();
@@ -236,9 +237,9 @@ public class BuildStepOperationTest {
         assertEquals(1, publisher1.executed);
         assertEquals(1, publisher2.executed);
     }
-    
+
     @Test
-    public void configuration() throws Exception {
+    void configuration() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         ArtifactArchiver archiver = new ArtifactArchiver("**/*.xml", "exclude.xml", false);
         
@@ -273,9 +274,9 @@ public class BuildStepOperationTest {
         assertEquals("exclude.xml", archiver.getExcludes());
         assertFalse(archiver.isLatestOnly());
     }
-    
+
     @Test
-    public void configurationWithoutDbc() throws Exception {
+    void configurationWithoutDbc() throws Exception {
         final String STRING_TO_TEST = "foobar";
         
         FreeStyleProject p = j.createFreeStyleProject();
@@ -312,9 +313,9 @@ public class BuildStepOperationTest {
         
         assertEquals(STRING_TO_TEST, builder.getDescriptionToSet());
     }
-    
+
     @Test
-    public void launcher() throws Exception {
+    void launcher() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TESTSTRING", null)));
@@ -344,9 +345,9 @@ public class BuildStepOperationTest {
         ));
         j.assertLogContains(TESTSTRING, p.getLastBuild());
     }
-    
+
     @Test
-    public void noLauncher() throws Exception {
+    void noLauncher() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         
         String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";
@@ -375,7 +376,7 @@ public class BuildStepOperationTest {
     }
 
     @Test
-    public void managePermissionShouldAccess() {
+    void managePermissionShouldAccess() {
         final String USER = "user";
         final String MANAGER = "manager";
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -390,12 +391,12 @@ public class BuildStepOperationTest {
 
         try (ACLContext c = ACL.as(User.getById(USER, true))) {
             Collection<Descriptor> descriptors = Functions.getSortedDescriptorsForGlobalConfigUnclassified();
-            assertTrue("Global configuration should not be accessible to READ users", descriptors.size() == 0);
+            assertTrue(descriptors.size() == 0, "Global configuration should not be accessible to READ users");
         }
         try (ACLContext c = ACL.as(User.getById(MANAGER, true))) {
             Collection<Descriptor> descriptors = Functions.getSortedDescriptorsForGlobalConfigUnclassified();
             Optional<Descriptor> found = descriptors.stream().filter(descriptor -> descriptor instanceof BuildStepOperation.DescriptorImpl).findFirst();
-            assertTrue("Global configuration should be accessible to MANAGE users", found.isPresent());
+            assertTrue(found.isPresent(), "Global configuration should be accessible to MANAGE users");
         }
     }
     

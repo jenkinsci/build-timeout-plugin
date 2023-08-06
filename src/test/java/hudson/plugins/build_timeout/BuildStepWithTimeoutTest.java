@@ -7,9 +7,10 @@ import hudson.model.Result;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 import hudson.plugins.build_timeout.operations.FailOperation;
 import hudson.tasks.Builder;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
@@ -24,14 +25,14 @@ public class BuildStepWithTimeoutTest {
     private final static long TINY_DELAY = 100L;
     private final static long HUGE_DELAY = 5000L;
 
-    @Before
+    @BeforeEach
     public void before() {
         // this allows timeout shorter than 3 minutes.
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 100;
     }
 
     @Test
-    public void timeoutWasNotTriggered() throws Exception {
+    void timeoutWasNotTriggered() throws Exception {
         final FreeStyleProject project = createProjectWithBuildStepWithTimeout(TINY_DELAY, null);
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
@@ -41,7 +42,7 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    public void timeoutWasTriggeredWithoutAction() throws Exception {
+    void timeoutWasTriggeredWithoutAction() throws Exception {
         final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, null);
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
@@ -51,7 +52,7 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    public void timeoutWasTriggeredWithAbortOperation() throws Exception {
+    void timeoutWasTriggeredWithAbortOperation() throws Exception {
         final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, new AbortOperation());
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();
@@ -61,7 +62,7 @@ public class BuildStepWithTimeoutTest {
     }
 
     @Test
-    public void timeoutWasTriggeredWithFailOperation() throws Exception {
+    void timeoutWasTriggeredWithFailOperation() throws Exception {
         final FreeStyleProject project = createProjectWithBuildStepWithTimeout(HUGE_DELAY, new FailOperation());
 
         final FreeStyleBuild build = project.scheduleBuild2(0, new Cause.UserIdCause()).get();

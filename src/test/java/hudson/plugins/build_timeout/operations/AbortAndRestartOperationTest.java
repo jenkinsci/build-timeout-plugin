@@ -24,10 +24,7 @@
 
 package hudson.plugins.build_timeout.operations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -35,7 +32,8 @@ import java.util.LinkedList;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
@@ -54,7 +52,7 @@ public class AbortAndRestartOperationTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void abortAndRestartOnce() throws Exception {
+    void abortAndRestartOnce() throws Exception {
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
@@ -79,9 +77,9 @@ public class AbortAndRestartOperationTest {
         assertEquals(Result.ABORTED, testproject.getFirstBuild().getResult());
         assertEquals(Result.ABORTED, testproject.getLastBuild().getResult());
     }
-    
+
     @Test
-    public void abortAndRestartTwice() throws Exception {
+    void abortAndRestartTwice() throws Exception {
         FreeStyleProject testproject = j.createFreeStyleProject();
 
         QuickBuildTimeOutStrategy strategy = new QuickBuildTimeOutStrategy(5000);
@@ -108,9 +106,9 @@ public class AbortAndRestartOperationTest {
         assertEquals(Result.ABORTED, testproject.getBuildByNumber(2).getResult());
         assertEquals(Result.ABORTED, testproject.getBuildByNumber(3).getResult());
     }
-    
+
     @Test
-    public void usingVariable() throws Exception {
+    void usingVariable() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("RESTART", null)));
@@ -134,9 +132,9 @@ public class AbortAndRestartOperationTest {
         
         assertEquals(2, p.getBuilds().size());
     }
-    
+
     @Test
-    public void usingBadRestart() throws Exception {
+    void usingBadRestart() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                      new QuickBuildTimeOutStrategy(1000),
