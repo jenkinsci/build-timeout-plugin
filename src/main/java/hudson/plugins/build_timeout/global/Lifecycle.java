@@ -3,7 +3,7 @@ package hudson.plugins.build_timeout.global;
 import hudson.Extension;
 import hudson.init.Terminator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;

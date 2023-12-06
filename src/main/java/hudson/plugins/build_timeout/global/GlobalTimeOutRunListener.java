@@ -6,8 +6,8 @@ import hudson.model.*;
 import hudson.model.listeners.RunListener;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;

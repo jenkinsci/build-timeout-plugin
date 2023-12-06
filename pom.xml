@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.74</version>
+    <version>4.75</version>
     <relativePath />
   </parent>
 
@@ -34,7 +34,7 @@
   <properties>
     <revision>1.32</revision>
     <changelist>-SNAPSHOT</changelist>
-    <jenkins.version>2.387.3</jenkins.version>
+    <jenkins.version>2.401.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <!-- To be removed once Jenkins.MANAGE permission gets out of beta -->
     <useBeta>true</useBeta>
@@ -61,8 +61,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.387.x</artifactId>
-        <version>2496.vddfca_753db_80</version>
+        <artifactId>bom-2.401.x</artifactId>
+        <version>2612.v3d6a_2128c0ef</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
