@@ -18,7 +18,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
