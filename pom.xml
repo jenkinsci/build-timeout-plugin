@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>build-timeout</artifactId>
-  <version>1.32</version>
+  <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>Build Timeout</name>
@@ -27,12 +27,12 @@
   <scm>
     <connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
     <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
-    <tag>build-timeout-1.32</tag>
+    <tag>${scmTag}</tag>
     <url>https://github.com/${gitHubRepo}</url>
   </scm>
 
   <properties>
-    <revision>1.32</revision>
+    <revision>1.33</revision>
     <changelist>-SNAPSHOT</changelist>
     <jenkins.version>2.401.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
