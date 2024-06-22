@@ -34,7 +34,7 @@
   <properties>
     <revision>1.33</revision>
     <changelist>-SNAPSHOT</changelist>
-    <jenkins.version>2.401.3</jenkins.version>
+    <jenkins.version>2.440.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <!-- To be removed once Jenkins.MANAGE permission gets out of beta -->
     <useBeta>true</useBeta>
