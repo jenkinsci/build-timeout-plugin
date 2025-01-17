@@ -41,7 +41,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -206,7 +206,7 @@ public class BuildStepOperation extends BuildTimeOutOperation {
         }
         
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json)
+        public boolean configure(StaplerRequest2 req, JSONObject json)
                 throws hudson.model.Descriptor.FormException {
             setEnabled(json.containsKey("enabled"));
             save();
@@ -217,12 +217,12 @@ public class BuildStepOperation extends BuildTimeOutOperation {
          * Create a new instance from user input.
          * 
          * As there are builders or publishers who does not use {@link DataBoundConstructor},
-         * it is required to handle to call {@link Descriptor#newInstance(StaplerRequest, JSONObject)}
+         * it is required to handle to call {@link Descriptor#newInstance(StaplerRequest2, JSONObject)}
          * manually.
          * 
          */
         @Override
-        public BuildStepOperation newInstance(StaplerRequest req, JSONObject formData)
+        public BuildStepOperation newInstance(StaplerRequest2 req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
             BuildStep buildstep = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "buildstep", BuildStep.class);
             boolean continueEvenFailed = formData.getBoolean("continueEvenFailed");

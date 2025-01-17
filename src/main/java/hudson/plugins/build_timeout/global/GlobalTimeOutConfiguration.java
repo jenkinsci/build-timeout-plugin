@@ -16,7 +16,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import jakarta.inject.Inject;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class GlobalTimeOutConfiguration extends GlobalConfiguration implements T
      * @return always true
      */
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) {
+    public boolean configure(StaplerRequest2 req, JSONObject json) {
         JSONObject settings = json.getJSONObject("timeout").getJSONObject("global");
         overwriteable = false;
         if (settings.isNullObject()) {

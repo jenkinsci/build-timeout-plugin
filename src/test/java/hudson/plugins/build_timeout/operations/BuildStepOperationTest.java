@@ -73,7 +73,7 @@ import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
@@ -445,7 +445,7 @@ class BuildStepOperationTest {
             }
             
             @Override
-            public NoDataBoundConstructorBuilder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public NoDataBoundConstructorBuilder newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
                 NoDataBoundConstructorBuilder builder = new NoDataBoundConstructorBuilder();
                 builder.setDescriptionToSet(formData.getString("descriptionToSet"));
                 return builder;

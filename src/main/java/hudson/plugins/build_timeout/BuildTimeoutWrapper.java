@@ -33,7 +33,7 @@ import net.sf.json.JSONObject;
 
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * {@link BuildWrapper} that terminates a build if it's taking too long.
@@ -107,7 +107,7 @@ public class BuildTimeoutWrapper extends BuildWrapper {
     /**
      * ctor.
      * 
-     * Don't forget to update {@link DescriptorImpl#newInstance(StaplerRequest, JSONObject)}
+     * Don't forget to update {@link DescriptorImpl#newInstance(StaplerRequest2, JSONObject)}
      * when you add new arguments.
      * 
      */
@@ -253,13 +253,13 @@ public class BuildTimeoutWrapper extends BuildWrapper {
         /**
          * create a new instance form user input.
          * 
-         * Usually this is performed with {@link StaplerRequest#bindJSON(Class, JSONObject)},
-         * but here it is required to construct object manually to call {@link Descriptor#newInstance(StaplerRequest, JSONObject)}
+         * Usually this is performed with {@link StaplerRequest2#bindJSON(Class, JSONObject)},
+         * but here it is required to construct object manually to call {@link Descriptor#newInstance(StaplerRequest2, JSONObject)}
          * of downstream classes.
          * 
          */
         @Override
-        public BuildTimeoutWrapper newInstance(StaplerRequest req, JSONObject formData)
+        public BuildTimeoutWrapper newInstance(StaplerRequest2 req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
             BuildTimeOutStrategy strategy = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "strategy", BuildTimeOutStrategy.class);
             List<BuildTimeOutOperation> operationList = newInstancesFromHeteroList(req, formData, "operationList", getOperations());

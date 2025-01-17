@@ -31,16 +31,16 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class BuildTimeOutUtility {
     /**
      * Construct an object from parameters input by a user.
      * 
      * Not using {@link DataBoundConstructor},
-     * but using {@link Descriptor#newInstance(StaplerRequest, JSONObject)}.
+     * but using {@link Descriptor#newInstance(StaplerRequest2, JSONObject)}.
      */
-    public static <T> T bindJSONWithDescriptor(StaplerRequest req, JSONObject formData, String fieldName, Class<T> expectedClazz)
+    public static <T> T bindJSONWithDescriptor(StaplerRequest2 req, JSONObject formData, String fieldName, Class<T> expectedClazz)
             throws hudson.model.Descriptor.FormException {
         formData = formData.getJSONObject(fieldName);
         if (formData == null || formData.isNullObject()) {
