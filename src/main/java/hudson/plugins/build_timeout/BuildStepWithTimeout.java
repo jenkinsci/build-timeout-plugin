@@ -21,7 +21,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -112,7 +112,7 @@ public class BuildStepWithTimeout extends Builder implements BuildStep {
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
         @Override
-        public BuildStepWithTimeout newInstance(StaplerRequest req, JSONObject formData)
+        public BuildStepWithTimeout newInstance(StaplerRequest2 req, JSONObject formData)
                 throws hudson.model.Descriptor.FormException {
             BuildStep buildstep = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "buildStep", BuildStep.class);
             BuildTimeOutStrategy strategy = BuildTimeOutUtility.bindJSONWithDescriptor(req, formData, "strategy", BuildTimeOutStrategy.class);
