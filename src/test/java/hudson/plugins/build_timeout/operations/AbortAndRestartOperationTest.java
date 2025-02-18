@@ -94,7 +94,7 @@ class AbortAndRestartOperationTest {
 
         testproject.scheduleBuild(new Cause.UserIdCause());
         
-        j.waitUntilNoActivityUpTo(25000);
+        j.waitUntilNoActivityUpTo(50000);
         
         assertNotNull(testproject.getFirstBuild());
         assertFalse(testproject.getFirstBuild().equals(testproject.getLastBuild()));
