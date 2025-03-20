@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2014 IKEDA Yasuyuki
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,9 +24,8 @@
 
 package hudson.plugins.build_timeout.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -62,27 +61,27 @@ import hudson.tasks.Builder;
 class NoActivityTimeOutStrategyTest {
 
     private long origTimeout = 0;
-    
+
     @BeforeEach
-    public void before() {
+    void before() {
         origTimeout = BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS;
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
     }
-    
+
     @AfterEach
-    public void after() {
+    void after() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = origTimeout;
     }
-    
+
     public static class PollingBuilder extends Builder {
         private final long pollingMilliseconds;
         private final long exitMilliseconds;
-        
+
         public PollingBuilder(long pollingMilliseconds, long exitMilliseconds) {
             this.pollingMilliseconds = pollingMilliseconds;
             this.exitMilliseconds = exitMilliseconds;
         }
-        
+
         private void log(BuildListener listener, long cur, String message) {
             String str = String.format(
                     "[%s] %s",
@@ -92,17 +91,16 @@ class NoActivityTimeOutStrategyTest {
             listener.getLogger().println(str);
             System.out.println(str);
         }
-        
+
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
-                BuildListener listener) throws InterruptedException,
-                IOException {
+                BuildListener listener) throws InterruptedException {
             long startAt = System.currentTimeMillis();
             long pollAt = startAt + pollingMilliseconds;
             long exitAt = startAt + exitMilliseconds;
-            
+
             log(listener, startAt, "----start----");
-            
+
             while (true) {
                 Thread.sleep(10);
                 long cur = System.currentTimeMillis();
@@ -115,7 +113,7 @@ class NoActivityTimeOutStrategyTest {
                     break;
                 }
             }
-            
+
             return true;
         }
     }
@@ -129,7 +127,7 @@ class NoActivityTimeOutStrategyTest {
                 false
         ));
         p.getBuildersList().add(new PollingBuilder(10 * 1000, 30 * 1000));
-        
+
         j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
     }
 
@@ -142,20 +140,20 @@ class NoActivityTimeOutStrategyTest {
                 false
         ));
         p.getBuildersList().add(new PollingBuilder(10 * 1000, 30 * 1000));
-        
+
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
-    
+
     private static class CountOperation extends BuildTimeOutOperation {
         public int count = 0;
-        
+
         @Override
         public boolean perform(AbstractBuild<?, ?> build,
                 BuildListener listener, long effectiveTimeout) {
-            listener.getLogger().println(String.format("Count: %d", ++count));
+            listener.getLogger().printf("Count: %d%n", ++count);
             return true;
         }
-        
+
     }
 
     @Test
@@ -164,11 +162,11 @@ class NoActivityTimeOutStrategyTest {
         CountOperation count = new CountOperation();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new NoActivityTimeOutStrategy(3),
-                Arrays.<BuildTimeOutOperation>asList(count),
+                Arrays.asList(count),
                 null
         ));
         p.getBuildersList().add(new SleepBuilder(10 * 1000));
-        
+
         assertEquals(0, count.count);
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(1, count.count);
@@ -180,21 +178,21 @@ class NoActivityTimeOutStrategyTest {
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
                         new NoActivityTimeOutStrategy("60"),
-                        Arrays.<BuildTimeOutOperation>asList(new AbortOperation()),
+                        Arrays.asList(new AbortOperation()),
                         null
                 )
         );
         p.save();
-        
+
         String projectName = p.getFullName();
-        
+
         // test configuration before configure on configuration page.
         {
             NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
             assertEquals("60", strategy.getTimeoutSecondsString());
             assertEquals(60, strategy.getTimeoutSeconds());
         }
-        
+
         // reconfigure.
         // This should preserve configuration.
         WebClient wc = j.createWebClient();
@@ -202,7 +200,7 @@ class NoActivityTimeOutStrategyTest {
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
         p = j.jenkins.getItemByFullName(projectName, FreeStyleProject.class);
-        
+
         // test configuration before configure on configuration page.
         {
             NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
@@ -217,21 +215,21 @@ class NoActivityTimeOutStrategyTest {
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
                         new NoActivityTimeOutStrategy("${TEST}"),
-                        Arrays.<BuildTimeOutOperation>asList(new AbortOperation()),
+                        Arrays.asList(new AbortOperation()),
                         null
                 )
         );
         p.save();
-        
+
         String projectName = p.getFullName();
-        
+
         // test configuration before configure on configuration page.
         {
             NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
             assertEquals("${TEST}", strategy.getTimeoutSecondsString());
             assertEquals(0, strategy.getTimeoutSeconds());
         }
-        
+
         // reconfigure.
         // This should preserve configuration.
         WebClient wc = j.createWebClient();
@@ -239,7 +237,7 @@ class NoActivityTimeOutStrategyTest {
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
         p = j.jenkins.getItemByFullName(projectName, FreeStyleProject.class);
-        
+
         // test configuration before configure on configuration page.
         {
             NoActivityTimeOutStrategy strategy = (NoActivityTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
@@ -256,19 +254,19 @@ class NoActivityTimeOutStrategyTest {
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
                         new NoActivityTimeOutStrategy("${TIMEOUT}"),
-                        Arrays.<BuildTimeOutOperation>asList(new AbortOperation()),
+                        Arrays.asList(new AbortOperation()),
                         null
                 )
         );
         p.getBuildersList().add(new PollingBuilder(10 * 1000, 30 * 1000));
-        
+
         // If called with TIMEOUT=15, the build succeeds.
         j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(
                 0,
                 new Cause.UserCause(),
                 new ParametersAction(new StringParameterValue("TIMEOUT", "15"))
         ).get());
-        
+
         // If called with TIMEOUT=5, the build is aborted.
         j.assertBuildStatus(Result.ABORTED, p.scheduleBuild2(
                 0,

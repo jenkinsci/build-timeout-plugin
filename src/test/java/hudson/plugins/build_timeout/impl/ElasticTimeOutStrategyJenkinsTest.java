@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2014 IKEDA Yasuyuki
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,7 +24,7 @@
 
 package hudson.plugins.build_timeout.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 
@@ -35,7 +35,6 @@ import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
-import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
 import hudson.plugins.build_timeout.operations.AbortOperation;
 
@@ -61,14 +60,14 @@ class ElasticTimeOutStrategyJenkinsTest {
         p.getBuildWrappersList().add(
                 new BuildTimeoutWrapper(
                         new ElasticTimeOutStrategy("300", "3", "10"),
-                        Arrays.<BuildTimeOutOperation>asList(new AbortOperation()),
+                        Arrays.asList(new AbortOperation()),
                         null
                 )
         );
         p.save();
-        
+
         String projectName = p.getFullName();
-        
+
         // test configuration before configure on configuration page.
         {
             ElasticTimeOutStrategy strategy = (ElasticTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
@@ -76,7 +75,7 @@ class ElasticTimeOutStrategyJenkinsTest {
             assertEquals("3", strategy.getTimeoutMinutesElasticDefault());
             assertEquals("10", strategy.getNumberOfBuilds());
         }
-        
+
         // reconfigure.
         // This should preserve configuration.
         WebClient wc = j.createWebClient();
@@ -84,7 +83,7 @@ class ElasticTimeOutStrategyJenkinsTest {
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
         p = j.jenkins.getItemByFullName(projectName, FreeStyleProject.class);
-        
+
         // test configuration before configure on configuration page.
         {
             ElasticTimeOutStrategy strategy = (ElasticTimeOutStrategy)p.getBuildWrappersList().get(BuildTimeoutWrapper.class).getStrategy();
@@ -106,7 +105,7 @@ class ElasticTimeOutStrategyJenkinsTest {
         ));
         CaptureEnvironmentBuilder ceb = new CaptureEnvironmentBuilder();
         p.getBuildersList().add(ceb);
-        
+
         FreeStyleBuild b = j.assertBuildStatusSuccess(
                 p.scheduleBuild2(
                         0,
@@ -118,7 +117,7 @@ class ElasticTimeOutStrategyJenkinsTest {
                         ))
                )
         );
-        
+
         assertEquals(
                 "1800000",      // value specified with FailSafeTimeout
                 ceb.getEnvVars().get("TIMEOUT")

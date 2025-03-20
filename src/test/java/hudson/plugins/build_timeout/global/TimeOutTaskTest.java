@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-public class TimeOutTaskTest {
+class TimeOutTaskTest {
     @Mock
     private TimeOutProvider timeOutProvider;
     @Mock
@@ -29,7 +29,7 @@ public class TimeOutTaskTest {
     private TimeOutTask task;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         task = TimeOutTask.create(timeOutProvider, build, listener, Duration.ofMillis(1));
     }
 
