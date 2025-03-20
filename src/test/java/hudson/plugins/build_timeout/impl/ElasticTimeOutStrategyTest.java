@@ -19,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
  */
-public class ElasticTimeOutStrategyTest {
+class ElasticTimeOutStrategyTest {
 
     @TempDir
-    Path directory;
+    private Path directory;
 
     @Test
-    public void percentageWithOneBuild() throws Exception {
+    void percentageWithOneBuild() throws Exception {
         BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy(200, 60, 3);
 
         Build b = new Build(new Build(60 * MINUTES, SUCCESS));
@@ -34,7 +34,7 @@ public class ElasticTimeOutStrategyTest {
     }
 
     @Test
-    public void percentageWithTwoBuilds() throws Exception {
+    void percentageWithTwoBuilds() throws Exception {
         BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy(200, 60, 3);
 
         Build b = new Build(new Build(20 * MINUTES, SUCCESS, new Build(40 * MINUTES, SUCCESS)));
@@ -43,7 +43,7 @@ public class ElasticTimeOutStrategyTest {
     }
 
     @Test
-    public void percentageWithNoBuilds() throws Exception {
+    void percentageWithNoBuilds() throws Exception {
         BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy(200, 90, 3);
 
         Build b = new Build(null);
@@ -51,7 +51,7 @@ public class ElasticTimeOutStrategyTest {
     }
 
     @Test
-    public void failSafeTimeoutDurationWithOneBuild() throws Exception {
+    void failSafeTimeoutDurationWithOneBuild() throws Exception {
         BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy("200", "60", "3", true);
 
         Build b = new Build(new Build(20 * MINUTES, SUCCESS));
@@ -60,7 +60,7 @@ public class ElasticTimeOutStrategyTest {
     }
 
     @Test
-    public void failSafeTimeoutDurationWithTwoBuilds() throws Exception {
+    void failSafeTimeoutDurationWithTwoBuilds() throws Exception {
         BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy("200", "60", "3", true);
 
         Build b = new Build(new Build(20 * MINUTES, SUCCESS, new Build(5 * MINUTES, SUCCESS)));
@@ -69,7 +69,7 @@ public class ElasticTimeOutStrategyTest {
     }
 
     @Test
-    public void failSafeTimeoutIsNotUsed() throws Exception {
+    void failSafeTimeoutIsNotUsed() throws Exception {
         BuildTimeOutStrategy strategy = new ElasticTimeOutStrategy("200", "60", "3", true);
 
         Build b = new Build(
@@ -123,7 +123,7 @@ public class ElasticTimeOutStrategyTest {
         @Override
         public void run() {
         }
-        
+
         @Override
         public File getRootDir() {
             return new File(String.valueOf(directory.getRoot()), getId());

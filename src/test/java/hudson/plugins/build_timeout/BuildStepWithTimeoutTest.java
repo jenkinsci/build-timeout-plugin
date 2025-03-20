@@ -20,11 +20,11 @@ import java.util.List;
 @WithJenkins
 class BuildStepWithTimeoutTest {
 
-    private final static long TINY_DELAY = 100L;
-    private final static long HUGE_DELAY = 5000L;
+    private static final long TINY_DELAY = 100L;
+    private static final long HUGE_DELAY = 5000L;
 
     @BeforeEach
-    public void before() {
+    void before() {
         // this allows timeout shorter than 3 minutes.
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 100;
     }
