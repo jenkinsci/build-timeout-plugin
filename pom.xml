@@ -35,11 +35,9 @@
     <revision>1.39</revision>
     <changelist>-SNAPSHOT</changelist>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-    <jenkins.baseline>2.479</jenkins.baseline>
-    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
+    <jenkins.baseline>2.504</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
-    <!-- To be removed once Jenkins.MANAGE permission gets out of beta -->
-    <useBeta>true</useBeta>
   </properties>
 
   <build>
@@ -64,7 +62,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>4607.v67a_4791074d7</version>
+        <version>4710.v016f0a_07e34d</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
