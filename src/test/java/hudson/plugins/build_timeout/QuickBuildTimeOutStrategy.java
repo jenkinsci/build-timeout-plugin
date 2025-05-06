@@ -11,15 +11,15 @@ import hudson.model.Run;
  */
 public class QuickBuildTimeOutStrategy extends BuildTimeOutStrategy {
     private final long timeout;
-    
+
     public QuickBuildTimeOutStrategy() {
         this(5000);
     }
-    
+
     public QuickBuildTimeOutStrategy(long milliseconds) {
         this.timeout = milliseconds;
     }
-    
+
     @Initializer(after=InitMilestone.PLUGINS_STARTED)
     public static void registerAlias() {
         // This is extracted from inner of BuildTimeoutWrapperIntegrationTest
@@ -28,15 +28,15 @@ public class QuickBuildTimeOutStrategy extends BuildTimeOutStrategy {
                 QuickBuildTimeOutStrategy.class
         );
     }
-    
+
     public Object readResolve()
     {
-        if(timeout == 0) {
+        if (timeout == 0) {
             return new QuickBuildTimeOutStrategy(5000);
         }
         return this;
     }
-    
+
     @Override public long getTimeOut(Run run) {
         return timeout;
     }

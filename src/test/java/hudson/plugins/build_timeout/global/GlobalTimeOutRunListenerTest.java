@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
-public class GlobalTimeOutRunListenerTest {
+class GlobalTimeOutRunListenerTest {
     @Mock
     private TimeOutProvider timeOutProvider;
     @Mock
@@ -37,7 +37,7 @@ public class GlobalTimeOutRunListenerTest {
     private BuildListener buildListener;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         listener = new GlobalTimeOutRunListener(
                 Executors.newSingleThreadScheduledExecutor(),
                 timeOutProvider,

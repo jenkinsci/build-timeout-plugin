@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-public class InMemoryTimeOutStoreTest {
+class InMemoryTimeOutStoreTest {
     private final Map<String, ScheduledFuture<?>> map = new HashMap<>();
     private final TimeOutStore store = new InMemoryTimeOutStore(map);
 

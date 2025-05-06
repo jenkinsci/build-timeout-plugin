@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2014 IKEDA Yasuyuki
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -47,7 +47,6 @@ import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.Result;
 import hudson.model.User;
-import hudson.plugins.build_timeout.BuildTimeOutOperation;
 import hudson.plugins.build_timeout.BuildTimeOutOperationDescriptor;
 import hudson.plugins.build_timeout.QuickBuildTimeOutStrategy;
 import hudson.plugins.build_timeout.BuildTimeoutWrapper;
@@ -85,58 +84,56 @@ class BuildStepOperationTest {
     void setUp() {
         BuildTimeoutWrapper.MINIMUM_TIMEOUT_MILLISECONDS = 0;
     }
-    
+
     public static class TestBuilder extends Builder {
         public boolean result = true;
         public int executed = 0;
-        
+
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-                throws InterruptedException, IOException {
-            listener.getLogger().println(String.format(
-                    "%s is executed: times=%d",
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+            listener.getLogger().printf(
+                    "%s is executed: times=%d%n",
                     getClass().getName(), ++executed
-            ));
+            );
             return result;
         }
     }
-    
+
     public static class TestPublisher extends Recorder {
-        public boolean result = true;
+        public final boolean result = true;
         public int executed = 0;
-        
+
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.NONE;
         }
-        
+
         @Override
-        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-                throws InterruptedException, IOException {
-            listener.getLogger().println(String.format(
-                    "%s is executed: times=%d",
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
+            listener.getLogger().printf(
+                    "%s is executed: times=%d%n",
                     getClass().getName(), ++executed
-            ));
+            );
             return result;
         }
     }
 
     @Test
-    void disabled(JenkinsRule j) throws Exception {
+    void disabled(JenkinsRule j) {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         // should be disabled by default.
         assertFalse(d.isEnabled());
-        
+
         assertFalse(BuildTimeOutOperationDescriptor.all(FreeStyleProject.class).contains(d));
     }
 
     @Test
-    void enabled(JenkinsRule j) throws Exception {
+    void enabled(JenkinsRule j) {
         BuildStepOperation.DescriptorImpl d
             = (BuildStepOperation.DescriptorImpl)j.jenkins.getDescriptorOrDie(BuildStepOperation.class);
         d.setEnabled(true);
         assertTrue(d.isEnabled());
-        
+
         assertTrue(BuildTimeOutOperationDescriptor.all(FreeStyleProject.class).contains(d));
     }
 
@@ -147,18 +144,18 @@ class BuildStepOperationTest {
         TestBuilder builder2 = new TestBuilder();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(5000),
-                Arrays.<BuildTimeOutOperation>asList(
+                Arrays.asList(
                         new BuildStepOperation(builder1, true),
                         new BuildStepOperation(builder2, true)
                 )
         ));
         p.getBuildersList().add(new SleepBuilder(9999));
-        
+
         assertEquals(0, builder1.executed);
         assertEquals(0, builder2.executed);
-        
+
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        
+
         assertEquals(1, builder1.executed);
         assertEquals(1, builder2.executed);
     }
@@ -170,20 +167,20 @@ class BuildStepOperationTest {
         TestBuilder builder2 = new TestBuilder();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(5000),
-                Arrays.<BuildTimeOutOperation>asList(
+                Arrays.asList(
                         new BuildStepOperation(builder1, true),
                         new BuildStepOperation(builder2, true)
                 )
         ));
         p.getBuildersList().add(new SleepBuilder(9999));
-        
+
         builder1.result = false;
-        
+
         assertEquals(0, builder1.executed);
         assertEquals(0, builder2.executed);
-        
+
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        
+
         assertEquals(1, builder1.executed);
         assertEquals(1, builder2.executed);
     }
@@ -195,20 +192,20 @@ class BuildStepOperationTest {
         TestBuilder builder2 = new TestBuilder();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(5000),
-                Arrays.<BuildTimeOutOperation>asList(
+                Arrays.asList(
                         new BuildStepOperation(builder1, false),
                         new BuildStepOperation(builder2, true)
                 )
         ));
         p.getBuildersList().add(new SleepBuilder(9999));
-        
+
         builder1.result = false;
-        
+
         assertEquals(0, builder1.executed);
         assertEquals(0, builder2.executed);
-        
+
         j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
-        
+
         assertEquals(1, builder1.executed);
         assertEquals(0, builder2.executed);
     }
@@ -220,18 +217,18 @@ class BuildStepOperationTest {
         TestPublisher publisher2 = new TestPublisher();
         p.getBuildWrappersList().add(new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(5000),
-                Arrays.<BuildTimeOutOperation>asList(
+                Arrays.asList(
                         new BuildStepOperation(publisher1, true),
                         new BuildStepOperation(publisher2, true)
                 )
         ));
         p.getBuildersList().add(new SleepBuilder(9999));
-        
+
         assertEquals(0, publisher1.executed);
         assertEquals(0, publisher2.executed);
-        
+
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        
+
         assertEquals(1, publisher1.executed);
         assertEquals(1, publisher2.executed);
     }
@@ -240,24 +237,24 @@ class BuildStepOperationTest {
     void configuration(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         ArtifactArchiver archiver = new ArtifactArchiver("**/*.xml", "exclude.xml", false);
-        
+
         BuildStepOperation op = new BuildStepOperation(archiver, true, false);
         BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy(3),
-                Arrays.<BuildTimeOutOperation>asList(op)
+                Arrays.asList(op)
         );
         p.getBuildWrappersList().add(timeout);
         p.save();
-        
+
         String fullname = p.getFullName();
-        
+
         // reconfigure.
         // This should preserve configuration.
         WebClient wc = j.createWebClient();
         HtmlPage page = wc.getPage(p, "configure");
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
-        
+
         p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
         timeout = p.getBuildWrappersList().get(BuildTimeoutWrapper.class);
         op = Util.filter(timeout.getOperationList(), BuildStepOperation.class).get(0);
@@ -265,9 +262,9 @@ class BuildStepOperationTest {
         assertEquals(ArtifactArchiver.class, op.getBuildstep().getClass());
         assertTrue(op.isContinueEvenFailed());
         assertFalse(op.isCreateLauncher());
-        
+
         archiver = (ArtifactArchiver)op.getBuildstep();
-        
+
         assertEquals("**/*.xml", archiver.getArtifacts());
         assertEquals("exclude.xml", archiver.getExcludes());
         assertFalse(archiver.isLatestOnly());
@@ -276,29 +273,29 @@ class BuildStepOperationTest {
     @Test
     void configurationWithoutDbc(JenkinsRule j) throws Exception {
         final String STRING_TO_TEST = "foobar";
-        
+
         FreeStyleProject p = j.createFreeStyleProject();
         NoDataBoundConstructorBuilder builder = new NoDataBoundConstructorBuilder();
         builder.setDescriptionToSet(STRING_TO_TEST);
-        
+
         BuildStepOperation op = new BuildStepOperation(builder, false, true);
         BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
                 new AbsoluteTimeOutStrategy("3"),
-                Arrays.<BuildTimeOutOperation>asList(op),
+                Arrays.asList(op),
                 ""
         );
         p.getBuildWrappersList().add(timeout);
         p.save();
-        
+
         String fullname = p.getFullName();
-        
+
         // reconfigure.
         // This should preserve configuration.
         WebClient wc = j.createWebClient();
         HtmlPage page = wc.getPage(p, "configure");
         HtmlForm form = page.getFormByName("config");
         j.submit(form);
-        
+
         p = j.jenkins.getItemByFullName(fullname, FreeStyleProject.class);
         timeout = p.getBuildWrappersList().get(BuildTimeoutWrapper.class);
         op = Util.filter(timeout.getOperationList(), BuildStepOperation.class).get(0);
@@ -306,9 +303,9 @@ class BuildStepOperationTest {
         assertEquals(NoDataBoundConstructorBuilder.class, op.getBuildstep().getClass());
         assertFalse(op.isContinueEvenFailed());
         assertTrue(op.isCreateLauncher());
-        
+
         builder = (NoDataBoundConstructorBuilder)op.getBuildstep();
-        
+
         assertEquals(STRING_TO_TEST, builder.getDescriptionToSet());
     }
 
@@ -317,25 +314,25 @@ class BuildStepOperationTest {
         FreeStyleProject p = j.createFreeStyleProject();
         // needed since Jenkins 2.3
         p.addProperty(new ParametersDefinitionProperty(new StringParameterDefinition("TESTSTRING", null)));
-        
+
         String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";
-        
+
         Builder shell = null;
         if(Functions.isWindows()) {
             shell = new BatchFile("echo %TESTSTRING%");
         } else {
             shell = new Shell("echo ${TESTSTRING}");
         }
-        
+
         BuildStepOperation op = new BuildStepOperation(shell, false, true);
         BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(5000),
-                Arrays.<BuildTimeOutOperation>asList(op),
+                Arrays.asList(op),
                 null
         );
         p.getBuildWrappersList().add(timeout);
         p.getBuildersList().add(new SleepBuilder(9999));
-        
+
         j.assertBuildStatusSuccess(p.scheduleBuild2(
                 0,
                 new Cause.UserCause(),
@@ -347,25 +344,25 @@ class BuildStepOperationTest {
     @Test
     void noLauncher(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        
+
         String TESTSTRING = "***THIS IS OUTPUT IN TIMEOUT***";
-        
+
         Builder shell = null;
         if(Functions.isWindows()) {
             shell = new BatchFile("echo %TESTSTRING%");
         } else {
             shell = new Shell("echo ${TESTSTRING}");
         }
-        
+
         BuildStepOperation op = new BuildStepOperation(shell, false, false);
         BuildTimeoutWrapper timeout = new BuildTimeoutWrapper(
                 new QuickBuildTimeOutStrategy(5000),
-                Arrays.<BuildTimeOutOperation>asList(op),
+                Arrays.asList(op),
                 null
         );
         p.getBuildWrappersList().add(timeout);
         p.getBuildersList().add(new SleepBuilder(9999));
-        
+
         j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(
                 0,
                 new Cause.UserCause(),
@@ -389,7 +386,7 @@ class BuildStepOperationTest {
 
         try (ACLContext c = ACL.as(User.getById(USER, true))) {
             Collection<Descriptor> descriptors = Functions.getSortedDescriptorsForGlobalConfigUnclassified();
-            assertTrue(descriptors.size() == 0, "Global configuration should not be accessible to READ users");
+            assertTrue(descriptors.isEmpty(), "Global configuration should not be accessible to READ users");
         }
         try (ACLContext c = ACL.as(User.getById(MANAGER, true))) {
             Collection<Descriptor> descriptors = Functions.getSortedDescriptorsForGlobalConfigUnclassified();
@@ -397,11 +394,11 @@ class BuildStepOperationTest {
             assertTrue(found.isPresent(), "Global configuration should be accessible to MANAGE users");
         }
     }
-    
+
     /**
      * A builder without {@link DataBoundConstructor}.
      * This sets description of the build.
-     * 
+     *
      * usually, Jenkins components initialized from form posts should support
      * with DataBoundConstructor, but components in some plugins (especially ancient ones)
      * doesn't support that.
@@ -409,43 +406,43 @@ class BuildStepOperationTest {
      */
     public static class NoDataBoundConstructorBuilder extends Builder {
         private String descriptionToSet;
-        
+
         // @DataBoundConstructor
         public NoDataBoundConstructorBuilder() {
         }
-        
+
         public void setDescriptionToSet(String descriptionToSet) {
             this.descriptionToSet = descriptionToSet;
         }
-        
+
         public String getDescriptionToSet() {
             return descriptionToSet;
         }
-        
+
         @Override
-        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException {
             if(getDescriptionToSet() == null) {
                 return false;
             }
             build.setDescription(getDescriptionToSet());
             return true;
         }
-        
+
         //@TestExtension doesn't work for JenkinsRule till jenkins-1.482.
         @Extension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @Override
-            public boolean isApplicable(@SuppressWarnings("rawtypes") Class<? extends AbstractProject> jobType) {
+            public boolean isApplicable(Class<? extends AbstractProject> jobType) {
                 return true;
             }
-            
+
             @Override
             public String getDisplayName() {
                 return "NoDataBoundConstructorBuilder";
             }
-            
+
             @Override
-            public NoDataBoundConstructorBuilder newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
+            public NoDataBoundConstructorBuilder newInstance(StaplerRequest2 req, JSONObject formData) {
                 NoDataBoundConstructorBuilder builder = new NoDataBoundConstructorBuilder();
                 builder.setDescriptionToSet(formData.getString("descriptionToSet"));
                 return builder;

@@ -9,18 +9,16 @@ import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 
-import java.io.IOException;
-
 public class FakeBuildStep extends Builder implements BuildStep {
     static final String FAKE_BUILD_STEP_OUTPUT = "fake-build-step-output";
     private long delay = 0;
-    
+
     FakeBuildStep(long delay) {
         this.delay = delay;
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
         Thread.sleep(delay);
 
         listener.getLogger().print(FAKE_BUILD_STEP_OUTPUT);
